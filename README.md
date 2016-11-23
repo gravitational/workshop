@@ -1,6 +1,6 @@
 # Workshop
 
-K8s 101 workshop using Minkube and Mattermost
+K8s 101 workshop using Minikube and Mattermost
 
 ## Installation
 
