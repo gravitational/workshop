@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    run: my-nginx
+  name: my-nginx
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      run: my-nginx
+  template:
+    metadata:
+      labels:
+        run: my-nginx
+    spec:
+      containers:
+      - image: nginx:1.11.5
+        name: my-nginx
+        ports:
+        - containerPort: 80
+          protocol: TCP

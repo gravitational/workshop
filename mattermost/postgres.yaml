@@ -1,0 +1,14 @@
+# mattermost postgres worker
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mattermost-database
+  labels:
+    app: mattermost
+    role: mattermost-database
+spec:
+  containers:
+  - name: mattermost-postgres
+    image: postgres:latest
+    ports:
+      - containerPort: 5432

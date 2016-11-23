@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: mattermost
+    role: mattermost-worker
+  name: mattermost-worker
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      role: mattermost-worker
+  template:
+    metadata:
+      labels:
+        app: mattermost
+        role: mattermost-worker
+    spec:
+      containers:
+      - image: localhost:5000/mattermost-worker:2.1.0
+        name: mattermost-worker
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /var/mattermost/config
+      volumes:
+       - name: config-volume
+         configMap:
+           name: mattermost-v1

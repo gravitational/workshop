@@ -1,0 +1,15 @@
+# service for web worker
+apiVersion: v1
+kind: Service
+metadata:
+  name: mattermost
+  labels:
+    app: mattermost
+    role: mattermost-worker
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    name: http
+  selector:
+    role: mattermost-worker

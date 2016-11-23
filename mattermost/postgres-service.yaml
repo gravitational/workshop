@@ -1,0 +1,14 @@
+# service that routes to database
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: mattermost
+    role: mattermost-database
+spec:
+  type: NodePort
+  ports:
+  - port: 5432
+  selector:
+    role: mattermost-database
