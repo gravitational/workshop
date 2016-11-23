@@ -1,6 +1,6 @@
 # Workshop
 
-K8s 101 workshop using Gravity as a tool to spin it up
+K8s 101 workshop using Minkube and Mattermost
 
 ## Installation
 
