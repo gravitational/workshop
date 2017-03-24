@@ -172,8 +172,16 @@ Multiple linux subsystems help to create a container concept:
 
 **Namespaces**
 
-Namespaces create isolated stacks of linux primitives, for example networking namespace creates it's own network stack with
-separate interfaces and routing rules.
+Namespaces create isolated stacks of linux primitives for a running process.
+
+* NET namespace creates a separate networking stack for the container, own routing tables and devices
+* PID namespace is used to assign isolated process IDs that are separate from host OS. This is important if we want to send signal to a running
+process, for example
+* MNT namespace creates a scoped view of a filesystem using [VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html), it lets container
+to get it's own "root" filesystem and map directories from one location on the host to the other location inside container
+* UTS namespace lets container to get its own hostname
+* IPC namespace is used to isolate inter process communication (e.g. message queues)
+* USER namespace allows container processes have different users and IDs from the host OS.
 
 **Control groups**
 
