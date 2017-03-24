@@ -139,13 +139,68 @@ lo        Link encap:Local Loopback
           RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
 ```
 
-What if we wanted to expose the host networking to our containers? We can do this, but to get there
-we first need to learn another flag:
+
+We can use `-p` flag to forward port on the host to the port 5000 inside the container:
+
+
+```bash
+docker run -p 5000:5000 library/python:3.3 python -m http.server 5000
+```
+
+This command blocks because the server listens for requests, open a new tab and access the endpoint
+
+```bash
+curl http://localhost:5000
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+....
+```
+
+Press `Ctrl-C` to stop the running container.
+
+
+## A bit of Theory
+
+![docker-settings](img/macos-docker-settings.jpg)
+
+Docker container is a set of linux processes that run isolated from the rest of the processes. 
+
+[chart](https://www.lucidchart.com/documents/edit/d5226f07-00b1-4a7a-ba22-59e0c2ec0b77/0)
+
+Multiple linux subsystems help to create a container concept:
+
+* Namespaces
+
+Namespaces create isolated stacks of linux primitives, for example networking namespace creates it's own network stack with
+separate interfaces and routing rules.
+
+* Control groups
+
+Kernel feature that limits, accounts for, and isolates the resource usage (CPU, memory, disk I/O, network, etc.)
+
+* Capabilities
+
+Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration even for a root user for example (`CAP_NET_ADMIN`
+
+
+Lots of additional low level detail [here](http://crosbymichael.com/creating-containers-part-1.html)
+
+
+## More container operations
+
 
 **Daemons**
 
-To make it a little more complex, let us start our program in background:
+Our last python server example was inconvenient as it worked in foreground
 
 ```bash
-docker run busybox echo "hello world"
+
 ```
+
+
+
+```bash
+docker run library/python:3.3 python -m http.server
+```
+
