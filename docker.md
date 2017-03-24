@@ -483,4 +483,54 @@ hello, hello!
 
 Let's update the script.sh
 
-echo ""
+```bash
+cp script2.sh script.sh
+```
+
+They are only differrent by one letter, but this makes a difference:
+
+
+```bash
+$ docker build -t hello:v7 .
+$ docker run hello:v7
+Hello, hello!
+```
+
+Notice `Using cache` diagnostic output from the container:
+
+```
+docker build -t hello:v7 .
+Sending build context to Docker daemon  5.12 kB
+Step 1 : FROM busybox
+ ---> 00f017a8c2a6
+Step 2 : ADD file /file
+ ---> Using cache
+ ---> 6f48df47cb1d
+Step 3 : ADD script.sh /script.sh
+ ---> b187172076e2
+Removing intermediate container 7afa2631d677
+Step 4 : ENTRYPOINT /script.sh
+ ---> Running in 51217447e66c
+ ---> d0ec3cfed6f7
+Removing intermediate container 51217447e66c
+Successfully built d0ec3cfed6f7
+```
+
+
+Docker executes every command in a special container. It detects the fact that the content has (or has not) changed,
+and instead of re-exectuing the command, uses cached value isntead. This helps to speed up builds, but sometimes introduces problems.
+
+**NOTE:** You can always turn caching off by using the `--no-cache=true` option for the `docker build` command.
+
+Docker images are composed of layers:
+
+![images](https://docs.docker.com/engine/userguide/storagedriver/images/image-layers.jpg)
+
+Every layer is a result of execution of a command in the Dockerfile. 
+
+**RUN command**
+
+The most frequently used command is `RUN`: it executes the command in a container,
+captures the output and records it as an image layer.
+
+
