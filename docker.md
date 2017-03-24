@@ -291,6 +291,99 @@ hello                                         latest              4dce466cf3de  
 linux process in isolation, we don't need any kernel, drivers or libraries to ship with the image, so it could be as tiny as several bytes!
 
 
+**Running the image**
+
+Trying to run it though, will result in error:
+
+```bash
+docker run hello /hello.sh
+write pipe: bad file descriptor
+```
+
+This is because our container is empty, there is no shell and script won't be able to start!
+Let's fix that by changing our base image to `busybox` that contains proper shell environment:
 
 
+```bash
+cd docker/busybox
+docker build -t hello .
+Sending build context to Docker daemon 3.072 kB
+Step 1 : FROM busybox
+ ---> 00f017a8c2a6
+Step 2 : ADD hello.sh /hello.sh
+ ---> c8c3f1ea6ede
+Removing intermediate container fa59f3921ff8
+Successfully built c8c3f1ea6ede
+```
 
+Listing the image shows that image id and size have changed:
+
+```bash
+docker images
+REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
+hello                                         latest              c8c3f1ea6ede        10 minutes ago      1.11 MB
+```
+
+we can run our script now:
+
+```bash
+docker run hello /hello.sh
+hello, world!
+```
+
+**Versioning**
+
+Let us roll new version of our script `v2`
+
+```bash
+cd docker/busybox
+docker build -t hello:v2 .
+```
+
+We will now see 2 images: `hello:v2` and `hello:latest`
+
+```
+hello                                         v2                  195aa31a5e4d        2 seconds ago       1.11 MB
+hello                                         latest              47060b048841        20 minutes ago      1.11 MB
+```
+
+**NOTE:** Tag `latest` will not automatically point to the latest version, so you have to manually update it
+
+Execute the scirpt using `image:tag` notation:
+
+```bash
+docker run hello:v2 /hello.sh
+hello, world v2!
+```
+
+**Entry point**
+
+We can improve our image by supplying `entrypoint`
+
+
+```bash
+cd docker/busybox-entrypoint
+docker build -t hello:v3 .
+```
+
+Entrypoint remembers the command to be executed on start, even if you don't supply the arguments:
+
+```bash
+docker run hello:v3
+hello, world !
+```
+
+what happens if you pass flags? they will be executed as arugments:
+
+```
+docker run hello:v3 woo
+hello, world woo!
+```
+
+(our v3 script prints passed arguments)
+
+```bash
+#!/bin/sh
+
+echo "hello, world $@!"
+```
