@@ -170,16 +170,16 @@ Docker container is a set of linux processes that run isolated from the rest of 
 
 Multiple linux subsystems help to create a container concept:
 
-* Namespaces
+**Namespaces**
 
 Namespaces create isolated stacks of linux primitives, for example networking namespace creates it's own network stack with
 separate interfaces and routing rules.
 
-* Control groups
+**Control groups**
 
 Kernel feature that limits, accounts for, and isolates the resource usage (CPU, memory, disk I/O, network, etc.)
 
-* Capabilities
+**Capabilities**
 
 Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration even for a root user for example (`CAP_NET_ADMIN`)
 
@@ -193,7 +193,7 @@ Lots of additional low level detail [here](http://crosbymichael.com/creating-con
 Our last python server example was inconvenient as it worked in foreground:
 
 ```bash
-docker run -d -p 5000:5000 library/python:3.3 python -m http.server 5000
+docker run -d -p 5000:5000 --name=simple1 library/python:3.3 python -m http.server 5000
 ```
 
 Flag `-d` instructs docker to start the process in background, let's see if still works:
@@ -202,12 +202,87 @@ Flag `-d` instructs docker to start the process in background, let's see if stil
 curl http://localhost:5000
 ```
 
-**Inspecting a runnign container**
+**Inspecting a running container**
 
 We can use `ps` command to view all running containers:
 
 ```bash
-docker ps 
+docker ps
 CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
-267021e6e7e4        library/python:3.3   "python -m http.serve"   50 seconds ago      Up 49 seconds       0.0.0.0:5000->5000/tcp   reverent_mcnulty
+eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
+
+* Container ID - auto generated unique running id
+* Container image - image name
+* Command - linux process running as the PID 1 in the container
+* Names - user friendly name of the container, we have named our container with `--name=simple1` flag.
+
+We can use `logs` to view logs of a running container:
+
+```bash
+docker logs simple1
+```
+
+To stop and start container we can use `stop` and `start` commands:
+
+```
+docker stop simple1
+docker start simple1
+```
+
+**NOTE** container names should be unique, otherwise you will get an error when you try to crate new container with conflicting name!
+
+
+## Building Container images
+
+So far we have been using container images downloaded from the Docker's public registry.
+
+**Starting from scratch**
+
+`Dockerfile` is a special file that instructs `docker build` command how to build image
+
+```
+cd docker/scratch
+docker build -t hello .
+Sending build context to Docker daemon 3.072 kB
+Step 1 : FROM scratch
+ ---> 
+Step 2 : ADD hello.sh /hello.sh
+ ---> 4dce466cf3de
+Removing intermediate container dc8a5b93d5a8
+Successfully built 4dce466cf3de
+```
+
+
+Dockerfile looks very simple:
+
+```dockerfile
+FROM scratch
+ADD hello.sh /hello.sh
+```
+
+`FROM scratch` instructs docker build process to use empty image to start building the container image.
+`ADD hello.sh /hello.sh` adds file `hello.sh` to the container's root path `/hello.sh`
+
+**Viewing images**
+
+`docker images` command is used to display images that we have built:
+
+```
+docker images
+REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
+hello                                         latest              4dce466cf3de        10 minutes ago      34 B
+```
+
+* Repository is a name of the local (on your computer) or remote repository. Our current repository is local and is called `hello`
+* Tag - indicates the version of our image, docker sets `latest` tag automatically if not specified
+* Image ID - unique image ID
+* Size - the size of our image is just 34 bytes
+
+**NOTE** Docker images are very different from virtual image formats. Because docker does not boot any operating system, but simply runs
+linux process in isolation, we don't need any kernel, drivers or libraries to ship with the image, so it could be as tiny as several bytes!
+
+
+
+
+
