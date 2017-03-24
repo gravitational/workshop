@@ -29,7 +29,7 @@ Xcode will install essential console utilities for us. You can install it from A
 Docker is as easy as Linux! To prove that let us write classic "Hello, World" in docker
 
 ```bash
-docker run busybox echo "hello world"
+$ docker run busybox echo "hello world"
 ```
 
 Docker containers are just as simple as linux processes, but they also provide many more features that we are going to explore.
@@ -50,7 +50,7 @@ host operating system shell, but the shell from busybox package when doing docke
 Let's now take a look at process tree running in the container:
 
 ```bash
-docker run busybox ps uax
+$ docker run busybox ps uax
 ```
 
 My terminal prints out something like this:
@@ -69,7 +69,7 @@ running on your machine.
 Let's see what environment variables do we have
 
 ```
-docker run busybox env
+$ docker run busybox env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=0a0169cdec9a
 ```
@@ -78,7 +78,7 @@ The environment is different from your host environment as well.
 We can extend environment by passing explicit enviornment variable flag to `docker run`:
 
 ```bash
-docker run -e HELLO=world busybox env
+$ docker run -e HELLO=world busybox env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=8ee8ba3443b6
 HELLO=world
@@ -90,14 +90,14 @@ HOME=/root
 If we look at the disks we will see that none of the OS directories are not here as well:
 
 ```bash
-docker run busybox ls -l /home
+$ docker run busybox ls -l /home
 total 0
 ```
 
 What if we want to expose our current directory to the container? For this we can use host mounts:
 
 ```
-docker run -v $(pwd):/home busybox ls -l /home
+$ docker run -v $(pwd):/home busybox ls -l /home
 total 72
 -rw-rw-r--    1 1000     1000         11315 Nov 23 19:42 LICENSE
 -rw-rw-r--    1 1000     1000         30605 Mar 22 23:19 README.md
@@ -119,7 +119,7 @@ directory.
 Networking in Docker containers is isolated as well, let us look at the interfaces inside a running container:
 
 ```bash
-docker run busybox ifconfig
+$ docker run busybox ifconfig
 eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:02  
           inet addr:172.17.0.2  Bcast:0.0.0.0  Mask:255.255.0.0
           inet6 addr: fe80::42:acff:fe11:2/64 Scope:Link
@@ -144,13 +144,13 @@ We can use `-p` flag to forward port on the host to the port 5000 inside the con
 
 
 ```bash
-docker run -p 5000:5000 library/python:3.3 python -m http.server 5000
+$ docker run -p 5000:5000 library/python:3.3 python -m http.server 5000
 ```
 
 This command blocks because the server listens for requests, open a new tab and access the endpoint
 
 ```bash
-curl http://localhost:5000
+$ curl http://localhost:5000
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
@@ -201,7 +201,7 @@ Lots of additional low level detail [here](http://crosbymichael.com/creating-con
 Our last python server example was inconvenient as it worked in foreground:
 
 ```bash
-docker run -d -p 5000:5000 --name=simple1 library/python:3.3 python -m http.server 5000
+$ docker run -d -p 5000:5000 --name=simple1 library/python:3.3 python -m http.server 5000
 ```
 
 Flag `-d` instructs docker to start the process in background, let's see if still works:
@@ -215,7 +215,7 @@ curl http://localhost:5000
 We can use `ps` command to view all running containers:
 
 ```bash
-docker ps
+$ docker ps
 CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
 eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
@@ -228,14 +228,14 @@ eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago 
 We can use `logs` to view logs of a running container:
 
 ```bash
-docker logs simple1
+$ docker logs simple1
 ```
 
 To stop and start container we can use `stop` and `start` commands:
 
 ```
-docker stop simple1
-docker start simple1
+$ docker stop simple1
+$ docker start simple1
 ```
 
 **NOTE** container names should be unique, otherwise you will get an error when you try to crate new container with conflicting name!
@@ -250,8 +250,8 @@ So far we have been using container images downloaded from the Docker's public r
 `Dockerfile` is a special file that instructs `docker build` command how to build image
 
 ```
-cd docker/scratch
-docker build -t hello .
+$ cd docker/scratch
+$ docker build -t hello .
 Sending build context to Docker daemon 3.072 kB
 Step 1 : FROM scratch
  ---> 
@@ -296,7 +296,7 @@ linux process in isolation, we don't need any kernel, drivers or libraries to sh
 Trying to run it though, will result in error:
 
 ```bash
-docker run hello /hello.sh
+$ docker run hello /hello.sh
 write pipe: bad file descriptor
 ```
 
@@ -305,8 +305,8 @@ Let's fix that by changing our base image to `busybox` that contains proper shel
 
 
 ```bash
-cd docker/busybox
-docker build -t hello .
+$ cd docker/busybox
+$ docker build -t hello .
 Sending build context to Docker daemon 3.072 kB
 Step 1 : FROM busybox
  ---> 00f017a8c2a6
@@ -319,7 +319,7 @@ Successfully built c8c3f1ea6ede
 Listing the image shows that image id and size have changed:
 
 ```bash
-docker images
+$ docker images
 REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
 hello                                         latest              c8c3f1ea6ede        10 minutes ago      1.11 MB
 ```
@@ -327,7 +327,7 @@ hello                                         latest              c8c3f1ea6ede  
 we can run our script now:
 
 ```bash
-docker run hello /hello.sh
+$ docker run hello /hello.sh
 hello, world!
 ```
 
@@ -336,7 +336,7 @@ hello, world!
 Let us roll new version of our script `v2`
 
 ```bash
-cd docker/busybox
+$ cd docker/busybox
 docker build -t hello:v2 .
 ```
 
@@ -352,7 +352,7 @@ hello                                         latest              47060b048841  
 Execute the scirpt using `image:tag` notation:
 
 ```bash
-docker run hello:v2 /hello.sh
+$ docker run hello:v2 /hello.sh
 hello, world v2!
 ```
 
@@ -362,28 +362,125 @@ We can improve our image by supplying `entrypoint`
 
 
 ```bash
-cd docker/busybox-entrypoint
-docker build -t hello:v3 .
+$ cd docker/busybox-entrypoint
+$ docker build -t hello:v3 .
 ```
 
 Entrypoint remembers the command to be executed on start, even if you don't supply the arguments:
 
 ```bash
-docker run hello:v3
+$ docker run hello:v3
 hello, world !
 ```
 
 what happens if you pass flags? they will be executed as arugments:
 
-```
-docker run hello:v3 woo
+```bash
+$ docker run hello:v3 woo
 hello, world woo!
 ```
 
-(our v3 script prints passed arguments)
+This magic happens because our v3 script prints passed arguments:
 
 ```bash
 #!/bin/sh
 
 echo "hello, world $@!"
 ```
+
+
+**Environment variables**
+
+We can pass environment variables during build and during runtime as well.
+
+Here's our modified shell script:
+
+```bash
+#!/bin/sh
+
+echo "hello, $BUILD1 and $RUN1!"
+```
+
+Dockerfile now uses `ENV` directive to provide environment variable:
+
+```Dockerfile
+FROM busybox
+ADD hello.sh /hello.sh
+ENV BUILD1 Bob
+ENTRYPOINT ["/hello.sh"]
+```
+
+Let's build and run:
+
+```bash
+cd docker/busybox-env
+$ docker build -t hello:v4 .
+$ docker run -e RUN1=Alice hello:v4
+hello, Bob and Alice!
+```
+
+**Build arguments**
+
+Sometimes it is helpful to supply arguments during build process,
+for example user ID to create inside the container. We can supply build arguments as flags to `docker build`:
+
+
+```bash
+$ cd docker/busybox-arg
+$ docker build --build-arg=BUILD1="Alice and Bob" -t hello:v5 .
+$ docker run hello:v5
+hello, Alice and Bob!
+```
+
+Here is our updated Dockerfile:
+
+```Dockerfile
+FROM busybox
+ADD hello.sh /hello.sh
+ARG BUILD1
+ENV BUILD1 $BUILD1
+ENTRYPOINT ["/hello.sh"]
+```
+
+Notice how `ARG` have supplied the build argument and we have referred to it right away exposing it as environment variable right away
+
+**Build layers and caching**
+
+Let's take a look at the new build image in `docker/cache` directory:
+
+```bash
+$ ls -l docker/cache/
+total 12
+-rw-rw-r-- 1 sasha sasha 76 Mar 24 16:23 Dockerfile
+-rw-rw-r-- 1 sasha sasha  6 Mar 24 16:23 file
+-rwxrwxr-x 1 sasha sasha 40 Mar 24 16:23 script.sh
+```
+
+We have a file and a script that uses the file:
+
+```bash
+$ cd docker/cache
+$ docker build -t hello:v6 .
+
+Sending build context to Docker daemon 4.096 kB
+Step 1 : FROM busybox
+ ---> 00f017a8c2a6
+Step 2 : ADD file /file
+ ---> Using cache
+ ---> 6f48df47cb1d
+Step 3 : ADD script.sh /script.sh
+ ---> b052fd11bcc6
+Removing intermediate container c555e8ab29dc
+Step 4 : ENTRYPOINT /script.sh
+ ---> Running in 50f057fd89cb
+ ---> db7c6f36cba1
+Removing intermediate container 50f057fd89cb
+Successfully built db7c6f36cba1
+
+$ docker run hello:v6
+hello, hello!
+```
+
+Let's update the script.sh
+
+echo ""
