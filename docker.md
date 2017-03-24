@@ -162,7 +162,7 @@ Press `Ctrl-C` to stop the running container.
 
 ## A bit of Theory
 
-![docker-settings](img/macos-docker-settings.jpg)
+![docker-settings](img/containers.png)
 
 Docker container is a set of linux processes that run isolated from the rest of the processes. 
 
@@ -181,26 +181,23 @@ Kernel feature that limits, accounts for, and isolates the resource usage (CPU, 
 
 * Capabilities
 
-Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration even for a root user for example (`CAP_NET_ADMIN`
-
+Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration even for a root user for example (`CAP_NET_ADMIN`)
 
 Lots of additional low level detail [here](http://crosbymichael.com/creating-containers-part-1.html)
 
 
 ## More container operations
 
-
 **Daemons**
 
-Our last python server example was inconvenient as it worked in foreground
+Our last python server example was inconvenient as it worked in foreground:
 
 ```bash
-
+docker run -d -p 5000:5000 library/python:3.3 python -m http.server 5000
 ```
 
-
+Flag `-d` instructs docker to start the process in background, let's see if still works:
 
 ```bash
-docker run library/python:3.3 python -m http.server
+curl http://localhost:5000
 ```
-
