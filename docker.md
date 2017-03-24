@@ -201,3 +201,13 @@ Flag `-d` instructs docker to start the process in background, let's see if stil
 ```bash
 curl http://localhost:5000
 ```
+
+**Inspecting a runnign container**
+
+We can use `ps` command to view all running containers:
+
+```bash
+docker ps 
+CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
+267021e6e7e4        library/python:3.3   "python -m http.serve"   50 seconds ago      Up 49 seconds       0.0.0.0:5000->5000/tcp   reverent_mcnulty
+```
