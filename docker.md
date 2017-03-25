@@ -499,7 +499,7 @@ Hello, hello!
 Notice `Using cache` diagnostic output from the container:
 
 ```
-docker build -t hello:v7 .
+$ docker build -t hello:v7 .
 Sending build context to Docker daemon  5.12 kB
 Step 1 : FROM busybox
  ---> 00f017a8c2a6
@@ -532,5 +532,122 @@ Every layer is a result of execution of a command in the Dockerfile.
 
 The most frequently used command is `RUN`: it executes the command in a container,
 captures the output and records it as an image layer.
+
+
+`RUN` let's us use existing package managers to compose our images:
+
+```Dockerfile
+FROM ubuntu:14.04
+RUN apt-get update
+RUN apt-get install -y curl
+ENTRYPOINT curl
+```
+
+The output of this build will look more like a real Linux install:
+
+```bash
+$ cd docker/ubuntu
+$ docker build -t myubuntu .
+```
+
+We can use our newly created ubuntu to curl pages:
+
+```bash
+$ docker run myubuntu https://google.com
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   220  100   220    0     0   1377      0 --:--:-- --:--:-- --:--:--  1383
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="https://www.google.com/">here</A>.
+</BODY></HTML>
+```
+
+However it all comes at a certain price:
+
+```bash
+$ docker images
+REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
+myubuntu                                      latest              50928f386c70        53 seconds ago      221.8 MB
+```
+
+That is 220MB for curl! As we know now there is no good reason to have images with all the OS inside. If you still need it though, Docker
+will save you some space by re-using the base layer, so images with slightly different bases
+would not repeat each other.
+
+### Operations with images
+
+You are already familiar with one command, `docker images`. You can also remove images, tag and untag them.
+
+**Removing images and containers**
+
+Let's start with removing the image that takes too much disk space:
+
+```
+$ docker rmi myubuntu
+Error response from daemon: conflict: unable to remove repository reference "myubuntu" (must force) - container 292d1e8d5103 is using its referenced image 50928f386c70
+```
+
+Docker complains that there are containers using this image. How is this possible, as we thought that all our containers are gone?
+In fact, docker keeps track of all containers, even those that have stopped:
+
+```bash
+$ docker ps -a
+CONTAINER ID        IMAGE                        COMMAND                   CREATED             STATUS                           PORTS                    NAMES
+292d1e8d5103        myubuntu                     "curl https://google."    5 minutes ago       Exited (0) 5 minutes ago                                  cranky_lalande
+f79c361a24f9        440a0da6d69e                 "/bin/sh -c curl"         5 minutes ago       Exited (2) 5 minutes ago                                  nauseous_sinoussi
+01825fd28a50        440a0da6d69e                 "/bin/sh -c curl --he"    6 minutes ago       Exited (2) 5 minutes ago                                  high_davinci
+95ffb2131c89        440a0da6d69e                 "/bin/sh -c curl http"    6 minutes ago       Exited (2) 6 minutes ago                                  lonely_sinoussi
+```
+
+We can now delete the container:
+
+```bash
+$ docker rm 292d1e8d5103
+292d1e8d5103
+```
+
+and the image:
+
+```bash
+$ docker rmi myubuntu
+Untagged: myubuntu:latest
+Deleted: sha256:50928f386c704610fb16d3ca971904f3150f3702db962a4770958b8bedd9759b
+```
+
+**Tagging images**
+
+`docker tag` helps us to tag images.
+
+We have quite a lot of versions of `hello` built, but latest still points to the old `v1`.
+
+```
+$ docker images | grep hello
+hello                                         v7                  d0ec3cfed6f7        33 minutes ago      1.11 MB
+hello                                         v6                  db7c6f36cba1        42 minutes ago      1.11 MB
+hello                                         v5                  1fbecb029c8e        About an hour ago   1.11 MB
+hello                                         v4                  ddb5bc88ebf9        About an hour ago   1.11 MB
+hello                                         v3                  eb07be15b16a        About an hour ago   1.11 MB
+hello                                         v2                  195aa31a5e4d        3 hours ago         1.11 MB
+hello                                         latest              47060b048841        3 hours ago         1.11 MB
+```
+
+Let's change that by re-tagging `latest` to `v7`:
+
+```bash
+$ docker tag hello:v7 hello:latest
+$ docker images | grep hello
+hello                                         latest              d0ec3cfed6f7        38 minutes ago      1.11 MB
+hello                                         v7                  d0ec3cfed6f7        38 minutes ago      1.11 MB
+hello                                         v6                  db7c6f36cba1        47 minutes ago      1.11 MB
+hello                                         v5                  1fbecb029c8e        About an hour ago   1.11 MB
+hello                                         v4                  ddb5bc88ebf9        About an hour ago   1.11 MB
+hello                                         v3                  eb07be15b16a        About an hour ago   1.11 MB
+hello                                         v2                  195aa31a5e4d        3 hours ago         1.11 MB
+```
+
+Both `v7` and `latest` point to the same image ID `d0ec3cfed6f7`
 
 
