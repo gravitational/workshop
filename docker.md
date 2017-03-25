@@ -651,3 +651,38 @@ hello                                         v2                  195aa31a5e4d  
 Both `v7` and `latest` point to the same image ID `d0ec3cfed6f7`
 
 
+**Publishing images**
+
+Images are distributed via special service - `docker registry`.
+Let us spin up local registry:
+
+```bash
+$ docker run -p 5000:5000 --name registry -d registry:2
+```
+
+`docker push` is used to publish images to registries.
+
+To tell where do we want to publish, we need to append registry address to repository name:
+
+```
+$ docker tag hello:v7 127.0.0.1:5000/hello:v7
+$ docker push 127.0.0.1:5000/hello:v7
+```
+
+`docker push` pushed the image to our "remote" registry.
+
+We can now download the image using `docker pull` command:
+
+```bash
+$ docker pull 127.0.0.1:5000/hello:v7
+v7: Pulling from hello
+Digest: sha256:c472a7ec8ab2b0db8d0839043b24dbda75ca6fa8816cfb6a58e7aaf3714a1423
+Status: Image is up to date for 127.0.0.1:5000/hello:v7
+```
+
+### Wrapping up
+
+We have learned how to start, build and publish containers, learned the containers building blocks.
+There is more to learn, just check out this [official docker documentation!](https://docs.docker.com/engine/userguide/)
+
+And thanks Docker team for such an amazing product!
