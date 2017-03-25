@@ -103,9 +103,11 @@ prod                                          v2                  ef93cea87a7c  
 prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
 ```
 
-## Zombies
+## Zombies and orphans
 
 **NOTICE:** this example demonstration will only work on Linux
+
+**Orphans**
 
 It is quite easy to leave orphaned processes running in backround. Let's take an image we have build in the previous example:
 
@@ -144,7 +146,10 @@ Yelp engineers have a good answer for why this happens [here](https://github.com
 
 > However, if the process receiving the signal is PID 1, it gets special treatment by the kernel; if it hasn't registered a handler for the signal, the kernel won't fall back to default behavior, and nothing happens. In other words, if your process doesn't explicitly handle these signals, sending it SIGTERM will have no effect at all.
 
+To solve this (and other) issues, you need a simple init system that has proper signal handlers specified, luckily `Yelp` engineers
+helped us again, and built the simple and lightweight init system, `dumb-init`
 
-
-
+```bash
+docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
+```
 
