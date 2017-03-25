@@ -1,6 +1,6 @@
-# Workshop
+# Docker 101
 
-Docker 101 workshop
+Docker 101 workshop - introduction to Docker and basic concepts
 
 ## Installation
 
