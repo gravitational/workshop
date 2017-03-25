@@ -231,6 +231,33 @@ We can use `logs` to view logs of a running container:
 $ docker logs simple1
 ```
 
+**Attaching to a running container**
+
+We can execute a process that joins container namespaces using `exec` command:
+
+```bash
+$ docker exec -ti simple1 /bin/sh
+```
+
+We can look around to see the process running as PID 1:
+
+```bash
+# ps uax
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.5  0.0  74456 17512 ?        Ss   18:07   0:00 python -m http.server 5000
+root         7  0.0  0.0   4336   748 ?        Ss   18:08   0:00 /bin/sh
+root        13  0.0  0.0  19188  2284 ?        R+   18:08   0:00 ps uax
+# 
+```
+
+This gives an illusion that you `SSH` in a container, however there is no remote network connection.
+The process `/bin/sh` started an instead of running in the host OS joined all namespaces of the container.
+
+* `-t` flag attaches terminal for interactive typing
+* `-i` flag attaches input/output from the terminal to the process
+
+**Starting and stopping containers**
+
 To stop and start container we can use `stop` and `start` commands:
 
 ```
@@ -238,8 +265,34 @@ $ docker stop simple1
 $ docker start simple1
 ```
 
-**NOTE** container names should be unique, otherwise you will get an error when you try to crate new container with conflicting name!
+**NOTE:** container names should be unique, otherwise you will get an error when you try to crate new container with conflicting name!
 
+**Interactive containers**
+
+`-it` combination allows us to start interactive containers without attaching to existing ones:
+
+```bash
+$ docker run -ti busybox
+# ps uax
+PID   USER     TIME   COMMAND
+    1 root       0:00 sh
+    7 root       0:00 ps uax
+```
+
+**Attaching to containers input**
+
+To best illustrate the impact of `-i` or `--interactive` in the expanded version, consider this example:
+
+```bash
+$ echo "hello there " | docker run busybox grep hello
+```
+
+The example above won't work as container's input is not attached to the host stdout. The `-i` flag fixes just that:
+
+```bash
+$ echo "hello there " | docker run -i busybox grep hello
+hello there 
+```
 
 ## Building Container images
 
