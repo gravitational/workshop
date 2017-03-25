@@ -63,5 +63,51 @@ int main()
 
 **Splitting build envrionment and run environment**
 
-We are going to use "buildbox" pattern to first build an image that 
+We are going to use "buildbox" pattern to build an image with build environment,
+and we will use much smaller runtime environment to run our program
+
+
+```bash
+$ cd prod/build-fix
+$ docker build -f build.dockerfile -t buildbox .
+```
+
+**NOTE:** We have used new `-f` flag to specify dockerfile we are going to use.
+
+Now we have a `buildbox` image that contains our build environment. We can use it to compile the C program now:
+
+```bash
+$ docker run -v $(pwd):/build  buildbox gcc /build/hello.c -o /build/hello
+```
+
+We have not used `docker build` this time, but mounted the source code and run the compiler directly.
+
+**NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
+
+
+We can now use much simpler (and smaller) dockerfile to run our image:
+
+```Dockerfile
+FROM quay.io/gravitational/debian-tall:0.0.1
+
+ADD hello /hello
+ENTRYPOINT ["/hello"]
+```
+
+```bash
+$ docker build -f run.dockerfile -t prod:v2 .
+$ docker run prod:v2
+Hello World
+$ docker images | grep prod
+prod                                          v2                  ef93cea87a7c        17 seconds ago       11.05 MB
+prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
+```
+
+
+
+
+
+
+
+
 

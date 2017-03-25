@@ -1,7 +1,4 @@
-FROM ubuntu:14.04
+FROM quay.io/gravitational/debian-tall:0.0.1
 
-RUN apt-get update
-RUN apt-get install -y gcc
-ADD hello.c /build/hello.c
-RUN gcc /build/hello.c -o /build/hello
-ENTRYPOINT ["/build/hello"]
+ADD hello /hello
+ENTRYPOINT ["/hello"]
