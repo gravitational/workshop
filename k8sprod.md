@@ -471,3 +471,345 @@ now you will see that after 10 seconds, the job has failed:
 
 **NOTE:** Sometimes it makes sense to retry forever, in this case make sure to set proper pod restart policy to protect from
 accidental DDOS on your cluster.
+
+
+### Production pattern: Circuit Breaker
+
+In this example, our web application is a imaginary web server for email. To render the page,
+our frontend has to do two requests to the backend:
+
+* Talk to the weather service to get current weather
+* Fetch current mail from the database
+
+If weather service is down, user still would like to review the email, so weather service
+is auxillary, while current mail service is critical.
+
+Here is our frontend, weather and mail services written in python:
+
+**Weather**
+
+```python
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return '''Pleasanton, CA
+Saturday 8:00 PM
+Partly Cloudy
+12 C
+Precipitation: 9%
+Humidity: 74%
+Wind: 14 km/h
+'''
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+    ```
+
+**Mail**
+
+```python
+from flask import Flask,jsonify
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return jsonify([
+        {"from": "<bob@example.com>", "subject": "lunch at noon tomorrow"},
+        {"from": "<alice@example.com>", "subject": "compiler docs"}])
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+```
+
+**Frontend**
+
+```python
+from flask import Flask
+import requests
+from datetime import datetime
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    weather = "weather unavailable"
+    try:
+        print "requesting weather..."
+        start = datetime.now()
+        r = requests.get('http://weather')
+        print "got weather in %s ..." % (datetime.now() - start)
+        if r.status_code == requests.codes.ok:
+            weather = r.text
+    except:
+        print "weather unavailable"
+
+    print "requesting mail..."
+    r = requests.get('http://mail')
+    mail = r.json()
+    print "got mail in %s ..." % (datetime.now() - start)
+
+    out = []
+    for letter in mail:
+        out.append("<li>From: %s Subject: %s</li>" % (letter['from'], letter['subject']))
+    
+
+    return '''<html>
+<body>
+  <h3>Weather</h3>
+  <p>%s</p>
+  <h3>Email</h3>
+  <p>
+    <ul>
+      %s
+    </ul>
+  </p>
+</body>
+''' % (weather, '<br/>'.join(out))
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+```
+
+Let's create our deployments and services:
+
+
+```bash
+$ cd prod/cbreaker
+$ docker build -t $(minikube ip):5000/mail:0.0.1 .
+$ docker push $(minikube ip):5000/mail:0.0.1
+$ kubectl apply -f service.yaml
+deployment "frontend" configured
+deployment "weather" configured
+deployment "mail" configured
+service "frontend" configured
+service "mail" configured
+service "weather" configured
+```
+
+Checkign that everyting is running smoothly:
+
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://frontend
+<html>
+<body>
+  <h3>Weather</h3>
+  <p>Pleasanton, CA
+Saturday 8:00 PM
+Partly Cloudy
+12 C
+Precipitation: 9%
+Humidity: 74%
+Wind: 14 km/h
+</p>
+  <h3>Email</h3>
+  <p>
+    <ul>
+      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
+    </ul>
+  </p>
+</body>
+```
+
+Let's introduce weather service that crashes:
+
+```python
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    raise Exception("I am out of service")
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+```
+
+Build and redeploy:
+
+```bash
+$ docker build -t $(minikube ip):5000/weather-crash:0.0.1 -f weather-crash.dockerfile .
+$ docker push $(minikube ip):5000/weather-crash:0.0.1
+$ kubectl apply -f weather-crash.yaml 
+deployment "weather" configured
+```
+
+Let's make sure that it is crashing:
+
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://weather
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request.  Either the server is overloaded or there is an error in the application.</p>
+```
+
+However our frontend should be all good:
+
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+curl http://frontend
+<html>
+<body>
+  <h3>Weather</h3>
+  <p>weather unavailable</p>
+  <h3>Email</h3>
+  <p>
+    <ul>
+      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
+    </ul>
+  </p>
+</body>
+root@cli:/# curl http://frontend                    
+<html>
+<body>
+  <h3>Weather</h3>
+  <p>weather unavailable</p>
+  <h3>Email</h3>
+  <p>
+    <ul>
+      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
+    </ul>
+  </p>
+</body>
+```
+
+Everything is smooth! There is one problem though, we have just observed service is crashing quickly, let's see what happens
+if our weather service is slow - this happens way more often in production, e.g. due to network or database overload.
+
+Let us introduce a delay:
+
+```python
+from flask import Flask
+import time
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    time.sleep(30)
+    raise Exception("System overloaded")
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
+```
+
+Build and redeploy:
+
+```bash
+$ docker build -t $(minikube ip):5000/weather-crash-slow:0.0.1 -f weather-crash-slow.dockerfile .
+$ docker push $(minikube ip):5000/weather-crash-slow:0.0.1
+$ kubectl apply -f weather-crash-slow.yaml 
+deployment "weather" configured
+```
+
+Just as expected, our weather service is timing out:
+
+```bash
+curl http://weather 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<title>500 Internal Server Error</title>
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request.  Either the server is overloaded or there is an error in the application.</p>
+```
+
+The problem though, is that every request to frontend takes 10 seconds as well
+
+```bash
+curl http://frontend
+```
+
+This is much more common outage - users still leave in frustration as service is unavailable.
+To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers)
+
+![standby](http://vulcand.github.io/_images/CircuitStandby.png)
+
+Circuit breaker is a special middleware that is designed to provide a fail-over action in case if service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against special error condition.
+
+
+![tripped](http://vulcand.github.io/_images/CircuitTripped.png)
+
+Here is our simple circuit breaker written in python:
+
+```python
+from flask import Flask
+import requests
+from datetime import datetime, timedelta
+from threading import Lock
+app = Flask(__name__)
+
+circuit_tripped_util = datetime.now()
+mutex = Lock()
+
+def trip():
+    print "tripping circuit breaker"
+    mutex.acquire()
+    try:
+        circuit_tripped_util = datetime.now() + timedelta(0,30)
+    finally:
+        mutex.release()
+
+def is_tripped():
+    mutex.acquire()
+    try:
+        return datetime.now() > circuit_tripped_util
+    finally:
+        mutex.release()    
+
+@app.route("/")
+def hello():
+    weather = "weather unavailable"
+    try:
+        if is_tripped():
+            return "circuit breaker: service unavailable (tripped)"
+        r = requests.get('http://localhost:5000', timeout=1)
+        print "requesting weather..."
+        start = datetime.now()
+        print "got weather in %s ..." % (datetime.now() - start)
+        if r.status_code == requests.codes.ok:
+            return r.text
+        else:
+            trip()
+            return "circuit brekear: service unavailable (tripping)"
+    except:
+        trip()
+        return "circuit brekear: service unavailable (tripping)"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=6000)
+
+```
+
+Let's build and redeploy:
+
+```bash
+$ docker build -t $(minikube ip):5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
+$ docker push $(minikube ip):5000/cbreaker:0.0.1
+$ kubectl apply -f weather-cbreaker.yaml 
+deployment "weather" configured
+$  kubectl apply -f weather-service.yaml
+service "weather" configured
+```
+
+
+Our circuit breaker will detect service outage and auxillary weather service will not bring our mail service down any more:
+
+```bash
+curl http://frontend
+<html>
+<body>
+  <h3>Weather</h3>
+  <p>circuit breaker: service unavailable (tripped)</p>
+  <h3>Email</h3>
+  <p>
+    <ul>
+      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
+    </ul>
+  </p>
+</body>
+```
+
+**NOTICE:** We have used a sidecar patern - a special proxy that adds additional logic to the service, such as error deteciton, TLS termination
+and other features. There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)

@@ -1,0 +1,111 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - command: ['python', '/frontend.py']
+        image: localhost:5000/mail:0.0.1
+        name: frontend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP        
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: weather
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather
+  template:
+    metadata:
+      labels:
+        app: weather
+    spec:
+      containers:
+      - command: ['python', '/weather.py']
+        image: localhost:5000/mail:0.0.1
+        name: frontend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP        
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: mail
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mail
+  template:
+    metadata:
+      labels:
+        app: mail
+    spec:
+      containers:
+      - command: ['python', '/mail.py']
+        image: localhost:5000/mail:0.0.1
+        name: mail
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP
+---
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: frontend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mail
+  labels:
+    app: mail
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: mail
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather
+  labels:
+    app: weather
+spec:
+  ports:
+  - port: 80
+    targetPort: 5000
+  selector:
+    app: weather
