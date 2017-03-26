@@ -295,7 +295,7 @@ spec:
     imagePullPolicy: Always
 ```
 
-### Production Pattern: Controlling process startup
+### Production Pattern: Pod Readiness
 
 Imagine a situation when your container takes time to start. To simulate this, we are going to write a simple script:
 
@@ -303,25 +303,70 @@ Imagine a situation when your container takes time to start. To simulate this, w
 #!/bin/bash
 
 echo "Starting up"
-sleep 10
+sleep 30
 echo "Started up successfully"
 python -m http.serve 5000
 ```
 
-Let's push the image and start service and deployment
+Push the image and start service and deployment:
 
 ```yaml
 $ cd prod/delay
 $ docker build -t $(minikube ip):5000/delay:0.0.1 .
 $ docker push $(minikube ip):5000/delay:0.0.1
-$ kubectl create -f delay.yaml
+$ kubectl create -f service.yaml
+$ kubectl create -f deployment.yaml
 ```
 
+Enter curl container inside the cluster and make sure it all works:
 
 ```
 kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://my-nginx
+curl http://delay:5000
 <!DOCTYPE html>
 ...
 ```
+
+You will notice that there's a `connection refused error`, when you try to access it
+for the first 30 seconds.
+
+Update deployment to simulate deploy:
+
+```bash
+$ docker build -t $(minikube ip):5000/delay:0.0.2 .
+$ docker push $(minikube ip):5000/delay:0.0.2
+$ kubectl replace -f deployment-update.yaml
+```
+
+In the next window, let's try to to see if we got any service downtime:
+
+```bash
+curl http://delay:5000
+curl: (7) Failed to connect to delay port 5000: Connection refused
+```
+
+We've got a production outage despite setting `maxUnavailable: 0` in our rolling update strategy!
+This happened because Kubernetes did not know about startup delay and readiness of the service.
+
+Let's fix that by using readiness probe:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: /
+    port: 5000
+  timeoutSeconds: 1
+  periodSeconds: 5
+```
+
+Readiness probe indicates the readiness of the pod containers, and Kubernetes will take this into account when
+doing a deployment:
+
+```bash
+$ kubectl replace -f deployment-fix.yaml
+```
+
+This time we will get no downtime.
+
+
 

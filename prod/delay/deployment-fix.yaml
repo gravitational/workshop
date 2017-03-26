@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - command: ['/start.sh']
-        image: localhost:5000/delay:0.0.1
+        image: localhost:5000/delay:0.0.2
         name: server
         imagePullPolicy: Always
         ports:
@@ -33,4 +33,10 @@ spec:
             port: 5000
           timeoutSeconds: 1
           initialDelaySeconds: 31
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          timeoutSeconds: 1
           periodSeconds: 5
