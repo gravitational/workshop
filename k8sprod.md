@@ -368,5 +368,106 @@ $ kubectl replace -f deployment-fix.yaml
 
 This time we will get no downtime.
 
+### Anti-Pattern: unbound quickly failing jobs
+
+Kubernetes provides new useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
+
+However there is a problem:
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bad
+spec:
+  template:
+    metadata:
+      name: bad
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: box
+        image: busybox
+        command: ["/bin/sh", "-c", "exit 1"]
+```
 
 
+```bash
+$ cd prod/jobs
+$ kubectl create -f job.yaml
+```
+
+You are going to observe the race to create hundreds of containers for the job retrying forever:
+
+```bash
+$ kubectl describe jobs 
+Name:		bad
+Namespace:	default
+Image(s):	busybox
+Selector:	controller-uid=18a6678e-11d1-11e7-8169-525400c83acf
+Parallelism:	1
+Completions:	1
+Start Time:	Sat, 25 Mar 2017 20:05:41 -0700
+Labels:		controller-uid=18a6678e-11d1-11e7-8169-525400c83acf
+		job-name=bad
+Pods Statuses:	1 Running / 0 Succeeded / 24 Failed
+No volumes.
+Events:
+  FirstSeen	LastSeen	Count	From			SubObjectPath	Type		Reason			Message
+  ---------	--------	-----	----			-------------	--------	------			-------
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-fws8g
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-321pk
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-2pxq1
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-kl2tj
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-wfw8q
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-lz0hq
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-0dck0
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-0lm8k
+  1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-q6ctf
+  1m		1s		16	{job-controller }			Normal		SuccessfulCreate	(events with common reason combined)
+
+```
+
+Probably not the result you have expected. Over time the load on the nodes and docker will be quite substantial,
+especially if job is failing very quickly.
+
+Lets clean up the busy failing job first:
+
+```bash
+$ kubectl delete jobs/bad
+```
+
+Introduce `activeDeadlineSeconds` to limit amount of retries:
+
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bound
+spec:
+  activeDeadlineSeconds: 10
+  template:
+    metadata:
+      name: bound
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: box
+        image: busybox
+        command: ["/bin/sh", "-c", "exit 1"]
+```
+
+```bash
+$ kubectl create -f bound.yaml
+```
+
+now you will see that after 10 seconds, the job has failed:
+
+```bash
+  11s		11s		1	{job-controller }			Normal		DeadlineExceeded	Job was active longer than specified deadline
+```
+
+
+**NOTE:** Sometimes it makes sense to retry forever, in this case make sure to set proper pod restart policy to protect from
+accidental DDOS on your cluster.

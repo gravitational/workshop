@@ -1,0 +1,15 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bound
+spec:
+  activeDeadlineSeconds: 30
+  template:
+    metadata:
+      name: bound
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: box
+        image: busybox
+        command: ["/bin/sh", "-c", "exit 1"]
