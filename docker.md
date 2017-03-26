@@ -8,7 +8,7 @@ Docker 101 workshop - introduction to Docker and basic concepts
 
 You will need Mac OSX with at least `7GB RAM` and `8GB free disk space` available.
 
-* docker
+* Docker
 
 ### Docker
 
@@ -26,7 +26,7 @@ Xcode will install essential console utilities for us. You can install it from A
 
 ### Hello, world
 
-Docker is as easy as Linux! To prove that let us write classic "Hello, World" in docker
+Docker is as easy as Linux! To prove that let us write classic "Hello, World" in Docker
 
 ```bash
 $ docker run busybox echo "hello world"
@@ -43,7 +43,7 @@ echo "hello world" # command to run
 ```
 
 Container image supplies environment - binaries with shell for example that is running the command, so you are not using
-host operating system shell, but the shell from busybox package when doing docker run.
+host operating system shell, but the shell from busybox package when executing Docker run.
 
 ### Sneak peek into container environment
 
@@ -59,14 +59,14 @@ My terminal prints out something like this:
     1 root       0:00 ps uax
 ```
 
-*NOTE:* Oh my! Am I running this command as root? Yes, but bear with me, this is not your regular root user, but a very limited one. We will get back to the topic of users and security a bit later.
+*NOTE:* Oh my! Am I running this command as root? Yes, although this is not your regular root user but a very limited one. We will get back to the topic of users and security a bit later.
 
 As you can see, the process runs in a very limited and isolated environment, and the PID of the process is 1, so it does not see all other processes
 running on your machine.
 
 ### Adding envrionment variables
 
-Let's see what environment variables do we have
+Let's see what environment variables we have:
 
 ```
 $ docker run busybox env
@@ -74,7 +74,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=0a0169cdec9a
 ```
 
-The environment is different from your host environment as well.
+The environment is different from your host environment.
 We can extend environment by passing explicit enviornment variable flag to `docker run`:
 
 ```bash
@@ -87,7 +87,7 @@ HOME=/root
 
 ### Adding host mounts
 
-If we look at the disks we will see that none of the OS directories are not here as well:
+If we look at the disks we will see the OS directories are not here, as well:
 
 ```bash
 $ docker run busybox ls -l /home
@@ -116,7 +116,7 @@ directory.
 
 ### Network
 
-Networking in Docker containers is isolated as well, let us look at the interfaces inside a running container:
+Networking in Docker containers is isolated, as well. Let us look at the interfaces inside a running container:
 
 ```bash
 $ docker run busybox ifconfig
@@ -140,7 +140,7 @@ lo        Link encap:Local Loopback
 ```
 
 
-We can use `-p` flag to forward port on the host to the port 5000 inside the container:
+We can use `-p` flag to forward a port on the host to the port 5000 inside the container:
 
 
 ```bash
@@ -160,11 +160,11 @@ $ curl http://localhost:5000
 Press `Ctrl-C` to stop the running container.
 
 
-## A bit of Theory
+## A bit of background
 
 ![docker-settings](img/containers.png)
 
-Docker container is a set of linux processes that run isolated from the rest of the processes. 
+A Docker container is a set of linux processes that run isolated from the rest of the processes. 
 
 [chart](https://www.lucidchart.com/documents/edit/d5226f07-00b1-4a7a-ba22-59e0c2ec0b77/0)
 
@@ -174,13 +174,13 @@ Multiple linux subsystems help to create a container concept:
 
 Namespaces create isolated stacks of linux primitives for a running process.
 
-* NET namespace creates a separate networking stack for the container, own routing tables and devices
-* PID namespace is used to assign isolated process IDs that are separate from host OS. This is important if we want to send signal to a running
-process, for example
-* MNT namespace creates a scoped view of a filesystem using [VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html), it lets container
-to get it's own "root" filesystem and map directories from one location on the host to the other location inside container
-* UTS namespace lets container to get its own hostname
-* IPC namespace is used to isolate inter process communication (e.g. message queues)
+* NET namespace creates a separate networking stack for the container, with its own routing tables and devices
+* PID namespace is used to assign isolated process IDs that are separate from host OS. For example, this is important if we want to send signals to a running
+process.
+* MNT namespace creates a scoped view of a filesystem using [VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html). It lets a container
+to get its own "root" filesystem and map directories from one location on the host to the other location inside container.
+* UTS namespace lets container to get to its own hostname.
+* IPC namespace is used to isolate inter-process communication (e.g. message queues).
 * USER namespace allows container processes have different users and IDs from the host OS.
 
 **Control groups**
@@ -189,9 +189,9 @@ Kernel feature that limits, accounts for, and isolates the resource usage (CPU, 
 
 **Capabilities**
 
-Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration even for a root user for example (`CAP_NET_ADMIN`)
+Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration, even for a root user - for example (`CAP_NET_ADMIN`)
 
-Lots of additional low level detail [here](http://crosbymichael.com/creating-containers-part-1.html)
+You can find a lot of additional low level detail [here](http://crosbymichael.com/creating-containers-part-1.html).
 
 
 ## More container operations
@@ -204,7 +204,7 @@ Our last python server example was inconvenient as it worked in foreground:
 $ docker run -d -p 5000:5000 --name=simple1 library/python:3.3 python -m http.server 5000
 ```
 
-Flag `-d` instructs docker to start the process in background, let's see if still works:
+Flag `-d` instructs Docker to start the process in background. Let's see if still works:
 
 ```bash
 curl http://localhost:5000
@@ -220,9 +220,9 @@ CONTAINER ID        IMAGE                COMMAND                  CREATED       
 eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
 
-* Container ID - auto generated unique running id
-* Container image - image name
-* Command - linux process running as the PID 1 in the container
+* Container ID - auto generated unique running id.
+* Container image - image name.
+* Command - linux process running as the PID 1 in the container.
 * Names - user friendly name of the container, we have named our container with `--name=simple1` flag.
 
 We can use `logs` to view logs of a running container:
@@ -250,11 +250,11 @@ root        13  0.0  0.0  19188  2284 ?        R+   18:08   0:00 ps uax
 # 
 ```
 
-This gives an illusion that you `SSH` in a container, however there is no remote network connection.
+This gives an illusion that you `SSH` in a container. However, there is no remote network connection.
 The process `/bin/sh` started an instead of running in the host OS joined all namespaces of the container.
 
-* `-t` flag attaches terminal for interactive typing
-* `-i` flag attaches input/output from the terminal to the process
+* `-t` flag attaches terminal for interactive typing.
+* `-i` flag attaches input/output from the terminal to the process.
 
 **Starting and stopping containers**
 
@@ -265,7 +265,7 @@ $ docker stop simple1
 $ docker start simple1
 ```
 
-**NOTE:** container names should be unique, otherwise you will get an error when you try to crate new container with conflicting name!
+**NOTE:** container names should be unique. Otherwise, you will get an error when you try to create a new container with a conflicting name!
 
 **Interactive containers**
 
@@ -287,7 +287,7 @@ To best illustrate the impact of `-i` or `--interactive` in the expanded version
 $ echo "hello there " | docker run busybox grep hello
 ```
 
-The example above won't work as container's input is not attached to the host stdout. The `-i` flag fixes just that:
+The example above won't work as the container's input is not attached to the host stdout. The `-i` flag fixes just that:
 
 ```bash
 $ echo "hello there " | docker run -i busybox grep hello
@@ -296,11 +296,11 @@ hello there
 
 ## Building Container images
 
-So far we have been using container images downloaded from the Docker's public registry.
+So far we have been using container images downloaded from Docker's public registry.
 
 **Starting from scratch**
 
-`Dockerfile` is a special file that instructs `docker build` command how to build image
+`Dockerfile` is a special file that instructs `docker build` command how to build an image
 
 ```
 $ cd docker/scratch
@@ -315,15 +315,15 @@ Successfully built 4dce466cf3de
 ```
 
 
-Dockerfile looks very simple:
+The Dockerfile looks very simple:
 
 ```dockerfile
 FROM scratch
 ADD hello.sh /hello.sh
 ```
 
-`FROM scratch` instructs docker build process to use empty image to start building the container image.
-`ADD hello.sh /hello.sh` adds file `hello.sh` to the container's root path `/hello.sh`
+`FROM scratch` instructs a Docker build process to use empty image to start building the container image.
+`ADD hello.sh /hello.sh` adds file `hello.sh` to the container's root path `/hello.sh`.
 
 **Viewing images**
 
@@ -335,26 +335,26 @@ REPOSITORY                                    TAG                 IMAGE ID      
 hello                                         latest              4dce466cf3de        10 minutes ago      34 B
 ```
 
-* Repository is a name of the local (on your computer) or remote repository. Our current repository is local and is called `hello`
-* Tag - indicates the version of our image, docker sets `latest` tag automatically if not specified
-* Image ID - unique image ID
-* Size - the size of our image is just 34 bytes
+* Repository - a name of the local (on your computer) or remote repository. Our current repository is local and is called `hello`.
+* Tag - indicates the version of our image, Docker sets `latest` tag automatically if not specified.
+* Image ID - unique image ID.
+* Size - the size of our image is just 34 bytes.
 
-**NOTE** Docker images are very different from virtual image formats. Because docker does not boot any operating system, but simply runs
+**NOTE:** Docker images are very different from virtual image formats. Because Docker does not boot any operating system, but simply runs
 linux process in isolation, we don't need any kernel, drivers or libraries to ship with the image, so it could be as tiny as several bytes!
 
 
 **Running the image**
 
-Trying to run it though, will result in error:
+Trying to run it though, will result in the error:
 
 ```bash
 $ docker run hello /hello.sh
 write pipe: bad file descriptor
 ```
 
-This is because our container is empty, there is no shell and script won't be able to start!
-Let's fix that by changing our base image to `busybox` that contains proper shell environment:
+This is because our container is empty. There is no shell and the script won't be able to start!
+Let's fix that by changing our base image to `busybox` that contains a proper shell environment:
 
 
 ```bash
@@ -377,7 +377,7 @@ REPOSITORY                                    TAG                 IMAGE ID      
 hello                                         latest              c8c3f1ea6ede        10 minutes ago      1.11 MB
 ```
 
-we can run our script now:
+We can run our script now:
 
 ```bash
 $ docker run hello /hello.sh
@@ -386,7 +386,7 @@ hello, world!
 
 **Versioning**
 
-Let us roll new version of our script `v2`
+Let us roll a new version of our script `v2`
 
 ```bash
 $ cd docker/busybox
@@ -402,7 +402,7 @@ hello                                         latest              47060b048841  
 
 **NOTE:** Tag `latest` will not automatically point to the latest version, so you have to manually update it
 
-Execute the scirpt using `image:tag` notation:
+Execute the script using `image:tag` notation:
 
 ```bash
 $ docker run hello:v2 /hello.sh
@@ -411,7 +411,7 @@ hello, world v2!
 
 **Entry point**
 
-We can improve our image by supplying `entrypoint`
+We can improve our image by supplying `entrypoint`:
 
 
 ```bash
@@ -426,7 +426,7 @@ $ docker run hello:v3
 hello, world !
 ```
 
-what happens if you pass flags? they will be executed as arugments:
+What happens if you pass flags? they will be executed as arugments:
 
 ```bash
 $ docker run hello:v3 woo
@@ -474,8 +474,8 @@ hello, Bob and Alice!
 
 **Build arguments**
 
-Sometimes it is helpful to supply arguments during build process,
-for example user ID to create inside the container. We can supply build arguments as flags to `docker build`:
+Sometimes it is helpful to supply arguments during build process
+(for example, user ID to create inside the container). We can supply build arguments as flags to `docker build`:
 
 
 ```bash
@@ -495,11 +495,11 @@ ENV BUILD1 $BUILD1
 ENTRYPOINT ["/hello.sh"]
 ```
 
-Notice how `ARG` have supplied the build argument and we have referred to it right away exposing it as environment variable right away
+Notice how `ARG` have supplied the build argument and we have referred to it right away, exposing it as environment variable right away.
 
 **Build layers and caching**
 
-Let's take a look at the new build image in `docker/cache` directory:
+Let's take a look at the new build image in the `docker/cache` directory:
 
 ```bash
 $ ls -l docker/cache/
@@ -579,7 +579,7 @@ Docker images are composed of layers:
 
 ![images](https://docs.docker.com/engine/userguide/storagedriver/images/image-layers.jpg)
 
-Every layer is a result of execution of a command in the Dockerfile. 
+Every layer is a the result of the execution of a command in the Dockerfile. 
 
 **RUN command**
 
@@ -587,7 +587,7 @@ The most frequently used command is `RUN`: it executes the command in a containe
 captures the output and records it as an image layer.
 
 
-`RUN` let's us use existing package managers to compose our images:
+Let's us use existing package managers to compose our images:
 
 ```Dockerfile
 FROM ubuntu:14.04
@@ -618,7 +618,7 @@ The document has moved
 </BODY></HTML>
 ```
 
-However it all comes at a certain price:
+However, it all comes at a price:
 
 ```bash
 $ docker images
@@ -626,7 +626,7 @@ REPOSITORY                                    TAG                 IMAGE ID      
 myubuntu                                      latest              50928f386c70        53 seconds ago      221.8 MB
 ```
 
-That is 220MB for curl! As we know now there is no good reason to have images with all the OS inside. If you still need it though, Docker
+That is 220MB for curl! As we know, now there is no good reason to have images with all the OS inside. If you still need it though, Docker
 will save you some space by re-using the base layer, so images with slightly different bases
 would not repeat each other.
 
@@ -643,8 +643,8 @@ $ docker rmi myubuntu
 Error response from daemon: conflict: unable to remove repository reference "myubuntu" (must force) - container 292d1e8d5103 is using its referenced image 50928f386c70
 ```
 
-Docker complains that there are containers using this image. How is this possible, as we thought that all our containers are gone?
-In fact, docker keeps track of all containers, even those that have stopped:
+Docker complains that there are containers using this image. How is this possible? We thought that all our containers are gone.
+Actually, Docker keeps track of all containers, even those that have stopped:
 
 ```bash
 $ docker ps -a
@@ -701,13 +701,13 @@ hello                                         v3                  eb07be15b16a  
 hello                                         v2                  195aa31a5e4d        3 hours ago         1.11 MB
 ```
 
-Both `v7` and `latest` point to the same image ID `d0ec3cfed6f7`
+Both `v7` and `latest` point to the same image ID `d0ec3cfed6f7`.
 
 
 **Publishing images**
 
-Images are distributed via special service - `docker registry`.
-Let us spin up local registry:
+Images are distributed with a special service - `docker registry`.
+Let us spin up a local registry:
 
 ```bash
 $ docker run -p 5000:5000 --name registry -d registry:2
@@ -715,7 +715,7 @@ $ docker run -p 5000:5000 --name registry -d registry:2
 
 `docker push` is used to publish images to registries.
 
-To tell where do we want to publish, we need to append registry address to repository name:
+To instruct where we want to publish, we need to append registry address to repository name:
 
 ```
 $ docker tag hello:v7 127.0.0.1:5000/hello:v7
@@ -724,7 +724,7 @@ $ docker push 127.0.0.1:5000/hello:v7
 
 `docker push` pushed the image to our "remote" registry.
 
-We can now download the image using `docker pull` command:
+We can now download the image using the `docker pull` command:
 
 ```bash
 $ docker pull 127.0.0.1:5000/hello:v7
@@ -735,7 +735,7 @@ Status: Image is up to date for 127.0.0.1:5000/hello:v7
 
 ### Wrapping up
 
-We have learned how to start, build and publish containers, learned the containers building blocks.
-There is more to learn, just check out this [official docker documentation!](https://docs.docker.com/engine/userguide/)
+We have learned how to start, build and publish containers and learned the containers building blocks.
+However, there is much more to learn. Just check out this [official docker documentation!](https://docs.docker.com/engine/userguide/).
 
-And thanks Docker team for such an amazing product!
+Thanks to Docker team for such an amazing product!
