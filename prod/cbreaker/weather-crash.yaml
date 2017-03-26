@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: weather
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather
+  template:
+    metadata:
+      labels:
+        app: weather
+    spec:
+      containers:
+      - command: ['python', '/weather.py']
+        image: localhost:5000/weather-crash:0.0.1
+        name: frontend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP        

@@ -1,0 +1,36 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: delay
+  name: delay
+  namespace: default
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: delay
+  template:
+    metadata:
+      labels:
+        app: delay
+    spec:
+      containers:
+      - command: ['/start.sh']
+        image: localhost:5000/delay:0.0.1
+        name: server
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP        
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          timeoutSeconds: 1
+          initialDelaySeconds: 31
+          periodSeconds: 5

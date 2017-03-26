@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: crash
+  namespace: default
+spec:
+  containers:
+  - command: ['/start.sh']
+    image: localhost:5000/background:0.0.1
+    name: pod
+    imagePullPolicy: Always
