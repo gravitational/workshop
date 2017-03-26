@@ -250,7 +250,29 @@ collected, forwarded and rotated.
 
 ### Production Pattern: Immutable containers
 
-Every time you write something to container's filesystem, it activates
+Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
+
+New storage layer is created using storage driver (devicemapper, overlayfs or others). In case of active usage,
+it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
+
+Make sure your containers write data only to volumes, you can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pd
+spec:
+  containers:
+  - image: busybox
+    name: test-container
+    volumeMounts:
+    - mountPath: /tmp
+      name: tempdir
+  volumes:
+  - name: tempdri
+    emptyDir: {}
+```
 
 ### Anti-Pattern: Using `latest` tag
 

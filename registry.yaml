@@ -9,13 +9,13 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: delay
+      app: registry
   template:
-    hostNetwork: true
     metadata:
       labels:
         app: registry
     spec:
+      hostNetwork: true
       containers:
       - image: registry:2
         name: server
