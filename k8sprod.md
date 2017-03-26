@@ -33,7 +33,7 @@ Hello World
 
 There is a couple of problems with the resulting Dockerfile:
 
-1. Size
+**Size**
 
 ```bash
 $ docker images | grep prod
@@ -46,7 +46,7 @@ C compiler and lots of other unnecessary tools that are not required to run this
 
 Which leads us to the second problem:
 
-2. Security
+**Security**
 
 We distribute the whole build toolchain in addition to that we ship the source code of the image:
 
@@ -152,4 +152,54 @@ helped us again, and built the simple and lightweight init system, `dumb-init`
 ```bash
 docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
 ```
+
+Now you can simply stop `docker run` process and still use it as is.
+
+### Anti-Pattern: Direct Use Of Pods
+
+[Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that itself is not durable.
+
+Do not use Pods directly in production. They won't get rescheduled, retain their data or guarantee any durability.
+
+Instead, you can use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled
+and will survive eviction or node loss.
+
+
+### Anti-Pattern: Using background processes
+
+```bash
+$ cd prod/background
+$ docker build -t $(minikube ip):5000/background:0.0.1 .
+$ docker push $(minikube ip):5000/background:0.0.1
+$ kubectl create -f crash.yaml
+$ kubectl get pods
+NAME      READY     STATUS    RESTARTS   AGE
+crash     1/1       Running   0          5s
+```
+
+The container appears to be running, but let's check if our server is running there:
+
+```bash
+$ kubectl exec -ti crash /bin/bash
+root@crash:/# 
+root@crash:/# 
+root@crash:/# ps uax
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         1  0.0  0.0  21748  1596 ?        Ss   00:17   0:00 /bin/bash /start.sh
+root         6  0.0  0.0   5916   612 ?        S    00:17   0:00 sleep 100000
+root         7  0.0  0.0  21924  2044 ?        Ss   00:18   0:00 /bin/bash
+root        11  0.0  0.0  19180  1296 ?        R+   00:18   0:00 ps uax
+root@crash:/# 
+```
+
+We made a mistake, and no HTTP server is running there, but there is no indication of this as the parent
+process is still running.
+
+The first obvious fix is to use proper init system and monitor the status of the web service,
+however let's use this as an opportunity
+
+
+
+
+
 
