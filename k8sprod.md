@@ -103,7 +103,7 @@ prod                                          v2                  ef93cea87a7c  
 prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
 ```
 
-## Zombies and orphans
+### Anti Pattern: Zombies and orphans
 
 **NOTICE:** this example demonstration will only work on Linux
 
@@ -192,12 +192,63 @@ root        11  0.0  0.0  19180  1296 ?        R+   00:18   0:00 ps uax
 root@crash:/# 
 ```
 
+**Using Probes**
+
 We made a mistake, and no HTTP server is running there, but there is no indication of this as the parent
 process is still running.
 
 The first obvious fix is to use proper init system and monitor the status of the web service,
-however let's use this as an opportunity
+however let's use this as an opportunity to use liveness probes:
 
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fix
+  namespace: default
+spec:
+  containers:
+  - command: ['/start.sh']
+    image: localhost:5000/background:0.0.1
+    name: server
+    imagePullPolicy: Always
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 5000
+      timeoutSeconds: 1
+```
+
+```bash
+$ kubectl create -f fix.yaml
+```
+
+The liveness probe will fail, and container will get restarted.
+
+```bash
+$ kubectl get pods
+NAME      READY     STATUS    RESTARTS   AGE
+crash     1/1       Running   0          11m
+fix       1/1       Running   1          1m
+```
+
+### Production Pattern: Logging
+
+Set up your logs to go to stdout:
+
+```bash
+$ kubectl create -f logs/logs.yaml
+$ kubectl logs logs
+hello, world!
+```
+
+Kubernetes and docker have a system of plugins to make sure logs sent to stdout and stderr will get
+collected, forwarded and rotated.
+
+**NOTE:** This is one of the patterns of [12 factor app](https://12factor.net/logs) and Kubernetes supports it out of the box!
+
+### Production Pattern: Controlling process startup
 
 
 

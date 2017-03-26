@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: fix
+  namespace: default
+spec:
+  containers:
+  - command: ['/start.sh']
+    image: localhost:5000/background:0.0.1
+    name: server
+    imagePullPolicy: Always
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 5000
+      timeoutSeconds: 1
