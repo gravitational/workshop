@@ -18,7 +18,7 @@ def trip():
 def is_tripped():
     mutex.acquire()
     try:
-        return datetime.now() > circuit_tripped_util
+        return datetime.now() < circuit_tripped_util
     finally:
         mutex.release()    
 

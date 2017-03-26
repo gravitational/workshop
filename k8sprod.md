@@ -679,7 +679,7 @@ root@cli:/# curl http://frontend
 Everything is smooth! There is one problem though, we have just observed service is crashing quickly, let's see what happens
 if our weather service is slow - this happens way more often in production, e.g. due to network or database overload.
 
-Let us introduce a delay:
+To simulate this failure we are going to introduce an artificial delay:
 
 ```python
 from flask import Flask
@@ -754,9 +754,9 @@ def trip():
 def is_tripped():
     mutex.acquire()
     try:
-        return datetime.now() > circuit_tripped_util
+        return datetime.now() < circuit_tripped_util
     finally:
-        mutex.release()    
+        mutex.release()
 
 @app.route("/")
 def hello():
@@ -782,7 +782,7 @@ if __name__ == "__main__":
 
 ```
 
-Let's build and redeploy:
+Let's build and redeploy circuit breaker:
 
 ```bash
 $ docker build -t $(minikube ip):5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
@@ -794,7 +794,7 @@ service "weather" configured
 ```
 
 
-Our circuit breaker will detect service outage and auxillary weather service will not bring our mail service down any more:
+Circuit breaker will detect service outage and auxillary weather service will not bring our mail service down any more:
 
 ```bash
 curl http://frontend
@@ -811,5 +811,14 @@ curl http://frontend
 </body>
 ```
 
-**NOTICE:** We have used a sidecar patern - a special proxy that adds additional logic to the service, such as error deteciton, TLS termination
-and other features. There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)
+**NOTICE:** There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)
+
+
+### Production Pattern: Sidecar For Rate and Connection Limiting
+
+In the previous example we have used a sidecar patern - a special proxy local to the Pod, that adds additional logic to the service, such as error deteciton, TLS termination
+and other features.
+
+Here is an example of sidecar nginx proxy that adds rate and connection limits:
+
+
