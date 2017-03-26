@@ -248,9 +248,58 @@ collected, forwarded and rotated.
 
 **NOTE:** This is one of the patterns of [12 factor app](https://12factor.net/logs) and Kubernetes supports it out of the box!
 
+### Production Pattern: Immutable containers
+
+Every time you write something to container's filesystem, it activates
+
+### Anti-Pattern: Using `latest` tag
+
+Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app is this.
+
+It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure
+Kubernetes allways pulls the latest version when creating a pod:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: always
+  namespace: default
+spec:
+  containers:
+  - command: ['/bin/sh', '-c', "echo hello, world!"]
+    image: busybox:latest
+    name: server
+    imagePullPolicy: Always
+```
+
 ### Production Pattern: Controlling process startup
 
+Imagine a situation when your container takes time to start. To simulate this, we are going to write a simple script:
+
+```bash
+#!/bin/bash
+
+echo "Starting up"
+sleep 10
+echo "Started up successfully"
+python -m http.serve 5000
+```
+
+Let's push the image and start service and deployment
+
+```yaml
+$ cd prod/delay
+$ docker build -t $(minikube ip):5000/delay:0.0.1 .
+$ docker push $(minikube ip):5000/delay:0.0.1
+$ kubectl create -f delay.yaml
+```
 
 
-
+```
+kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+curl http://my-nginx
+<!DOCTYPE html>
+...
+```
 
