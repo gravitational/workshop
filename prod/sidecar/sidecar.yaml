@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sidecar
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sidecar
+  template:
+    metadata:
+      labels:
+        app: sidecar
+    spec:
+      containers:
+      - command: ['python', '/service.py']
+        image: localhost:5000/weather-crash-slow:0.0.1
+        name: frontend
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+          protocol: TCP        
