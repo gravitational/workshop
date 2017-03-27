@@ -146,8 +146,7 @@ Yelp engineers have a good answer for why this happens [here](https://github.com
 
 > However, if the process receiving the signal is PID 1, it gets special treatment by the kernel; if it hasn't registered a handler for the signal, the kernel won't fall back to default behavior, and nothing happens. In other words, if your process doesn't explicitly handle these signals, sending it SIGTERM will have no effect at all.
 
-To solve this (and other) issues, you need a simple init system that has proper signal handlers specified, luckily `Yelp` engineers
-helped us again, and built the simple and lightweight init system, `dumb-init`
+To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily `Yelp` engineers built the simple and lightweight init system, `dumb-init`
 
 ```bash
 docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
@@ -194,11 +193,11 @@ root@crash:/#
 
 **Using Probes**
 
-We made a mistake, and no HTTP server is running there, but there is no indication of this as the parent
+We made a mistake and the HTTP server is not running there but there is no indication of this as the parent
 process is still running.
 
-The first obvious fix is to use proper init system and monitor the status of the web service,
-however let's use this as an opportunity to use liveness probes:
+The first obvious fix is to use a proper init system and monitor the status of the web service.
+However, let's use this as an opportunity to use liveness probes:
 
 
 ```yaml
@@ -224,7 +223,7 @@ spec:
 $ kubectl create -f fix.yaml
 ```
 
-The liveness probe will fail, and container will get restarted.
+The liveness probe will fail and the container will get restarted.
 
 ```bash
 $ kubectl get pods
@@ -243,19 +242,19 @@ $ kubectl logs logs
 hello, world!
 ```
 
-Kubernetes and docker have a system of plugins to make sure logs sent to stdout and stderr will get
+Kubernetes and Docker have a system of plugins to make sure logs sent to stdout and stderr will get
 collected, forwarded and rotated.
 
-**NOTE:** This is one of the patterns of [12 factor app](https://12factor.net/logs) and Kubernetes supports it out of the box!
+**NOTE:** This is one of the patterns of [The Twelve Factor App](https://12factor.net/logs) and Kubernetes supports it out of the box!
 
 ### Production Pattern: Immutable containers
 
 Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
 
-New storage layer is created using storage driver (devicemapper, overlayfs or others). In case of active usage,
+New storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
 it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
 
-Make sure your containers write data only to volumes, you can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
+Make sure your containers write data only to volumes. You can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
 
 ```yaml
 apiVersion: v1
@@ -276,10 +275,10 @@ spec:
 
 ### Anti-Pattern: Using `latest` tag
 
-Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app is this.
+Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app this is.
 
 It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure
-Kubernetes allways pulls the latest version when creating a pod:
+Kubernetes always pulls the latest version when creating a pod:
 
 ```yaml
 apiVersion: v1
@@ -297,7 +296,7 @@ spec:
 
 ### Production Pattern: Pod Readiness
 
-Imagine a situation when your container takes time to start. To simulate this, we are going to write a simple script:
+Imagine a situation when your container takes some time to start. To simulate this, we are going to write a simple script:
 
 ```bash
 #!/bin/bash
@@ -359,7 +358,7 @@ readinessProbe:
   periodSeconds: 5
 ```
 
-Readiness probe indicates the readiness of the pod containers, and Kubernetes will take this into account when
+Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when
 doing a deployment:
 
 ```bash
@@ -428,16 +427,16 @@ Events:
 
 ```
 
-Probably not the result you have expected. Over time the load on the nodes and docker will be quite substantial,
+Probably not the result you expected. Over time the load on the nodes and docker will be quite substantial,
 especially if job is failing very quickly.
 
-Lets clean up the busy failing job first:
+Let's clean up the busy failing job first:
 
 ```bash
 $ kubectl delete jobs/bad
 ```
 
-Introduce `activeDeadlineSeconds` to limit amount of retries:
+Now let's use `activeDeadlineSeconds` to limit amount of retries:
 
 
 ```yaml
@@ -462,26 +461,26 @@ spec:
 $ kubectl create -f bound.yaml
 ```
 
-now you will see that after 10 seconds, the job has failed:
+Now you will see that after 10 seconds, the job has failed:
 
 ```bash
   11s		11s		1	{job-controller }			Normal		DeadlineExceeded	Job was active longer than specified deadline
 ```
 
 
-**NOTE:** Sometimes it makes sense to retry forever, in this case make sure to set proper pod restart policy to protect from
+**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from
 accidental DDOS on your cluster.
 
 
 ### Production pattern: Circuit Breaker
 
-In this example, our web application is a imaginary web server for email. To render the page,
-our frontend has to do two requests to the backend:
+In this example, our web application is an imaginary web server for email. To render the page,
+our frontend has to make two requests to the backend:
 
 * Talk to the weather service to get current weather
 * Fetch current mail from the database
 
-If weather service is down, user still would like to review the email, so weather service
+If the weather service is down, user still would like to review the email, so weather service
 is auxillary, while current mail service is critical.
 
 Here is our frontend, weather and mail services written in python:
@@ -587,7 +586,7 @@ service "mail" configured
 service "weather" configured
 ```
 
-Checkign that everyting is running smoothly:
+Check that everyting is running smoothly:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
@@ -676,8 +675,8 @@ root@cli:/# curl http://frontend
 </body>
 ```
 
-Everything is smooth! There is one problem though, we have just observed service is crashing quickly, let's see what happens
-if our weather service is slow - this happens way more often in production, e.g. due to network or database overload.
+Everything is working as expected! There is one problem though, we have just observed the service is crashing quickly, let's see what happens
+if our weather service is slow. This happens way more often in production, e.g. due to network or database overload.
 
 To simulate this failure we are going to introduce an artificial delay:
 
@@ -721,12 +720,12 @@ The problem though, is that every request to frontend takes 10 seconds as well
 curl http://frontend
 ```
 
-This is much more common outage - users still leave in frustration as service is unavailable.
-To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers)
+This is a much more common outage - users leave in frustration as the service is unavailable.
+To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers).
 
 ![standby](http://vulcand.github.io/_images/CircuitStandby.png)
 
-Circuit breaker is a special middleware that is designed to provide a fail-over action in case if service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against special error condition.
+Circuit breaker is a special middleware that is designed to provide a fail-over action in case the service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against a special error condition.
 
 
 ![tripped](http://vulcand.github.io/_images/CircuitTripped.png)
@@ -820,12 +819,12 @@ curl http://frontend
 </body>
 ```
 
-**NOTICE:** There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)
+**NOTE:** There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)
 
 
 ### Production Pattern: Sidecar For Rate and Connection Limiting
 
-In the previous example we have used a sidecar patern - a special proxy local to the Pod, that adds additional logic to the service, such as error deteciton, TLS termination
+In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error deteciton, TLS termination
 and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
