@@ -389,13 +389,14 @@ hello, world!
 Let us roll a new version of our script `v2`
 
 ```bash
-$ cd docker/busybox
+$ cd docker/busybox-v2
 docker build -t hello:v2 .
 ```
 
 We will now see 2 images: `hello:v2` and `hello:latest`
 
-```
+```bash
+$ docker images
 hello                                         v2                  195aa31a5e4d        2 seconds ago       1.11 MB
 hello                                         latest              47060b048841        20 minutes ago      1.11 MB
 ```
