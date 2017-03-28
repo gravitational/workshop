@@ -25,6 +25,106 @@ More about K8S networking solutions [here][1].
 For this purposes K8S supports CNI plugins to manage networking. More about K8S
 CNI (and other modes) [here][2].
 
+## Docker network example
+
+We can easily simulate docker-alike networking using namespaces, virtual
+ethernet devices and a bridge.
+
+Network diagram:
+
+```text
++----------------------------------------------------+
+| Linux host                                         |
+| +----------------------+  +----------------------+ |
+| | netns node1          |  | netns node2          | |
+| |       +              |  |       +              | |
+| |       | vethA        |  |       | vethX        | |
+| |       | 10.10.0.2/24 |  |       | 10.10.0.3/24 | |
+| |       |              |  |       |              | |
+| +----------------------+  +----------------------+ |
+|         |                         |                |
+|         | vethB                   | vethY          |
+|         |                         |                |
+|   br0 +-------------------------------+            |
+|       +-------------------------------+            |
+|                                                    |
++----------------------------------------------------+
+```
+
+You can run this script to create this network configuration:
+
+```shell
+# Create bridge on host to interconnect virtual ethernets
+ip link add br0 type bridge
+ip link set br0 up
+
+# Creating virtual ethernet pairs vethA-vethB and vethX-vethY
+ip link add vethA type veth peer name vethB
+ip link add vethX type veth peer name vethY
+ip link set vethB up
+ip link set vethY up
+
+# Adding network namespaces node1 and node2
+# They will work as containers with independent networking
+ip netns add node1
+ip netns add node2
+
+# Put one end of each pair to each of netns'es
+ip link set vethA netns node1
+ip link set vethX netns node2
+
+# Bring interfaces inside netns up
+# This should be done AFTER putting interfaces to netns because this movet turns interfaces off
+ip netns exec node1 ip link set vethA up
+ip netns exec node2 ip link set vethX up
+
+# Assign IP addresses from same 10.10.0.0/24 subnet
+ip netns exec node1 ip address add 10.10.0.2/24 dev vethA
+ip netns exec node2 ip address add 10.10.0.3/24 dev vethX
+
+# Link on-host ends of veths to bridge, i.e. providing L2 connectivity between veth'es
+ip link set vethB master br0
+ip link set vethY master br0
+```
+
+Check connectivity between netns'es `node1` and `node2`:
+
+```text
+# ip netns exec node2 ping -c 3 10.10.0.2
+PING 10.10.0.2 (10.10.0.2) 56(84) bytes of data.
+64 bytes from 10.10.0.2: icmp_seq=1 ttl=64 time=0.124 ms
+64 bytes from 10.10.0.2: icmp_seq=2 ttl=64 time=0.151 ms
+64 bytes from 10.10.0.2: icmp_seq=3 ttl=64 time=0.066 ms
+
+--- 10.10.0.2 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2054ms
+rtt min/avg/max/mdev = 0.066/0.113/0.151/0.037 ms
+
+# ip netns exec node1 ping -c 3 10.10.0.3
+PING 10.10.0.3 (10.10.0.3) 56(84) bytes of data.
+64 bytes from 10.10.0.3: icmp_seq=1 ttl=64 time=0.079 ms
+64 bytes from 10.10.0.3: icmp_seq=2 ttl=64 time=0.062 ms
+64 bytes from 10.10.0.3: icmp_seq=3 ttl=64 time=0.103 ms
+
+--- 10.10.0.3 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2030ms
+rtt min/avg/max/mdev = 0.062/0.081/0.103/0.018 ms
+```
+
+To destroy this setup simply run:
+
+```shell
+# Remove bridge
+ip link set br0 down
+ip link delete br0
+
+# Remove namespaces
+# We don't need to remove each of veth because `netns delete` destroys all interfaces
+# inside itself, and veth can be destroyed by simply removing any of it's interfaces
+ip netns delete node1
+ip netns delete node2
+```
+
 ## CNI basics
 
 CNI (Container Network Interface) is a project which aims at providing universal
@@ -131,7 +231,7 @@ Configuration explained briefly:
 Inside VM (if you've exited, enter again using `minikube ssh` command) we
 can explore K8S host networking part.
 
-```
+```text
 $ ip a
 ...
 7: mybridge: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1460 qdisc noqueue state UP group default qlen 1000
@@ -166,7 +266,7 @@ just meaningless suffix.*
 
 Now see how interfaces are connected to bridge:
 
-```
+```text
 $ brctl show
 bridge name bridge id       STP enabled interfaces
 docker0     8000.0242ec55eeb9   no
@@ -180,7 +280,7 @@ parts of `veths`.
 
 Let's examine CNI plugins stored data:
 
-```
+```text
 $ sudo -i
 # ls /var/lib/cni/networks/rkt.kubernetes.io/
 10.1.0.2          10.1.0.3          10.1.0.4          last_reserved_ip
@@ -194,8 +294,6 @@ Directory `/var/lib/cni/networks` contains information of IPAM plugins. We can
 see that host-local plugin tracks IP address which was allocated last
 `last_reserved_ip` to allocate IPs in order. And every file named after
 allocated IP contains ID of docker container network namespace.
-
-## Links
 
 [1]: https://kubernetes.io/docs/concepts/cluster-administration/networking/
 [2]: https://kubernetes.io/docs/concepts/cluster-administration/network-plugins/
