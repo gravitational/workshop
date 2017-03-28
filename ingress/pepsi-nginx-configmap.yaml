@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: pepsi-nginx
+  name: pepsi-nginx
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pepsi-nginx
+    spec:
+      containers:
+      - image: nginx:1.11.5
+        name: pepsi-nginx
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d
+      volumes:
+       - name: config-volume
+         configMap:
+           name: pepsi-nginx
