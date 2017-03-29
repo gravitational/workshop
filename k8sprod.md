@@ -128,10 +128,10 @@ As you see there are in fact two processes: `docker run` and `sleep 1000` runnin
 Let's send kill signal to the `docker run` (just as CI/CD job would do for long running processes):
 
 ```bash
-kill -9 14171
+kill 14171
 ```
 
-`docker run` process exited, but `sleep` process is running!
+`docker run` process has not exited, and `sleep` process is running!
 
 ```bash
 ps uax | grep sleep
@@ -152,7 +152,7 @@ To solve this (and other) issues, you need a simple init system that has proper 
 docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
 ```
 
-Now you can simply stop `docker run` process and still use it as is.
+Now you can simply stop `docker run` process using SIGTERM and it will handle shutdown properly
 
 ### Anti-Pattern: Direct Use Of Pods
 
