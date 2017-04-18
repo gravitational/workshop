@@ -14,10 +14,25 @@ spec:
         app: sidecar
     spec:
       containers:
-      - command: ['python', '/service.py']
-        image: localhost:5000/weather-crash-slow:0.0.1
-        name: frontend
+      - image: localhost:5000/service:0.0.1
+        name: service
+        imagePullPolicy: Always
+      - image: localhost:5000/sidecar:0.0.1
+        name: sidecar
         imagePullPolicy: Always
         ports:
-        - containerPort: 5000
-          protocol: TCP        
+        - containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sidecar
+  labels:
+    app: sidecar
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: sidecar

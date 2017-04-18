@@ -829,4 +829,16 @@ and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
 
+```bash
+$ cd prod/sidecar
+$ docker build -t $(minikube ip):5000/sidecar:0.0.1 -f sidecar.dockerfile .
+$ docker push $(minikube ip):5000/cbreaker:0.0.1
+$ docker build -t $(minikube ip):5000/service:0.0.1 -f service.dockerfile .
+$ docker push $(minikube ip):5000/service:0.0.1
+$ kubectl apply -f weather-cbreaker.yaml
+deployment "weather" configured
+$  kubectl apply -f weather-service.yaml
+service "weather" configured
+```
+
 
