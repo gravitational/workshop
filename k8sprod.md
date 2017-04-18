@@ -839,6 +839,8 @@ $ kubectl apply -f sidecar.yaml
 deployment "sidecar" configured
 ```
 
+Try to hit the service faster than one request per second and you will see the rate limiting in action
+
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
 curl http://sidecar
