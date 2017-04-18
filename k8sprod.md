@@ -839,4 +839,9 @@ $ kubectl apply -f sidecar.yaml
 deployment "sidecar" configured
 ```
 
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+curl http://sidecar
+```
+
 
