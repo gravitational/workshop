@@ -22,7 +22,7 @@ RUN apt-get install gcc
 RUN gcc hello.c -o /hello
 ```
 
-It compiles and runs simple helloworld program:
+It compiles and runs a simple hello-world program:
 
 ```bash
 $ cd prod/build
@@ -52,7 +52,7 @@ We distribute the whole build toolchain in addition to that we ship the source c
 
 ```bash
 $ docker run --entrypoint=cat prod /build/hello.c
-#include<stdio.h>
+#include <stdio.h>
 
 int main()
 {
@@ -61,10 +61,10 @@ int main()
 }
 ```
 
-**Splitting build envrionment and run environment**
+**Splitting build environment and runtime environment**
 
 We are going to use "buildbox" pattern to build an image with build environment,
-and we will use much smaller runtime environment to run our program
+and use a much smaller runtime environment to run our program
 
 
 ```bash
@@ -72,7 +72,7 @@ $ cd prod/build-fix
 $ docker build -f build.dockerfile -t buildbox .
 ```
 
-**NOTE:** We have used new `-f` flag to specify dockerfile we are going to use.
+**NOTE:** We have used a new `-f` flag to specify the dockerfile we are going to use.
 
 Now we have a `buildbox` image that contains our build environment. We can use it to compile the C program now:
 
@@ -80,12 +80,12 @@ Now we have a `buildbox` image that contains our build environment. We can use i
 $ docker run -v $(pwd):/build  buildbox gcc /build/hello.c -o /build/hello
 ```
 
-We have not used `docker build` this time, but mounted the source code and run the compiler directly.
+We have not used `docker build` this time, but mounted the source code and ran the compiler directly.
 
 **NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
 
 
-We can now use much simpler (and smaller) dockerfile to run our image:
+We can now use a much simpler (and smaller) dockerfile to run our image:
 
 ```Dockerfile
 FROM quay.io/gravitational/debian-tall:0.0.1
@@ -103,13 +103,13 @@ prod                                          v2                  ef93cea87a7c  
 prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
 ```
 
-### Anti Pattern: Zombies and orphans
+### Anti Pattern: Zombie and orphaned processes
 
-**NOTICE:** this example demonstration will only work on Linux
+**NOTICE:** this example will only work on Linux
 
 **Orphans**
 
-It is quite easy to leave orphaned processes running in backround. Let's take an image we have build in the previous example:
+It is quite easy to leave orphaned processes running in background. Let's take an image we have built in the previous example:
 
 ```bash
 docker run busybox sleep 10000
@@ -158,7 +158,7 @@ Now you can simply stop `docker run` process using SIGTERM and it will handle sh
 
 [Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that itself is not durable.
 
-Do not use Pods directly in production. They won't get rescheduled, retain their data or guarantee any durability.
+Do not use Pods directly in production. They won't get rescheduled, they don't retain their data or guarantee any durability.
 
 Instead, you can use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled
 and will survive eviction or node loss.
@@ -251,7 +251,7 @@ collected, forwarded and rotated.
 
 Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
 
-New storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
+New storage layer is created by the storage driver (devicemapper, overlayfs or any other). In case of active usage,
 it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
 
 Make sure your containers write data only to volumes. You can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
@@ -269,16 +269,16 @@ spec:
     - mountPath: /tmp
       name: tempdir
   volumes:
-  - name: tempdri
+  - name: tempdir
     emptyDir: {}
 ```
 
 ### Anti-Pattern: Using `latest` tag
 
-Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app this is.
+Do not use `latest` tag in production. It creates ambiguity, as it's not clear which application version it is referring to.
 
-It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure
-Kubernetes always pulls the latest version when creating a pod:
+It is ok to use `latest` for development purposes, although even then it is recommended to set `imagePullPolicy` to `Always`, to make sure
+Kubernetes always pulls the latest changes when creating a pod:
 
 ```yaml
 apiVersion: v1
@@ -296,7 +296,7 @@ spec:
 
 ### Production Pattern: Pod Readiness
 
-Imagine a situation when your container takes some time to start. To simulate this, we are going to write a simple script:
+Imagine a situation when your container takes considerable time to start. To simulate this, we are going to write a simple script:
 
 ```bash
 #!/bin/bash
@@ -317,7 +317,7 @@ $ kubectl create -f service.yaml
 $ kubectl create -f deployment.yaml
 ```
 
-Enter curl container inside the cluster and make sure it all works:
+Enter curl container inside the cluster and make sure everything works:
 
 ```
 kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
@@ -345,7 +345,7 @@ curl: (7) Failed to connect to delay port 5000: Connection refused
 ```
 
 We've got a production outage despite setting `maxUnavailable: 0` in our rolling update strategy!
-This happened because Kubernetes did not know about startup delay and readiness of the service.
+This happened because Kubernetes did not know about startup delay and availability of the service.
 
 Let's fix that by using readiness probe:
 
@@ -358,7 +358,7 @@ readinessProbe:
   periodSeconds: 5
 ```
 
-Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when
+Readiness probe indicates the availability of the pod containers to respond, and Kubernetes will take this into account when
 doing a deployment:
 
 ```bash
@@ -367,9 +367,9 @@ $ kubectl replace -f deployment-fix.yaml
 
 This time we will get no downtime.
 
-### Anti-Pattern: unbound quickly failing jobs
+### Anti-Pattern: unbounded, quickly failing jobs
 
-Kubernetes provides new useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
+Kubernetes provides new useful tool to schedule containers to perform one-time tasks: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
 
 However there is a problem:
 
@@ -427,8 +427,8 @@ Events:
 
 ```
 
-Probably not the result you expected. Over time the load on the nodes and docker will be quite substantial,
-especially if job is failing very quickly.
+Probably not the result you have expected. Over time the load on the nodes and docker will be quite substantial,
+especially if the job is failing very quickly.
 
 Let's clean up the busy failing job first:
 
@@ -468,22 +468,22 @@ Now you will see that after 10 seconds, the job has failed:
 ```
 
 
-**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from
-accidental DDOS on your cluster.
+**NOTE:** Sometimes it makes sense to retry forever, in this case make sure to set proper pod restart policy to protect from
+accidental DDOS (Distributed Denial Of Service) on your cluster.
 
 
 ### Production pattern: Circuit Breaker
 
 In this example, our web application is an imaginary web server for email. To render the page,
-our frontend has to make two requests to the backend:
+our frontend has to do two requests to the backend:
 
 * Talk to the weather service to get current weather
 * Fetch current mail from the database
 
-If the weather service is down, user still would like to review the email, so weather service
-is auxillary, while current mail service is critical.
+If the weather service is down, users would still like to review the email, so weather service
+is auxiliary, while the mail service is critical.
 
-Here is our frontend, weather and mail services written in python:
+Here are our frontend, weather and mail services written in python:
 
 **Weather**
 
@@ -509,7 +509,7 @@ if __name__ == "__main__":
 **Mail**
 
 ```python
-from flask import Flask,jsonify
+from flask import Flask, jsonify
 app = Flask(__name__)
 
 @app.route("/")
@@ -586,7 +586,7 @@ service "mail" configured
 service "weather" configured
 ```
 
-Check that everyting is running smoothly:
+Checking that everything is running smoothly:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
@@ -611,7 +611,7 @@ Wind: 14 km/h
 </body>
 ```
 
-Let's introduce weather service that crashes:
+Let's introduce a weather service that crashes:
 
 ```python
 from flask import Flask
@@ -634,7 +634,7 @@ $ kubectl apply -f weather-crash.yaml
 deployment "weather" configured
 ```
 
-Let's make sure that it is crashing:
+Let's see if is crashing:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
@@ -675,8 +675,8 @@ root@cli:/# curl http://frontend
 </body>
 ```
 
-Everything is working as expected! There is one problem though, we have just observed the service is crashing quickly, let's see what happens
-if our weather service is slow. This happens way more often in production, e.g. due to network or database overload.
+Everything is working as expected! There is one problem though, we have just observed that the service is crashing quickly.
+Now let's see what happens if our weather service is slow - this happens way more often in production, e.g. due to network or database overload.
 
 To simulate this failure we are going to introduce an artificial delay:
 
@@ -721,11 +721,11 @@ curl http://frontend
 ```
 
 This is a much more common outage - users leave in frustration as the service is unavailable.
-To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers).
+To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers)
 
 ![standby](http://vulcand.github.io/_images/CircuitStandby.png)
 
-Circuit breaker is a special middleware that is designed to provide a fail-over action in case the service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against a special error condition.
+Circuit breaker is a special middleware that is designed to provide a fail-over action in case if service has degraded. It is very helpful in preventing cascading failures - when a failure of one service leads to a failure of another. Circuit breaker detects failures by collecting request statistics to prevent the application from performing actions that are doomed to fail.
 
 
 ![tripped](http://vulcand.github.io/_images/CircuitTripped.png)
@@ -750,7 +750,7 @@ def trip():
     mutex.acquire()
     try:
         circuit_tripped_until = datetime.now() + timedelta(0,30)
-        app.logger.info("circuit tripped until %s" %(circuit_tripped_until))
+        app.logger.info("circuit tripped until %s" % (circuit_tripped_until))
     finally:
         mutex.release()
 
@@ -802,7 +802,7 @@ service "weather" configured
 ```
 
 
-Circuit breaker will detect service outage and auxillary weather service will not bring our mail service down any more:
+Circuit breaker will detect service outage and auxiliary weather service will not bring our mail service down any more:
 
 ```bash
 curl http://frontend
@@ -824,7 +824,7 @@ curl http://frontend
 
 ### Production Pattern: Sidecar For Rate and Connection Limiting
 
-In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error deteciton, TLS termination
+In the previous example we have used a sidecar container pattern - a special proxy in the same Pod, that adds additional logic to the service, such as error detection, TLS termination
 and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
