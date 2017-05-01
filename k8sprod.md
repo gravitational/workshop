@@ -22,7 +22,7 @@ RUN apt-get install gcc
 RUN gcc hello.c -o /hello
 ```
 
-It compiles and runs simple helloworld program:
+It compiles and runs a simple helloworld program:
 
 ```bash
 $ cd prod/build
@@ -31,7 +31,7 @@ $ docker run prod
 Hello World
 ```
 
-There is a couple of problems with the resulting Dockerfile:
+There are a couple of problems with the resulting Dockerfile:
 
 **Size**
 
@@ -48,7 +48,7 @@ Which leads us to the second problem:
 
 **Security**
 
-We distribute the whole build toolchain in addition to that we ship the source code of the image:
+We distribute the whole build toolchain. In addition to that, we ship the source code of the image:
 
 ```bash
 $ docker run --entrypoint=cat prod /build/hello.c
@@ -61,10 +61,10 @@ int main()
 }
 ```
 
-**Splitting build envrionment and run environment**
+**Splitting build environment and run environment**
 
 We are going to use "buildbox" pattern to build an image with build environment,
-and we will use much smaller runtime environment to run our program
+and we will use a much smaller runtime environment to run our program
 
 
 ```bash
@@ -72,7 +72,7 @@ $ cd prod/build-fix
 $ docker build -f build.dockerfile -t buildbox .
 ```
 
-**NOTE:** We have used new `-f` flag to specify dockerfile we are going to use.
+**NOTE:** We have used new `-f` flag to specify the dockerfile we are going to use.
 
 Now we have a `buildbox` image that contains our build environment. We can use it to compile the C program now:
 
@@ -85,7 +85,7 @@ We have not used `docker build` this time, but mounted the source code and run t
 **NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
 
 
-We can now use much simpler (and smaller) dockerfile to run our image:
+We can now use a much simpler (and smaller) dockerfile to run our image:
 
 ```Dockerfile
 FROM quay.io/gravitational/debian-tall:0.0.1
@@ -109,13 +109,13 @@ prod                                          latest              b2c197180350  
 
 **Orphans**
 
-It is quite easy to leave orphaned processes running in backround. Let's take an image we have build in the previous example:
+It is quite easy to leave orphaned processes running in the background. Let's take an image we have built in the previous example:
 
 ```bash
 docker run busybox sleep 10000
 ```
 
-Let us open a separate terminal and locate the process
+Now, let's open a separate terminal and locate the process
 
 ```bash
 ps uax | grep sleep
@@ -251,7 +251,7 @@ collected, forwarded and rotated.
 
 Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
 
-New storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
+A new storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
 it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
 
 Make sure your containers write data only to volumes. You can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
@@ -371,7 +371,7 @@ This time we will get no downtime.
 
 Kubernetes provides new useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
 
-However there is a problem:
+However, there is a problem:
 
 ```yaml
 apiVersion: batch/v1
@@ -427,7 +427,7 @@ Events:
 
 ```
 
-Probably not the result you expected. Over time the load on the nodes and docker will be quite substantial,
+Probably not the result you expected. Over time, the load on the nodes and docker will be quite substantial,
 especially if job is failing very quickly.
 
 Let's clean up the busy failing job first:
@@ -481,7 +481,7 @@ our frontend has to make two requests to the backend:
 * Fetch current mail from the database
 
 If the weather service is down, user still would like to review the email, so weather service
-is auxillary, while current mail service is critical.
+is auxilliary, while current mail service is critical.
 
 Here is our frontend, weather and mail services written in python:
 
@@ -778,11 +778,11 @@ def hello():
             return r.text
         else:
             trip()
-            return "circuit brekear: service unavailable (tripping 1)"
+            return "circuit breaker: service unavailable (tripping 1)"
     except:
         app.logger.info("exception: %s", sys.exc_info()[0])
         trip()
-        return "circuit brekear: service unavailable (tripping 2)"
+        return "circuit breaker: service unavailable (tripping 2)"
 
 if __name__ == "__main__":
     app.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -802,7 +802,7 @@ service "weather" configured
 ```
 
 
-Circuit breaker will detect service outage and auxillary weather service will not bring our mail service down any more:
+Circuit breaker will detect service outage and auxilliary weather service will not bring our mail service down any more:
 
 ```bash
 curl http://frontend
@@ -824,7 +824,7 @@ curl http://frontend
 
 ### Production Pattern: Sidecar For Rate and Connection Limiting
 
-In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error deteciton, TLS termination
+In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error detection, TLS termination
 and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
