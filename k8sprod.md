@@ -83,7 +83,7 @@ $ docker run -v $(pwd):/build  buildbox gcc /build/hello.c -o /build/hello
 We have not used `docker build` this time, but mounted the source code and run the compiler directly.
 
 **NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
-
+**UPDATE:** [Multi-stage builds is now available in CE](https://docs.docker.com/engine/userguide/eng-image/multistage-build/).
 
 We can now use a much simpler (and smaller) dockerfile to run our image:
 
