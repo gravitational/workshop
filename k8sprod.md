@@ -104,6 +104,8 @@ prod                                          v2                  ef93cea87a7c  
 prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
 ```
 
+**NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" you binaries to have them include all needed libraries.
+
 ### Anti Pattern: Zombies and orphans
 
 **NOTICE:** this example demonstration will only work on Linux
