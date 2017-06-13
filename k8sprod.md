@@ -270,7 +270,7 @@ spec:
     - mountPath: /tmp
       name: tempdir
   volumes:
-  - name: tempdri
+  - name: tempdir
     emptyDir: {}
 ```
 
