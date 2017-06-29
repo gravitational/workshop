@@ -822,7 +822,7 @@ curl http://frontend
 </body>
 ```
 
-**NOTE:** There are some production level proxies that natively support circuit breaker pattern - [Vulcand](http://vulcand.github.io/) or [Nginx plus](https://www.nginx.com/products/)
+**NOTE:** There are some production level proxies that natively support circuit breaker pattern - such as [Vulcand](http://vulcand.github.io/), [Nginx plus](https://www.nginx.com/products/) or [Envoy](https://lyft.github.io/envoy/)
 
 
 ### Production Pattern: Sidecar For Rate and Connection Limiting
@@ -849,4 +849,4 @@ $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
 curl http://sidecar
 ```
 
-
+[Istio](https://istio.io/docs/concepts/what-is-istio/overview.html#architecture) is an example of platform that embodies this design and more for instance.
