@@ -56,7 +56,7 @@ For Linux:
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 Also, you can install drivers for various VM providers to optimize your minikube VM performance.
-Instructions can be found here: https://github.com/kubernetes/minikube/blob/master/DRIVERS.md.
+Instructions can be found here: https://github.com/kubernetes/minikube/blob/master/docs/drivers.md.
 
 ### Xcode and local tools
 
