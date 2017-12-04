@@ -22,6 +22,10 @@ If you have Mac OS X (Yosemite or newer), please download Docker for Mac [here](
 
 Xcode will install essential console utilities for us. You can install it from AppStore.
 
+### Video version
+
+[Workshop video](https://youtu.be/h7T8Sh1QrJU)
+
 ## Introduction
 
 ### Hello, world
