@@ -582,7 +582,7 @@ and instead of re-exectuing the command, uses cached value isntead. This helps t
 
 Docker images are composed of layers:
 
-![images](https://docs.docker.com/engine/userguide/storagedriver/images/image-layers.jpg)
+![images](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
 
 Every layer is a the result of the execution of a command in the Dockerfile. 
 
