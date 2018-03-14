@@ -31,28 +31,33 @@ Let’s install VirtualBox first.
 
 Get latest stable version from https://www.virtualbox.org/wiki/Downloads
 
+### Linux: KVM2
+
+Follow the instructions here: https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#kvm2-driver
+
+
 ### Kubectl
 
 For Mac OS X:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/darwin/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/darwin/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 For Linux:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.6.4/bin/linux/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.9.0/bin/linux/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 ### Minikube
 
 For Mac OS X:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-darwin-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-darwin-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 For Linux:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.20.0/minikube-linux-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.25.0/minikube-linux-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 Also, you can install drivers for various VM providers to optimize your minikube VM performance.
@@ -66,18 +71,31 @@ Xcode will install essential console utilities for us. You can install it from A
 
 To run cluster:
 
+**Mac OS**
+
 ```
-minikube start
+# starts minikube
+minikube start --kubernetes-version=v1.9.0
+# this command should work
 kubectl get nodes
-# from the workshop directory
-kubectl apply -f registry.yaml
+# use docker from minikube
+eval $(minikube docker-env)
+# this command to check connectivity
+docker ps
 ```
 
-**Notice for Mac OS X users:** you need to allow your docker daemon to work with your local insecure registry. It could be achieved via adding VM address to Docker for Mac.
+**Linux**
 
-1. Get minikube VM IP via calling `minikube ip`
-2. Add obtained IP with port 5000 (specified above in `docker run` command) to Docker insecure registries:
+```
+# starts minikube
+minikube start --kubernetes-version=v1.9.0 --vm-driver=kvm2
+# this command should work
+kubectl get nodes
+# use docker from minikube
+eval $(minikube docker-env)
+# this command to check connectivity
+docker ps
+```
 
-![docker-settings](img/macos-docker-settings.jpg)
 
 
