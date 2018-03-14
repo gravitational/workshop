@@ -18,7 +18,7 @@ spec:
         role: mattermost-worker
     spec:
       containers:
-      - image: localhost:5000/mattermost-worker:2.1.0
+      - image: mattermost-worker:2.1.0
         name: mattermost-worker
         ports:
         - containerPort: 80
