@@ -12,7 +12,7 @@ First, follow [installation instructions](README.md#installation)
 
 ### Anti-Pattern: Mixing build environment and runtime environment
 
-Let's take a look at this dockerfile
+Let's take a look at this dockerfile:
 
 ```Dockerfile
 FROM ubuntu:14.04
@@ -64,7 +64,7 @@ int main()
 **Splitting build environment and run environment**
 
 We are going to use "buildbox" pattern to build an image with build environment,
-and we will use a much smaller runtime environment to run our program
+and we will use a much smaller runtime environment to run our program:
 
 
 ```bash
@@ -108,7 +108,7 @@ prod                                          latest              b2c197180350  
 
 ### Anti Pattern: Zombies and orphans
 
-**NOTICE:** this example demonstration will only work on Linux
+**NOTICE:** this example demonstration will only work on Linux.
 
 **Orphans**
 
@@ -118,7 +118,7 @@ It is quite easy to leave orphaned processes running in the background. Let's ta
 docker run busybox sleep 10000
 ```
 
-Now, let's open a separate terminal and locate the process
+Now, let's open a separate terminal and locate the process:
 
 ```bash
 ps uax | grep sleep
@@ -149,13 +149,13 @@ Yelp engineers have a good answer for why this happens [here](https://github.com
 
 > However, if the process receiving the signal is PID 1, it gets special treatment by the kernel; if it hasn't registered a handler for the signal, the kernel won't fall back to default behavior, and nothing happens. In other words, if your process doesn't explicitly handle these signals, sending it SIGTERM will have no effect at all.
 
-To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily `Yelp` engineers built the simple and lightweight init system, `dumb-init`
+To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily `Yelp` engineers built the simple and lightweight init system, `dumb-init`:
 
 ```bash
 docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
 ```
 
-Now you can simply stop `docker run` process using SIGTERM and it will handle shutdown properly
+Now you can simply stop `docker run` process using SIGTERM and it will handle shutdown properly.
 
 ### Anti-Pattern: Direct Use Of Pods
 
@@ -340,7 +340,7 @@ $ docker push $(minikube ip):5000/delay:0.0.2
 $ kubectl replace -f deployment-update.yaml
 ```
 
-In the next window, let's try to to see if we got any service downtime:
+In the next window, let's try to see if we got any service downtime:
 
 ```bash
 curl http://delay:5000
@@ -717,7 +717,7 @@ curl http://weather
 <p>The server encountered an internal error and was unable to complete your request.  Either the server is overloaded or there is an error in the application.</p>
 ```
 
-The problem though, is that every request to frontend takes 10 seconds as well
+The problem though, is that every request to frontend takes 10 seconds as well:
 
 ```bash
 curl http://frontend
@@ -842,7 +842,7 @@ $ kubectl apply -f sidecar.yaml
 deployment "sidecar" configured
 ```
 
-Try to hit the service faster than one request per second and you will see the rate limiting in action
+Try to hit the service faster than one request per second and you will see the rate limiting in action:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
