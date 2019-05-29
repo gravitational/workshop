@@ -11,12 +11,7 @@ Open source series of workshops delivered by Gravitational services team.
 
 ### Requirements
 
-You will need macOS with at least `7GB` of RAM and `20GB` of free disk space available.
-
-* Docker Desktop Community `18.09`.
-* VirtualBox `6.0.8`.
-* kubectl `1.14.0`.
-* minikube `1.1.0`.
+You will need a Linux or macOS box with at least `7GB` of RAM and `20GB` of free disk space available.
 
 ### Docker
 
