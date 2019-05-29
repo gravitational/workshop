@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alpine
+spec:
+  containers:
+  - name: alpine
+    image: "{{ .Values.registry }}alpine:{{ .Values.version }}"
+    command: ["/bin/sleep", "90000"]
