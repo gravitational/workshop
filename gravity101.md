@@ -521,7 +521,7 @@ Planet, sometimes also referred to as “master container”, is a containerized
 
 When Gravity installs Kubernetes on a node, it does not install all its services (such as etcd, docker, kubelet, etc.) directly on the host. Instead, the entire Kubernetes runtime and its dependencies are packaged in a container, Planet. This allows Kubernetes nodes to be self-contained and abstracted from the “outside” environment of the node, being protected by what we call a “bubble of consistency” of the master container.
 
-![Gravity Node Diagram](gravity101/gravity-node.png)
+![Gravity Node Diagram](img/gravity-node.png)
 
 The Planet container also runs as a systemd unit on the host, we’ll learn how to interact with services running inside it in a more in-depth Fire Drills training.
 

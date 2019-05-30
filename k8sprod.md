@@ -2,17 +2,17 @@
 
 ... and anti-patterns.
 
-We are going to explore helpful techniques to improve resiliency and high availability
-of Kubernetes deployments and will take a look at some common mistakes to avoid when
-working with Docker and Kubernetes.
+We are going to explore helpful techniques to improve resiliency and high availability of Kubernetes deployments and will take a look at some common mistakes to avoid when working with Docker and Kubernetes.
 
 ## Installation
 
 First, follow [installation instructions](README.md#installation)
 
-### Anti-Pattern: Mixing build environment and runtime environment
+### Anti-Pattern: Mixing Build And Runtime
 
-Let's take a look at this dockerfile:
+The first common anti-pattern when working with Docker images, or more specifically, when writing Dockerfiles for your own images, is mixing build and runtime environments in the same image.
+
+Let's take consider this Dockerfile:
 
 ```Dockerfile
 FROM ubuntu:14.04
@@ -22,7 +22,7 @@ RUN apt-get install gcc
 RUN gcc hello.c -o /hello
 ```
 
-It compiles and runs a simple helloworld program:
+It compiles and runs a simple "hello world" program:
 
 ```bash
 $ cd prod/build
@@ -31,7 +31,7 @@ $ docker run prod
 Hello World
 ```
 
-There are a couple of problems with the resulting Dockerfile:
+There are a couple of problems with the resulting Docker image.
 
 **Size**
 
@@ -40,9 +40,7 @@ $ docker images | grep prod
 prod                                          latest              b2c197180350        14 minutes ago      293.7 MB
 ```
 
-That's almost 300 megabytes to host several kilobytes of the c program! We are bringing in package manager,
-C compiler and lots of other unnecessary tools that are not required to run this program.
-
+That's almost 300 megabytes to host several kilobytes of a C program! We are bringing in package manager, C compiler and lots of other unnecessary tools that are not required to run this program.
 
 Which leads us to the second problem:
 
@@ -61,32 +59,34 @@ int main()
 }
 ```
 
-**Splitting build environment and run environment**
+**Splitting Build And Runtime Environments**
 
-We are going to use "buildbox" pattern to build an image with build environment,
-and we will use a much smaller runtime environment to run our program:
+A better way to do this is to use a pattern called "buildbox". The idea behind it is that you build a separate "buildbox" image that provides the necessary build environment to compile/build the program and use another, much smaller, image to run the program.
 
+Let's take a look:
 
 ```bash
 $ cd prod/build-fix
 $ docker build -f build.dockerfile -t buildbox .
 ```
 
-**NOTE:** We have used new `-f` flag to specify the dockerfile we are going to use.
+**NOTE:** We have used `-f` flag to specify the Dockerfile we are going to use. By default Docker would look for a file named `Dockerfile` which we also have in this directory.
 
 Now we have a `buildbox` image that contains our build environment. We can use it to compile the C program now:
 
 ```bash
-$ docker run -v $(pwd):/build  buildbox gcc /build/hello.c -o /build/hello
+$ docker run -v $(pwd):/build buildbox gcc /build/hello.c -o /build/hello
 ```
 
-We have not used `docker build` this time, but mounted the source code and run the compiler directly.
+**NOTE:** If you have your local Docker environment configured to point to your local minikube cluster (via `eval $(minikube docker-env)` command), the command above will not work because it won't be able to mount the volume. Use your local Docker installation, you can open a new shell session for that.
 
-**NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
+Let's explore what's just happened. Instead of building another image with the compiled binary (and the program's source code) inside it using `docker build` we mounted the source code directory in our buildbox container, compiled the program and had the container to output the resulting binary to the same volume. If we look at our local directory now, we'll see that the compiled binary is there:
 
-**UPDATE:** [Multi-stage builds is now available in CE](https://docs.docker.com/engine/userguide/eng-image/multistage-build/).
+```bash
+$ ls -lh
+```
 
-We can now use a much simpler (and smaller) dockerfile to run our image:
+Now we can build a much smaller image to run our program:
 
 ```Dockerfile
 FROM quay.io/gravitational/debian-tall:0.0.1
@@ -106,22 +106,55 @@ prod                                          latest              b2c197180350  
 
 **NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" you binaries to have them include all needed libraries.
 
-### Anti Pattern: Zombies and orphans
+Docker supports the buildbox pattern natively starting from version `17.05`, by providing a feature called [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/). With multi-stage builds you can define multiple "stages" in a single Dockerfile, each of which starts with a new `FROM` clause, and selectively copy artifacts between the stages. This way you only write a single Dockerfile and end up with a single resulting (small) image.
 
-**NOTICE:** this example demonstration will only work on Linux.
+For example:
 
-**Orphans**
+```Dockerfile
+#
+# Build stage.
+#
+FROM ubuntu:14.04
 
-It is quite easy to leave orphaned processes running in the background. Let's take an image we have built in the previous example:
+RUN apt-get update
+RUN apt-get install -y gcc
+ADD hello.c /build/hello.c
+RUN gcc /build/hello.c -o /build/hello
+
+#
+# Run stage.
+#
+FROM quay.io/gravitational/debian-tall:0.0.1
+
+COPY --from=0 /build/hello /hello
+ENTRYPOINT ["/hello"]
+```
+
+Notice how we copy the resulting binary from the first stage of the build. Let's build v3 of our image:
 
 ```bash
-docker run busybox sleep 10000
+$ docker build -f multi.dockerfile -t prod:v3 .
+$ docker run prod:v3
+```
+
+If you query `docker images` now, you'll see that `v3` version of our image is same size as `v2`.
+
+### Anti Pattern: Zombies And Orphans
+
+**NOTE:** This example demonstration will only work on Linux.
+
+It is quite easy to leave orphaned processes running in the background.
+
+Let's launch a simple container:
+
+```bash
+$ docker run busybox sleep 10000
 ```
 
 Now, let's open a separate terminal and locate the process:
 
 ```bash
-ps uax | grep sleep
+$ ps uax | grep sleep
 sasha    14171  0.0  0.0 139736 17744 pts/18   Sl+  13:25   0:00 docker run busybox sleep 10000
 root     14221  0.1  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
 ```
@@ -131,16 +164,16 @@ As you see there are in fact two processes: `docker run` and `sleep 1000` runnin
 Let's send kill signal to the `docker run` (just as CI/CD job would do for long running processes):
 
 ```bash
-kill 14171
+$ kill 14171
 ```
 
-`docker run` process has not exited, and `sleep` process is running!
+However, `docker run` process has not exited, and `sleep` process is running!
 
 ```bash
-ps uax | grep sleep
-root     14221  0.0  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
+$ ps uax | grep sleep
+sasha    14171  0.0  0.0 139736 17744 pts/18   Sl+  13:25   0:00 docker run busybox sleep 10000
+root     14221  0.1  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
 ```
-
 
 Yelp engineers have a good answer for why this happens [here](https://github.com/Yelp/dumb-init):
 
@@ -149,25 +182,80 @@ Yelp engineers have a good answer for why this happens [here](https://github.com
 
 > However, if the process receiving the signal is PID 1, it gets special treatment by the kernel; if it hasn't registered a handler for the signal, the kernel won't fall back to default behavior, and nothing happens. In other words, if your process doesn't explicitly handle these signals, sending it SIGTERM will have no effect at all.
 
-To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily `Yelp` engineers built the simple and lightweight init system, `dumb-init`:
+Let's enter our container and see for ourselves:
 
 ```bash
-docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+06703112d6ac        busybox             "sleep 10000"       5 minutes ago       Up 5 minutes                            nervous_jennings
+$ docker exec -ti 06703112d6ac /bin/sh
+$ ps -ef
+PID   USER     TIME  COMMAND
+    1 root      0:00 sleep 10000
+   12 root      0:00 /bin/sh
+   18 root      0:00 ps -ef
 ```
 
-Now you can simply stop `docker run` process using SIGTERM and it will handle shutdown properly.
+Indeed, the `sleep` command is running as PID 1, and since it does not explicitly register any signal handlers, our TERM signal gets ignores. Let's kill the container:
+
+```bash
+$ docker kill 06703112d6ac
+```
+
+To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily, Yelp engineers built a simple and lightweight init system, `dumb-init`:
+
+```bash
+$ docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
+```
+
+If you send SIGTERM signal to the `docker run` process now, it will handle shutdown properly.
 
 ### Anti-Pattern: Direct Use Of Pods
 
-[Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that itself is not durable.
+[Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that by itself does not provide any durability guarantees. As Kubernetes docs say, a pod won't survive scheduling failures, node failures, or other evictions, for example due to lack of resources.
 
-Do not use Pods directly in production. They won't get rescheduled, retain their data or guarantee any durability.
+For example, let's create a single nginx pod:
 
-Instead, you can use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled
-and will survive eviction or node loss.
+```bash
+$ cd prod/pod
+$ kubectl create -f pod.yaml
+$ kubectl get pods
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   1/1     Running   0          18s
+```
 
+This pod will keep running, for now. It will also restart in case its container crashes, provided it has an appropriate restart policy. However, in the event a node goes down or starts running out of resources triggering evictions, the pod will be lost. Let's delete it now:
 
-### Anti-Pattern: Using background processes
+```bash
+$ kubectl delete pod/nginx
+$ kubectl get pods        
+No resources found.
+```
+
+The pod is gone.
+
+Do not use pods directly in production. Instead, you should almost always use controllers that provide self-healing on the cluster scope - there are plenty to choose from: `Deployments`, `ReplicaSets`, `DaemonSets`, `StatefulSets` and so on.
+
+Even for singletons, use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled and survive eviction or node loss:
+
+```bash
+$ kubectl create -f deploy.yaml
+$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-w2klm   1/1     Running   0          19s
+```
+
+If we delete the pod now, it will get rescheduled right back on:
+
+```bash
+$ kubectl delete pod/nginx-65f88748fd-w2klm
+pod "nginx-65f88748fd-w2klm" deleted
+$ kubectl get pods                         
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-fd2sk   1/1     Running   0          4s
+```
+
+### Anti-Pattern: Using Background Processes
 
 ```bash
 $ cd prod/background
