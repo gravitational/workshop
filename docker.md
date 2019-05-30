@@ -18,10 +18,6 @@ If you have Mac OS X (Yosemite or newer), please download Docker for Mac [here](
 
 *Older docker package for OSes older than Yosemite -- Docker Toolbox located [here](https://www.docker.com/products/docker-toolbox).*
 
-### Xcode and local tools
-
-Xcode will install essential console utilities for us. You can install it from AppStore.
-
 ### Video version
 
 [Workshop video](https://youtu.be/h7T8Sh1QrJU)
@@ -30,7 +26,7 @@ Xcode will install essential console utilities for us. You can install it from A
 
 ### Hello, world
 
-Docker is as easy as Linux! To prove that let us write classic "Hello, World" in Docker
+Docker is as easy as Linux! To prove that let us write classic "Hello, World" in Docker:
 
 ```bash
 $ docker run busybox echo "hello world"
@@ -38,48 +34,65 @@ $ docker run busybox echo "hello world"
 
 Docker containers are just as simple as linux processes, but they also provide many more features that we are going to explore.
 
-Let's review the structure of the command:
+Let's review the structure of the command we just used:
 
 ```bash
-docker run # executes command in a container
-busybox    # container image
-echo "hello world" # command to run
+docker             # Docker client binary used to interact with Docker
+run                # Docker subcommand - runs a command in a container
+busybox            # container image used by the run command
+echo "hello world" # actual command to run (and arguments)
 ```
 
-Container image supplies environment - binaries with shell for example that is running the command, so you are not using
-host operating system shell, but the shell from busybox package when executing Docker run.
+Container images carry within themselves all the needed libraries, binaries and directories in order to be able to run.
 
-### Sneak peek into container environment
+Specifically that means that the running command will not use the host operating system shell but one provided by the busybox Docker container image.
 
-Let's now take a look at process tree running in the container:
+### Where is my container?
 
+Running containers can be listed using the command
 ```bash
-$ docker run busybox ps uax
+$ docker ps
+CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
+eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
 
-My terminal prints out something like this:
+* Container ID - auto generated unique running id.
+* Container image - image name.
+* Command - Linux process running as the PID 1 in the container.
+* Names - user friendly name of the container
 
+After running the "hello world" example above there will be no running container since the entire life cycle of the command (echo-ing "hello world") has already finished and thus the container has been stopped.
+
+Once the command running inside the container finishes its execution the container will stop but will still be available, even if it's not listed by default.
+
+To list stopped containers use:
 ```bash
-    1 root       0:00 ps uax
+docker ps -a
 ```
 
-*NOTE:* Oh my! Am I running this command as root? Yes, although this is not your regular root user but a very limited one. We will get back to the topic of users and security a bit later.
+You can then clean stopped containers by using:
+```bash
+docker rm simple1
+```
 
-As you can see, the process runs in a very limited and isolated environment, and the PID of the process is 1, so it does not see all other processes
-running on your machine.
+The argument used for the `rm` command can be the container ID or the container name.
+
+It's possible to specify the option `--rm` to the `run` subcommand so that the container will be cleaned automatically as soon as it stops its execution.
 
 ### Adding envrionment variables
 
-Let's see what environment variables we have:
+Let's see what environment variables there are by default:
 
 ```
 $ docker run busybox env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=0a0169cdec9a
+HOME=/root
 ```
 
-The environment is different from your host environment.
-We can extend environment by passing explicit enviornment variable flag to `docker run`:
+The environment variable above will likely differ from other systems and the hostname is randomized per container, unless explicitly specified differently.
+
+We can extend the environment by passing variable flags as `docker run` arguments:
 
 ```bash
 $ docker run -e HELLO=world busybox env
@@ -89,19 +102,38 @@ HELLO=world
 HOME=/root
 ```
 
+### Sneak peek into the container environment
+
+Let's now take a look at process tree running in the container:
+
+```bash
+$ docker run busybox ps uax
+```
+
+My terminal prints out something similar to:
+
+```bash
+PID   USER     TIME  COMMAND
+    1 root       0:00 ps uax
+```
+
+*NOTE:* Oh my! Am I running this command as root? Technically yes, although remember as we anticipated above this is not the actual root of your host system but a very limited one running inside the container. We will get back to the topic of users and security a bit later.
+
+In fact, as you can see, the process runs in a very limited and isolated environment where it cannot see or access all the other processes running on your machine.
+
 ### Adding host mounts
 
-If we look at the disks we will see the OS directories are not here, as well:
+The filesystem used inside running containers is also isolated and separated from the one in the host:
 
 ```bash
 $ docker run busybox ls -l /home
 total 0
 ```
 
-What if we want to expose our current directory to the container? For this we can use host mounts:
+What if we want to expose one or more directories inside a container? To do so the option `-v/--volume` mounts must be used as shown in the following example:
 
 ```
-$ docker run -v $(pwd):/home busybox ls -l /home
+$ docker run -v /data/repo:/home busybox ls -l /home
 total 72
 -rw-rw-r--    1 1000     1000         11315 Nov 23 19:42 LICENSE
 -rw-rw-r--    1 1000     1000         30605 Mar 22 23:19 README.md
@@ -114,13 +146,13 @@ drwxrwxr-x    4 1000     1000          4096 Nov 23 19:30 mattermost
 -rw-rw-r--    1 1000     1000           399 Nov 23 19:30 my-nginx-typo.yaml
 ```
 
-This command "mounted" our current working directory inside the container, so it appears to be "/home"
-inside the container! All changes that we do in this repository will be immediately seen in the container's `home`
-directory.
+This command "mounted" the directory `/data/repo` from the host inside the container, so that it appeared to be "/home" inside the container!
+
+In this configuration all changes done in the repository directory will be immediately seen in the container's `/home` directory.
 
 ### Network
 
-Networking in Docker containers is isolated, as well. Let us look at the interfaces inside a running container:
+Networking in Docker containers is also isolated. Let's look at the interfaces inside a running container:
 
 ```bash
 $ docker run busybox ifconfig
@@ -143,8 +175,7 @@ lo        Link encap:Local Loopback
           RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
 ```
 
-
-We can use `-p` flag to forward a port on the host to the port 5000 inside the container:
+If the We can use the `-p` flag to forward a port on the host to the port 5000 inside the container:
 
 
 ```bash
@@ -168,15 +199,15 @@ Press `Ctrl-C` to stop the running container.
 
 ![docker-settings](img/containers.png)
 
-A Docker container is a set of linux processes that run isolated from the rest of the processes. 
+A Docker container is a set of Linux processes that run isolated from the rest of the processes. 
 
 [chart](https://www.lucidchart.com/documents/edit/d5226f07-00b1-4a7a-ba22-59e0c2ec0b77/0)
 
-Multiple linux subsystems help to create a container concept:
+Multiple Linux subsystems help to create a container concept:
 
 **Namespaces**
 
-Namespaces create isolated stacks of linux primitives for a running process.
+Namespaces create isolated stacks of Linux primitives for a running process.
 
 * NET namespace creates a separate networking stack for the container, with its own routing tables and devices
 * PID namespace is used to assign isolated process IDs that are separate from host OS. For example, this is important if we want to send signals to a running
@@ -215,19 +246,6 @@ curl http://localhost:5000
 ```
 
 **Inspecting a running container**
-
-We can use `ps` command to view all running containers:
-
-```bash
-$ docker ps
-CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
-eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
-```
-
-* Container ID - auto generated unique running id.
-* Container image - image name.
-* Command - linux process running as the PID 1 in the container.
-* Names - user friendly name of the container, we have named our container with `--name=simple1` flag.
 
 We can use `logs` to view logs of a running container:
 
@@ -345,7 +363,7 @@ hello                                         latest              4dce466cf3de  
 * Size - the size of our image is just 34 bytes.
 
 **NOTE:** Docker images are very different from virtual image formats. Because Docker does not boot any operating system, but simply runs
-linux process in isolation, we don't need any kernel, drivers or libraries to ship with the image, so it could be as tiny as several bytes!
+Linux process in isolation, we don't need any kernel, drivers or libraries to ship with the image, so it could be as tiny as several bytes!
 
 
 **Running the image**
