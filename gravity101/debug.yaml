@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: debug
+  labels:
+    app: debug
+spec:
+  selector:
+    matchLabels:
+      app: debug
+  template:
+    metadata:
+      labels:
+        app: debug
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: debug
+        image: leader.telekube.local:5000/gravitational/debian-tall:stretch
+        command: ["/bin/sh", "-c", "sleep 365d"]
+        env:
+        - name: PATH
+          value: "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:/rootfs/usr/local/bin:/rootfs/usr/local/sbin:/rootfs/usr/bin:/rootfs/usr/sbin:/rootfs/bin:/rootfs/sbin"
+        - name: LD_LIBRARY_PATH
+          value: "/rootfs/usr/lib/x86_64-linux-gnu"
+        volumeMounts:
+        - name: rootfs
+          mountPath: /rootfs
+      volumes:
+        - name: rootfs
+          hostPath:
+            path: /
