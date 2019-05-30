@@ -8,8 +8,7 @@ Docker 101, Kubernetes 101 and Gravity 101.
 
 For these exercises we’ll be using a 3-node Gravity cluster.
 
-!!! note:
-    If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment.
+_Note: If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment._
 
 ## General Troubleshooting Tools
 
@@ -41,15 +40,19 @@ Now we’re inside the Planet container and can “see” all systemd units runn
 node-1-planet$ systemctl status kube-apiserver
 ```
 
-You can think of the `gravity shell` command as an analogue of the Docker command that requests a shell inside a running Docker container: `docker exec -ti <container> /bin/bash`. In fact, `gravity shell` is just a convenient shorthand for a similarly-looking `gravity exec` command:
+You can think of the `gravity shell` command as an analogue of the Docker command that requests a shell inside a running Docker container: `docker exec -ti <container> /bin/bash`. In fact, `gravity shell` is just a convenient shorthand for a similarly-looking `gravity exec` command.
+
+Let's exit the Planet container and try `gravity exec`:
 
 ```bash
+node-1-planet$ exit
 node-1$ sudo gravity exec -ti /bin/bash
 ```
 
 The `gravity exec` command allows to execute a single command inside the Planet container, similar to `docker exec`, for example:
 
 ```bash
+node-1-planet$ exit
 node-1$ sudo gravity exec systemctl status kube-apiserver
 ```
 
@@ -238,6 +241,7 @@ node-1$ sudo gravity exec cp /var/log/apiserver/audit.log /ext/share
 We can now view it directly from host:
 
 ```bash
+node-1$ ls -l /var/lib/gravity/planet/share/
 node-1$ less /var/lib/gravity/planet/share/audit.log
 ```
 
@@ -253,9 +257,10 @@ node-1$ less /opt/gravity/planet/share/audit.log
 
 Oftentimes, it is useful to get a shell inside one of the running containers to test various things, for example, when experiencing pod-to-pod or pod-to-service communication issues. The “problem” with existing running pods is that more often than not they either do not include shell at all or are missing many tools that are useful in troubleshooting (dig, netstat, etc.) - in order to keep Docker images small.
 
-To facilitate our debugging, we can create a special “debug” pod that will have access to all tools from the Planet environment. Define it’s spec in a file called “debug.yaml”:
+To facilitate our debugging, we can create a special “debug” pod that will have access to all tools from the Planet environment. Define it’s spec in a file called `debug.yaml`:
 
-```yaml
+```bash
+node-1$ cat <<EOF > debug.yaml
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
@@ -275,15 +280,21 @@ spec:
         runAsUser: 0
       containers:
       - name: debug
-        image: leader.telekube.local:5000/gravitational/debian-tall:0.0.1
+        image: leader.telekube.local:5000/gravitational/debian-tall:stretch
         command: ["/bin/sh", "-c", "sleep 365d"]
+        env:
+        - name: PATH
+          value: "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin:/rootfs/usr/local/bin:/rootfs/usr/local/sbin:/rootfs/usr/bin:/rootfs/usr/sbin:/rootfs/bin:/rootfs/sbin"
+        - name: LD_LIBRARY_PATH
+          value: "/rootfs/usr/lib/x86_64-linux-gnu"
         volumeMounts:
-          - name: rootfs
-            mountPath: /rootfs
+        - name: rootfs
+          mountPath: /rootfs
       volumes:
         - name: rootfs
           hostPath:
             path: /
+EOF
 ```
 
 And create it:
@@ -298,12 +309,27 @@ Now, an instance of the debug pod is running on each node in the default namespa
 node-1$ kubectl get pods -owide
 ```
 
-We can obtain the shell inside one of them and use all the tools available in Planet:
+We can obtain the shell inside one of them:
 
 ```bash
-node-1$ kubectl exec -ti debug-jl8nr /bin/chroot /rootfs
-debug-pod$ netstat -lpten
-debug-pod$ kctl get pods
+node-1$ kubectl exec -ti debug-jl8nr /bin/sh
+debug-pod$ ifconfig
+debug-pod$ kubectl get pods
+debug-pod$ dig google.com +short
+```
+
+Now we're actually inside a pod, but have access to all Planet tools! We can also get into the full Planet environment from inside this debug pod by using a chroot jail, using the `/rootfs` directory that we've mounted as a new root tree:
+
+```bash
+debug-pod$ chroot /rootfs
+debug-pod-chroot$ kctl get pods
+```
+
+Keep in mind though that after `chroot` the debug container will also be using Planet's `resolv.conf` so cluster DNS won't be working. Let's exit the debug container:
+
+```bash
+debug-pod-chroot$ exit
+debug-pod$ exit
 ```
 
 Let’s keep the debug pods running, we’re going to use them for some of our troubleshooting exercises below. Now, let’s do some breaking!
@@ -315,6 +341,8 @@ Let’s keep the debug pods running, we’re going to use them for some of our t
 Kubernetes requires a number of certain kernel modules to be loaded to function properly.
 
 One example is the “overlay” module used by the Docker overlay storage driver. Another example is “br_netfilter” (or “bridge” on some older systems) which is used for packet filtering, NAT and other packet mangling and is required for Kubernetes-setup iptables to function correctly. Without it, the packets from one pod will not be able to reach other pods.
+
+Feel free to look at our documentation that lists all system requirements, including [Kernel Modules](https://gravitational.com/gravity/docs/requirements/#kernel-modules).
 
 Gravity has an auto-load feature that makes sure to enable necessary modules and set appropriate kernel parameters upon installation but we’ve seen many times when users have some provisioning automation setup on their infrastructure (e.g. via Chef/Puppet/etc.) that can occasionally go and reset them.
 
@@ -329,12 +357,18 @@ The probability of this happening on a real cluster is actually non-negligible b
 Let’s see what happened to the cluster pods. We can use one of our debug pods to explore:
 
 ```bash
-node-1$ kubectl exec -ti debug-jl8nr /bin/chroot /rootfs
+node-1$ kubectl exec -ti debug-jl8nr /bin/sh
 debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
-<hangs>
+// hangs
 ```
 
-This service URL points to the active cluster controller (gravity-site) and is supposed to return 200OK but the pod can no longer reach it. Let’s see if our problem detector can give us any hints:
+This service URL points to the active cluster controller (`gravity-site`) and is supposed to return 200OK but the pod can no longer reach it. All pods seems to be running and healthy though:
+
+```bash
+node-1$ kubectl get pods -owide --all-namespaces
+```
+
+Let’s see if our problem detector can give us any hints and run `gravity status` command:
 
 ```bash
 node-1$ gravity status
@@ -346,7 +380,7 @@ Cluster nodes:  nostalgicbell4909
            [×]         ipv4 forwarding is off, see https://www.gravitational.com/docs/faq/#ipv4-forwarding ()
 ```
 
-Satellite just saved us (possibly) hours of troubleshooting and pointed to the documentation section that explains how to fix this particular issue. Let’s fix the networking and verify:
+Bingo! Satellite just saved us (possibly) hours of troubleshooting and pointed to the documentation section that explains how to fix this particular issue. Let’s fix the networking and verify:
 
 ```
 node-1$ sudo sysctl -w net.ipv4.ip_forward=1
@@ -361,6 +395,8 @@ Cluster nodes:  nostalgicbell4909
        * node-1 (192.168.121.232, node)
            Status:     healthy
 ```
+
+The cluster status may take a minute to recover and get back to "healthy".
 
 ### Scenario 1.2: Overlay Network
 
@@ -389,23 +425,38 @@ Probably the most common (and easy to detect) reason for the overlay network iss
 node-1$ sudo iptables -A INPUT -p udp --dport 8472 -j REJECT
 ```
 
-Now, on another node let’s pick a couple of pods running on different nodes and try to ping them:
+Now, on another node let’s pick a couple of pods running on different nodes and try to ping them. Let's use `coredns` pods as an example:
 
 ```bash
-node-2$ kubectl get pods -owide --all-namespaces
-...
-kube-system   coredns-t2rtd                         1/1     Running     4          149m   10.244.59.23      192.168.121.232   <none>           <none>
-kube-system   coredns-wfvrm                         1/1     Running     0          115m   10.244.84.4       192.168.121.198   <none>           <none>
-...
-node-2$ ping -c1 10.244.59.23
-<packets lost>
-node-2$ ping -c1 10.244.84.4
-PING 10.244.84.4 (10.244.84.4): 56 data bytes
-64 bytes from 10.244.84.4: icmp_seq=0 ttl=64 time=0.068 ms
-...
+node-2$ kubectl get pods -owide --all-namespaces | grep coredns
+kube-system   coredns-8mklv                         1/1     Running     0          3h32m   10.244.78.3  
+kube-system   coredns-c9gzd                         1/1     Running     0          3h28m   10.244.13.2  
+kube-system   coredns-sh74m                         1/1     Running     0          3h45m   10.244.93.3
 ```
 
-To detect things like that it is often useful to inspect the iptables rules and look for any suspicious DROP or REJECT rules:
+We're on `node-2` right so let's try to ping the `coredns` pod running on `node-3`:
+
+```bash
+node-2$ ping -c1 10.244.13.2
+PING 10.244.13.2 (10.244.13.2) 56(84) bytes of data.
+64 bytes from 10.244.13.2: icmp_seq=1 ttl=63 time=0.345 ms
+
+--- 10.244.13.2 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.345/0.345/0.345/0.000 ms
+```
+
+This works. Now let's try to ping the pod running on `node-1` - the one with the blocked port:
+
+```bash
+node-2$ ping -c1 10.244.93.3
+PING 10.244.93.3 (10.244.93.3) 56(84) bytes of data.
+^C
+--- 10.244.93.3 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+```
+
+Packets do not reach this pod. Note that we pinged the pod's IP directly, so the traffic goes via overlay network. To detect things like that it is often useful to inspect the iptables rules and look for any suspicious DROP or REJECT rules:
 
 ```bash
 node-1$ sudo iptables -L -n
@@ -413,11 +464,14 @@ node-1$ sudo iptables -L -n
 REJECT     udp  --  0.0.0.0/0            0.0.0.0/0            udp dpt:8472 reject-with icmp-port-unreachable
 ```
 
-Let’s repair the overlay network in our cluster in the meanwhile and make sure it recovers:
+Let’s repair the overlay network in our cluster by removing our firewall rule in the meanwhile and make sure it recovers:
 
 ```bash
 node-1$ sudo iptables -D INPUT -p udp --dport 8472 -j REJECT
-node-2$ ping 10.244.59.23
+```
+
+```bash
+node-2$ ping -c1 10.244.93.3
 ```
 
 #### Flannel Issues
@@ -436,7 +490,13 @@ node-1$ sudo gravity exec journalctl -u flanneld --no-pager
 
 Another example worth mentioning is that on virtual machines powered by VMWare ESXi (part of VMWare vSphere suite) port 8472 is used for VXLAN that encapsulates all VM-to-VM traffic which will conflict with Kubernetes overlay network. The tricky part about detecting this is that VXLAN runs over UDP so there is no evident port conflict issue (i.e. no “bind” error b/c there is no “bind”) and since it’s happening in-kernel, the port does not appear in netstat either.
 
-To support such systems Gravity provides ability to override default VXLAN port at install time via a command-line flag:
+To support such systems Gravity provides ability to override default VXLAN port at install time via a command-line flag. The flag is shown in the `gravity` help string:
+
+```bash
+node-1$ ./gravity install --help
+```
+
+To use it during initial installation, you would run the `gravity install` command like this:
 
 ```bash
 node-1$ sudo ./gravity install --vxlan-port=9473
@@ -518,7 +578,15 @@ node-1-planet$ cat /etc/coredns/coredns.conf
 node-1-planet$ cat /etc/resolv.conf
 ```
 
-Also, CoreDNS runs as a DaemonSet inside the cluster to provide DNS resolution for cluster pods:
+You can see that CoreDNS binds to port `53` on `127.0.0.2`. It also has a `kubernetes` plugin enabled so it can resolve Kubernetes service names for the specified authoritative zones:
+
+```bash
+node-1-planet$ dig +short gravity-site.kube-system.svc.cluster.local @127.0.0.2
+```
+
+The rest of DNS queries are forwarded to the upstream DNS server from `/etc/resolv.conf`.
+
+CoreDNS also runs as a DaemonSet inside the cluster to provide DNS resolution for cluster pods:
 
 ```bash
 node-1-planet$ kctl get pods,services -owide | grep dns
@@ -544,7 +612,8 @@ node-1$ kubectl -nkube-system delete pods -lk8s-app=kube-dns
 Now let’s try to access a service from one of our debug pods:
 
 ```bash
-node-1$ kubectl exec -ti debug-jl8nr /bin/chroot /rootfs
+node-1$ kubectl get pods
+node-1$ kubectl exec -ti debug-jl8nr /bin/sh
 debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
 curl: (6) Could not resolve host: gravity-site.kube-system.svc.cluster.local
 ```
@@ -552,32 +621,41 @@ curl: (6) Could not resolve host: gravity-site.kube-system.svc.cluster.local
 But CURLing the service IP directly works:
 
 ```bash
-debug-pod$ kctl get services | grep gravity-site
+debug-pod$ kubectl -nkube-system get services | grep gravity-site
 debug-pod$ curl -k https://10.100.135.21:3009/healthz
 {"info":"service is up and running","status":"ok"}
 ```
 
-Thus far the issue seems to be laying on the DNS side. In order to further troubleshoot it, let’s also check the packets traffic using “tcpdump”. First, we need to find out the IP address of our container so we know what to filter by:
+The fact that we can connect to the pod directly but aren't able to resolve it's name hints that the issue seems to be laying on the DNS side.
+
+Let' use this exercise as an opportunity to do some traffic sniffing using `tcpdump`. First, we need to find out the IP address of our container so we know what to filter by:
 
 ```bash
 debug-pod$ ifconfig eth0
 ```
 
-Now, launch another terminal on node-1 and start sniffing:
+Now, let's start sniffing traffic from our debug pod by executing the following command on all nodes, `node-1`, `node-2` and `node-3`. You may need to open another terminal session on `node-1` as our current one is occupied by debug pod.
 
 ```bash
-node-1$ sudo gravity exec tcpdump -n -i any host 10.244.4.21
+node-1$ sudo gravity exec tcpdump -n -l -i any host 10.244.4.21
 ```
 
-Then, execute another “curl” from the debug container and see if “tcpdump” has captured any packets. Note, you may need to execute it a few times in order to get traffic on the correct node.
+```bash
+node-2$ sudo gravity exec tcpdump -n -l -i any host 10.244.4.21
+```
+
+```bash
+node-3$ sudo gravity exec tcpdump -n -l -i any host 10.244.4.21
+```
+
+Obviously, replace the IP with the IP of your debug pod. Then, execute another `curl` from the debug container. One of the running `tcpdump` sessions should start producing output like this:
 
 ```
 19:19:28.678062 IP 10.244.4.21.44651 > gravity.domain: 46573+ A? gravity-site.kube-system.svc.cluster.local. (60)
 19:19:28.678130 IP 10.244.4.21.44651 > gravity.domain: 47613+ AAAA? gravity-site.kube-system.svc.cluster.local. (60)
-19:19:28.678492 IP gravity.domain > 10.244.4.21.44651: 46573 ServFail 0/0/0 (60)
 ```
 
-We can now see that “tcpdump” has captured the DNS request made by our pod and returned ServFail. This clearly points to the DNS issue so let’s check our CoreDNS pods and their logs:
+We can now see DNS queries made by our debug pod to the DNS Kubernetes service IP but it produces no response - the traffic only flows one way. This means something's wrong with our in-cluster DNS service so let’s check our CoreDNS pods and their logs (do not forget to Ctrl-C `tcpdump` running on all nodes):
 
 ```bash
 node-1$ kubectl -nkube-system get pods -owide
@@ -606,8 +684,9 @@ One of the first things you wanna do when troubleshooting a cluster is to assess
 
 ```bash
 node-1$ sudo gravity exec etcdctl cluster-health
-member bdbf284ca403d577 is healthy: got healthy result from https://192.168.121.198:2379
-member dce1aaf4c02dc4b5 is healthy: got healthy result from https://192.168.121.232:2379
+member 2388d6479b007643 is healthy: got healthy result from https://10.128.0.80:2379
+member b344f867011d446f is healthy: got healthy result from https://10.128.0.77:2379
+member f427d78b1bc76a37 is healthy: got healthy result from https://10.128.0.78:2379
 cluster is healthy
 ```
 
@@ -649,7 +728,7 @@ NAME              STATUS   ROLES    AGE    VERSION
 192.168.121.232   Ready    <none>   26h    v1.14.1
 ```
 
-Let’s say we want to take the .217 one out. First, let’s make sure that Kubernetes does not schedule any more pods onto it:
+Let’s say we want to take the `.217` one out. First, let’s make sure that Kubernetes does not schedule any more pods onto it:
 
 ```bash
 node-1$ kubectl cordon 192.168.121.217
@@ -676,17 +755,33 @@ Note that since the node is running several daemon set pods, we need to pass the
 node-1$ kubectl get pods -A -owide
 ```
 
-In a production setting, it may take a while for a node to get drained. Once it’s completed, we can also safely shut down the Planet container. Generally speaking, it is not always required and will terminate all Kubernetes services running on this node, but is sometimes necessary if you, for example, updated DNS configuration on the node (/etc/resolv.conf) and need to propagate this change into Planet container.
+In a production setting, it may take a while for a node to get drained. Once it’s completed, we can also safely shut down the Planet container. Generally speaking, it is not always required and will terminate all Kubernetes services running on this node, but is sometimes necessary if you, for example, updated DNS configuration on the node (`/etc/resolv.conf`) and need to propagate this change into Planet container.
 
-To shut down the planet, find out its systemd unit name (note, that we’re on node-3 now):
+To shut down the planet, find out its systemd unit name (note, that we’re on `node-3` now):
 
 ```bash
-node-3$ sudo systemctl list-units | grep planet | grep service
-gravity__gravitational.io__planet__6.0.0-11401.service...
-node-3$ sudo systemctl stop gravity__gravitational.io__planet__6.0.0-11401.service
+node-3$ sudo systemctl list-unit-files | grep planet
+gravity__gravitational.io__planet__5.5.17-11305.service enabled
+node-3$ sudo systemctl stop gravity__gravitational.io__planet__5.5.17-11305.service
 ```
 
-Once the planet has shut down, you can perform whatever maintenance necessary. Note that the cluster has become “degraded” and the node appears offline in gravity status now (may take a few seconds to reflect):
+Once the planet has shut down, you can perform whatever maintenance necessary. Note that all Kubernetes services have shut down together with Planet:
+
+```bash
+node-3$ ps aux
+```
+
+But the Teleport actually keeps running:
+
+```bash
+node-3$ systemctl list-unit-files | grep teleport
+gravity__gravitational.io__teleport__3.0.5.service      enabled 
+node-3$ systemctl status gravity__gravitational.io__teleport__3.0.5.service
+```
+
+Teleport node is still operational so it is possible to connect to it, for example via web terminal to perform maintenance if necessary.
+
+If we take a look at the cluster status, we'll see that it has become “degraded” and the node appears offline now (may take a few seconds to reflect):
 
 ```bash
 node-1$ gravity status
@@ -696,10 +791,22 @@ Cluster status:         degraded
            Status:     offline
 ```
 
-Keep in mind that if you restart the node, the planet unit will automatically start when the node boots up. Once the maintenance has been completed, uncordon the node and Kubernetes will start scheduling pods on it again:
+Also note, that even though we've shut down one out of three nodes, Kubernetes cluster is still operational because we have a 3-node HA cluster:
 
 ```bash
-node-1$ kubectl cordon 192.168.121.217
+node-1$ kubectl get nodes
+```
+
+Keep in mind that if you restart the node, Planet will automatically start when the node boots up. Once the maintenance has been completed, let's bring Planet back up:
+
+```bash
+node-3$ sudo systemctl start gravity__gravitational.io__planet__5.5.17-11305.service
+```
+
+It will take the cluster a minute or so to recover, after which let's uncordon the node and let Kubernetes start scheduling pods on it again:
+
+```bash
+node-1$ kubectl uncordon 192.168.121.217
 node/192.168.121.217 uncordoned
 ```
 
@@ -708,13 +815,19 @@ node/192.168.121.217 uncordoned
 Now let’s consider another scenario - a failed node. A node can fail for various reasons, for the sake of this exercise we will assume that the node is unrecoverable. Let’s simulate this scenario by wiping out the node clean:
 
 ```bash
-node-3$ sudo gravity system uninstall --confirm
+node-3$ sudo gravity system uninstall
 ```
 
-!!! warning:
-    This command is equivalent of `rm -rf` for all Kubernetes/Gravity data so never run it on a production cluster.
+**Warning: This command is equivalent of `rm -rf` for all Kubernetes/Gravity data so never run it on a production cluster unless absolutely sure.**
 
-As we found out before, when we were talking about etcd, a 3-node cluster can afford to lose 1 node so the cluster remains functional, but the node is shown as offline:
+Confirm the cleanup with `yes` reply. `node-3` has been wiped clean now and all Gravity data has been removed. Indeed, even calling `gravity` doesn't work anymore because the binary is no longer there:
+
+```bash
+node-3$ gravity
+gravity: command not found
+```
+
+As we found out before, a 3-node cluster can afford to lose 1 node so the cluster remains functional, and the node is again shown as offline:
 
 ```bash
 node-1$ gravity status
@@ -744,7 +857,7 @@ Active operations:
      unregistering the node, 10% complete
 ```
 
-Once the operation completes, the cluster will switch back into the active state and the node will no longer appear in the gravity status. The `kubectl get nodes` and `etcdctl cluster-health` commands will also show that the node is no longer a part of the cluster.
+Once the operation completes, the cluster will switch back into the active state and the node will no longer appear in the `gravity status`. The `kubectl get nodes` and `etcdctl cluster-health` commands will also show that the node is no longer a part of the cluster.
 
 ```bash
 node-1$ gravity status
@@ -762,8 +875,8 @@ Now that the node has been properly removed and the cluster is healthy (but runn
 First, let’s find out the cluster’s join token which the joining node will need to provide to authenticate:
 
 ```bash
-node-1$ gravity status --token
-45b56f472e71
+node-1$ gravity status
+Join Token: 45b56f472e71
 ```
 
 Next, we need to run a `gravity join` command on our new node, however when we ran system uninstall on it, the gravity binary was removed as well. Let’s get it back:
@@ -784,7 +897,7 @@ Once the node has joined, run gravity status to confirm.
 
 Now we’re going to take a look at the cluster upgrade. In the ideal scenario cluster upgrade is straightforward - you upload a new installer tarball onto a cluster node, unpack it and execute included upgrade script which launches the automatic upgrade procedure.
 
-Behind the scenes the upgrade works as a state machine: Gravity generates an upgrade plan that consists of multiple “phases” and launches an upgrade agent that executes phases of the plan one-by-one. If the automatic upgrade agent encounters an error during the execution of one of the phases, it stops. There is no automatic rollback, for safety and flexibility reasons. This approach allows an operator to inspect the upgrade operation plan, see where it failed, fix the issue and continue with the upgrade, either in automatic or manual fashion.
+Behind the scenes the upgrade works as a state machine. Gravity generates an upgrade plan that consists of multiple “phases” - see [documentation](https://gravitational.com/gravity/docs/cluster/#displaying-operation-plan) - and launches an upgrade agent that executes phases of the plan one-by-one. If the automatic upgrade agent encounters an error during the execution of one of the phases, it stops. There is no automatic rollback, for safety and flexibility reasons. This approach allows an operator to inspect the upgrade operation plan, see where it failed, fix the issue and continue with the upgrade, either in automatic or manual fashion.
 
 In some situations there may be no easy way to move forward with the interrupted upgrade so you might want to rollback the cluster to the previous state instead. Let’s simulate the failed upgrade by launching the operation and interrupting in a middle of a phase.
 
@@ -815,9 +928,9 @@ In order to rollback the operation, we need to rollback all phases that have bee
 node-1$ sudo ./gravity plan rollback --phase=/init --force
 ```
 
-Note, that we pass a fully-qualified phase identifier to the command. You can think of the operation plan as a tree of phases so a fully-qualified phase name starts with the root (/) and the rest of sub-phase names concatenated by a /.
+Note, that we pass a fully-qualified phase identifier to the command. You can think of the operation plan as a tree of phases so a fully-qualified phase name starts with the root (`/`) and the rest of sub-phase names concatenated by a `/`.
 
-Once all phases have been rolled back and the plan only consists of “rolled back” and “unstarted” phases, we can mark the operation completed which will move the operation to the final “failed” state and activate the cluster:
+If you look at that `gravity plan` again now, you'll see that the phase has been marked as "rolled back". Keep going rolling back all phases in the reverse order. Once all phases have been rolled back and the plan only consists of “rolled back” and “unstarted” phases, we can mark the operation completed which will move the operation to the final “failed” state and activate the cluster:
 
 ```bash
 node-1$ sudo ./gravity plan complete
@@ -853,11 +966,10 @@ node-1$ sudo ./gravity plan
 
 Note that some phases have prerequisites and can only execute if their requirements are met.
 
-Let’s execute a couple more phases:
+Let’s execute one more phase:
 
 ```bash
-node-1$ sudo ./gravity plan execute --phase=/bootstrap/node-1
-node-1$ sudo ./gravity plan execute --phase=/bootstrap/node-2
+node-1$ sudo ./gravity plan execute --phase=/checks
 ```
 
 If you wish to continue the upgrade operation (for example, after having fixed the issue that caused the failure), you can keep executing the rest of the plan phases manually or resume the operation in the automatic mode:
@@ -872,30 +984,42 @@ If you choose to execute all phases manually, once all phases have been complete
 
 For the final exercise of the day, we’re going to take a look at how to recover a failed install operation. Cluster installation employs the same plan-based approach as the upgrade operation where it generates an operation plan and install agents execute it.
 
-To see how it works, we need a clean node which we can install a cluster on so let’s uninstall our existing 3-node cluster as we won’t need it anymore and reuse node-1. On all 3 nodes, run:
+To see how it works, we need a clean node which we can install a cluster on so let’s uninstall our existing 3-node cluster as we won’t need it anymore and reuse `node-1`. On all 3 nodes, run:
 
 ```bash
-node-{1,2,3}$ sudo gravity system uninstall --confirm
+node-1$ sudo gravity system uninstall --confirm
 ```
 
-We’ll be using node-1 to attempt to install a new single-node cluster. Let’s do something to the node which will cause the installation to fail but we’ll be able to easily fix. For example, let’s mess with of one of the directories that we know the installer will need:
+```bash
+node-2$ sudo gravity system uninstall --confirm
+```
+
+```bash
+node-3$ sudo gravity system uninstall --confirm
+```
+
+We’ll be using `node-1` to attempt to install a new single-node cluster. Let’s do something to the node which will cause the installation to fail but we’ll be able to easily fix. For example, let’s mess with of one of the directories that we know the installer will need:
 
 ```bash
 node-1$ sudo mkdir -p /var/lib/gravity/planet
 node-1$ sudo chattr +i /var/lib/gravity/planet
 ```
 
-This will make the directory immutable so when installer attempts to create its subdirectories, it will fail. Let’s now launch the install operation:
+This will make the directory immutable so when the installer attempts to create its subdirectories, it will fail. Let’s now launch the install operation:
 
 ```bash
-node-1$ cd ~/installer
-node-1$ sudo ./gravity install
+node-1$ cd ~/v1
+node-1$ sudo ./gravity install --cloud-provider=generic
 ...
 Wed May  8 21:37:37 UTC Operation failure: failed to execute phase "/bootstrap/node-1"
 Wed May  8 21:37:37 UTC Installation failed in 9.726002255s, check /var/log/gravity-install.log and /var/log/gravity-system.log for details
 ```
 
-The installation will fail while trying to bootstrap the node. We can check the install log to see what happened:
+The installation will fail while trying to bootstrap the node.
+
+**Note: Do not cancel the installer process when it fails and let it run.**
+
+We can also launch another shell on `node-1` and check the install log to see what happened:
 
 ```bash
 node-1$ sudo cat /var/log/gravity-install.log
@@ -903,7 +1027,7 @@ node-1$ sudo cat /var/log/gravity-install.log
 Wed May  8 22:05:06 UTC [ERROR] [node-1] Phase execution failed: mkdir /var/lib/gravity/planet/state: permission denied.
 ```
 
-We can also launch another shell on node-1 and inspect the operation plan:
+and inspect the operation plan:
 
 ```bash
 node-1$ sudo gravity plan

@@ -5,6 +5,7 @@ Open source series of workshops delivered by Gravitational services team.
 * [Docker 101 workshop](docker.md)
 * [Kubernetes 101 workshop using Minikube and Mattermost](k8s101.md)
 * [Kubernetes production patterns](k8sprod.md)
+* [Gravity 101](gravity101.md)
 * [Gravity fire drill exercises](firedrills.md)
 
 ## Installation
