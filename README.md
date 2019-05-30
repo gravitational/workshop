@@ -69,26 +69,32 @@ To run cluster:
 
 **macOS**
 
-```
+```bash
 # starts minikube
-minikube start --kubernetes-version=v1.14.0
+$ minikube start --kubernetes-version=v1.14.0
 # this command should work
-kubectl get nodes
+$ kubectl get nodes
 # use docker from minikube
-eval $(minikube docker-env)
+$ eval $(minikube docker-env)
 # this command to check connectivity
-docker ps
+$ docker ps
 ```
 
 **Linux**
 
-```
+```bash
 # starts minikube
-minikube start --kubernetes-version=v1.14.0 --vm-driver=kvm2
+$ minikube start --kubernetes-version=v1.14.0 --vm-driver=kvm2
 # this command should work
-kubectl get nodes
+$ kubectl get nodes
 # use docker from minikube
-eval $(minikube docker-env)
+$ eval $(minikube docker-env)
 # this command to check connectivity
-docker ps
+$ docker ps
+```
+
+## Configure registry
+
+```
+$ kubectl create -f registry.yaml
 ```
