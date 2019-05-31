@@ -257,6 +257,8 @@ nginx-65f88748fd-fd2sk   1/1     Running   0          4s
 
 ### Anti-Pattern: Using Background Processes
 
+**NOTE:** You need to have executed `eval $(minikube docker-env)` command for the following to work properly.
+
 ```bash
 $ cd prod/background
 $ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
@@ -404,6 +406,8 @@ sleep 30
 echo "Started up successfully"
 python -m http.server 5000
 ```
+
+**NOTE:** You need to have executed `eval $(minikube docker-env)` command for the following to work properly.
 
 Push the image and start service and deployment:
 
@@ -563,20 +567,23 @@ Now you will see that after 30 seconds, the job has failed and no more pods will
 
 **NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from accidental DDOS on your cluster.
 
-### Production pattern: Circuit Breaker
+### Production Pattern: Circuit Breaker
 
-In this example, our web application is an imaginary web server for email. To render the page,
-our frontend has to make two requests to the backend:
+In this example we will explore a more generic production pattern that's not necessarily Kubernetes-specific but we'll be using our local Kubernetes cluster to play with it. The pattern is called "circuit breaker".
 
-* Talk to the weather service to get current weather
-* Fetch current mail from the database
+Our web application is an imaginary web server for email. To render the page, our frontend has to make two requests to the backend:
 
-If the weather service is down, user still would like to review the email, so weather service
-is auxilliary, while current mail service is critical.
+* Talk to the weather service to get current weather.
+* Fetch current mail from the database.
 
-Here is our frontend, weather and mail services written in python:
+We will make the following assumptions:
 
-**Weather**
+* The weather service is auxiliary and its downtime shouldn't affect the whole system.
+* The mail service is critical and users should still be able to view mail if weather service is down.
+
+Here is our frontend, weather and mail services written in Python:
+
+**Weather Service Backend**
 
 ```python
 from flask import Flask
@@ -597,7 +604,7 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0')
 ```
 
-**Mail**
+**Mail Service Backend**
 
 ```python
 from flask import Flask,jsonify
@@ -663,11 +670,11 @@ if __name__ == "__main__":
 
 Let's create our deployments and services:
 
-
 ```bash
 $ cd prod/cbreaker
-$ docker build -t $(minikube ip):5000/mail:0.0.1 .
-$ docker push $(minikube ip):5000/mail:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/mail:0.0.1 .
+$ docker push $registry:5000/mail:0.0.1
 $ kubectl apply -f service.yaml
 deployment "frontend" configured
 deployment "weather" configured
@@ -719,8 +726,8 @@ if __name__ == "__main__":
 Build and redeploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/weather-crash:0.0.1 -f weather-crash.dockerfile .
-$ docker push $(minikube ip):5000/weather-crash:0.0.1
+$ docker build -t $registry:5000/weather-crash:0.0.1 -f weather-crash.dockerfile .
+$ docker push $registry:5000/weather-crash:0.0.1
 $ kubectl apply -f weather-crash.yaml 
 deployment "weather" configured
 ```
@@ -740,19 +747,7 @@ However our frontend should be all good:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://frontend
-<html>
-<body>
-  <h3>Weather</h3>
-  <p>weather unavailable</p>
-  <h3>Email</h3>
-  <p>
-    <ul>
-      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
-    </ul>
-  </p>
-</body>
-root@cli:/# curl http://frontend                    
+$ curl http://frontend
 <html>
 <body>
   <h3>Weather</h3>
@@ -789,16 +784,17 @@ if __name__ == "__main__":
 Build and redeploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/weather-crash-slow:0.0.1 -f weather-crash-slow.dockerfile .
-$ docker push $(minikube ip):5000/weather-crash-slow:0.0.1
+$ docker build -t $registry:5000/weather-crash-slow:0.0.1 -f weather-crash-slow.dockerfile .
+$ docker push $registry:5000/weather-crash-slow:0.0.1
 $ kubectl apply -f weather-crash-slow.yaml 
 deployment "weather" configured
 ```
 
-Just as expected, our weather service is timing out:
+Just as expected, our weather service is timing out now:
 
 ```bash
-curl http://weather 
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://weather 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>500 Internal Server Error</title>
 <h1>Internal Server Error</h1>
@@ -808,16 +804,16 @@ curl http://weather
 The problem though, is that every request to frontend takes 10 seconds as well:
 
 ```bash
-curl http://frontend
+$ curl http://frontend
 ```
 
-This is a much more common outage - users leave in frustration as the service is unavailable.
+This is a much more common type of outage - users leave in frustration as the service is unavailable.
+
 To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers).
 
 ![standby](http://vulcand.github.io/_images/CircuitStandby.png)
 
 Circuit breaker is a special middleware that is designed to provide a fail-over action in case the service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against a special error condition.
-
 
 ![tripped](http://vulcand.github.io/_images/CircuitTripped.png)
 
@@ -884,19 +880,27 @@ if __name__ == "__main__":
 Let's build and redeploy circuit breaker:
 
 ```bash
-$ docker build -t $(minikube ip):5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
-$ docker push $(minikube ip):5000/cbreaker:0.0.1
+$ docker build -t $registry:5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
+$ docker push $registry:5000/cbreaker:0.0.1
 $ kubectl apply -f weather-cbreaker.yaml 
 deployment "weather" configured
-$  kubectl apply -f weather-service.yaml
+$ kubectl apply -f weather-service.yaml
 service "weather" configured
 ```
 
+Circuit breaker runs as a separate container next to the weather service container in the same pod:
+
+```bash
+$ cat weather-cbreaker.yaml
+```
+
+Note that we have reconfigured our service so requests are handled by the circuit breaker first which forwards requests to the weather service running in the same pod, and trips if the request fails.
 
 Circuit breaker will detect service outage and auxilliary weather service will not bring our mail service down any more:
 
 ```bash
-curl http://frontend
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://frontend
 <html>
 <body>
   <h3>Weather</h3>
@@ -910,22 +914,20 @@ curl http://frontend
 </body>
 ```
 
-**NOTE:** There are some production level proxies that natively support circuit breaker pattern - such as [Vulcand](http://vulcand.github.io/), [Nginx plus](https://www.nginx.com/products/) or [Envoy](https://lyft.github.io/envoy/)
+**NOTE:** There are some production level proxies that natively support circuit breaker pattern - such as [Vulcand](http://vulcand.github.io/), [Nginx Plus](https://www.nginx.com/products/) or [Envoy](https://lyft.github.io/envoy/)
 
+### Production Pattern: Sidecar For Rate And Connection Limiting
 
-### Production Pattern: Sidecar For Rate and Connection Limiting
-
-In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error detection, TLS termination
-and other features.
+In the previous example we used a pattern called a "sidecar container". A sidecar is a container colocated with other containers in the same pod, which adds additional logic to the service, such as error detection, TLS termination and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
 
 ```bash
 $ cd prod/sidecar
-$ docker build -t $(minikube ip):5000/sidecar:0.0.1 -f sidecar.dockerfile .
-$ docker push $(minikube ip):5000/sidecar:0.0.1
-$ docker build -t $(minikube ip):5000/service:0.0.1 -f service.dockerfile .
-$ docker push $(minikube ip):5000/service:0.0.1
+$ docker build -t $registry:5000/sidecar:0.0.1 -f sidecar.dockerfile .
+$ docker push $registry:5000/sidecar:0.0.1
+$ docker build -t $registry:5000/service:0.0.1 -f service.dockerfile .
+$ docker push $registry:5000/service:0.0.1
 $ kubectl apply -f sidecar.yaml
 deployment "sidecar" configured
 ```
@@ -934,7 +936,7 @@ Try to hit the service faster than one request per second and you will see the r
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://sidecar
+$ curl http://sidecar
 ```
 
-[Istio](https://istio.io/docs/concepts/what-is-istio/overview.html#architecture) is an example of platform that embodies this design and more for instance.
+For instance, [Istio](https://istio.io/docs/concepts/policies-and-telemetry/) is an example of platform that embodies this design.
