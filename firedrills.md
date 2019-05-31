@@ -853,7 +853,7 @@ Note that we need to force-remove in this case because the node is offline. For 
 If you launch `gravity status` command now, you will see that Gravity launched “shrink” operation that is working on properly evicting the node from the cluster and Kubernetes state.
 
 ```bash
-node-1$ gravity status
+node-1$ watch gravity status
 ...
 Active operations:
    * operation_shrink (71266b23-d0ea-46b6-a5c4-15906eeb770a)
@@ -906,7 +906,7 @@ Behind the scenes the upgrade works as a state machine. Gravity generates an upg
 In some situations there may be no easy way to move forward with the interrupted upgrade so you might want to rollback the cluster to the previous state instead. Let’s simulate the failed upgrade by launching the operation and interrupting in a middle of a phase.
 
 ```bash
-node-1$ cd ~/upgrade
+node-1$ cd ~/v3
 node-1$ sudo ./upgrade
 <progress output…>
 <ctrl-c>
