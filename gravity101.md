@@ -456,7 +456,7 @@ Before we start, let’s inspect the node real quick.
 node-1$ docker info
 The program 'docker' is currently not installed.
 
-node-1$ ps aux
+node-1$ ps wwauxf
 ```
 
 Note that the node is clean - it not have Docker running on it, or anything else Kubernetes needs really. In fact, if Docker was running on it, the installer would detect this and refuse to start until the Docker is uninstalled. The reason is that all Kubernetes dependencies are packaged in our cluster image - this way we can be sure that all components work well together and we do not rely on random software that may be installed on the target nodes.
@@ -694,6 +694,37 @@ https://192.168.121.197:3009/web/newuser/33fcb869d9ef5d820f881089baff93d3911ec6f
 The command has generated an invitation URL which we can now open in our browser and sign up. Note that we have specified the `--roles=@teleadmin` flag - this is a special system role that provides super-user privileges.
 
 We should now be able to log into our cluster web UI.
+
+### Connecting To Cluster
+
+Grab auth gateway address:
+
+```bash
+node-1$ gravity status
+Cluster endpoints:
+    * Authentication gateway:
+        - 10.128.0.92:32009
+```
+
+Login from `build` machine using `tsh` and providing credentials for the admin user we've just created:
+
+```bash
+build$ tsh --insecure login --proxy=10.128.0.92:32009 --user=admin
+```
+
+We can now use `tsh` to interact with the cluster from the `build` box:
+
+```bash
+build$ tsh ls
+build$ tsh ssh root@role=node
+node-1$ gravity status
+```
+
+Moreover, local `kubectl` on the `build` box has also been configured with proper credentials:
+
+```bash
+build$ kubectl get nodes
+```
 
 ### Configuring Cluster
 
