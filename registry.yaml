@@ -19,3 +19,18 @@ spec:
       containers:
       - image: registry:2
         name: server
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry
+  namespace: default
+  labels:
+    app: registry
+spec:
+  type: ClusterIP
+  ports:
+  - name: registry
+    port: 5000
+  selector:
+    app: registry
