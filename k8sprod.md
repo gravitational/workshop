@@ -596,7 +596,7 @@ Proper quotas configuration is mandatory to ensure smooth sailing in production.
 https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/
 https://kubernetes.io/docs/tasks/configure-pod-container/assign-cpu-resource/
 
-### Anti-Pattern: Configuration Inside Image
+### Anti-Pattern: Putting Configuration Inside Image
 
 Oftentimes an application needs a configuration file to run. It might be tempting to just put the configuration file alongside your program inside the container:
 
