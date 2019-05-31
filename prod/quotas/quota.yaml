@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quota
+  namespace: default
+spec:
+  containers:
+  - name: memhog
+    image: localhost:5000/memhog:0.0.1
+    resources:
+      limits:
+        memory: "20Mi"

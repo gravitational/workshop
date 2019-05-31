@@ -567,6 +567,64 @@ Now you will see that after 30 seconds, the job has failed and no more pods will
 
 **NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from accidental DDOS on your cluster.
 
+### Production Pattern: Pod Quotas
+
+One of important Kubernetes features is resource management. Kubernetes allows to configure CPU/RAM resource quotas for containers to ensure that no single container can starve the entire system.
+
+Suppose we have a container that tends to hog memory:
+
+```bash
+$ cd prod/quotas
+$ docker build -t $registry:5000/memhog:0.0.1 .
+$ docker push $registry:5000/memhog:0.0.1
+$ kubectl create -f quota.yaml
+```
+
+The container consumes about 100 megabytes of memory but the limit we set on our pod allows only 20. Let's see how Kubernetes handled it:
+
+```bash
+$ kubectl get pods/quota
+quota                       0/1     OOMKilled          1          4s
+```
+
+Kubernetes's OOM killer killed the container, so if the application running inside it leaks memory gradually, it will restart.
+
+Kubernetes also allows to configure quotas per namespace and utilizes intelligent scheduling algorithm to ensure that pods are distributed across the cluster nodes appropriately. For example, it won't schedule a pod on a node if that pod's quota request exceeds resources available on the node.
+
+Proper quotas configuration is mandatory to ensure smooth sailing in production. Check Kubernetes resources for more information:
+
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-cpu-resource/
+
+### Anti-Pattern: Configuration Inside Image
+
+Oftentimes an application needs a configuration file to run. It might be tempting to just put the configuration file alongside your program inside the container:
+
+```bash
+$ cd prod/config
+$ docker build -t $registry:5000/config:0.0.1 -f config.dockerfile .
+$ docker push $registry:5000/config:0.0.1
+$ kubectl create -f pod.yaml
+```
+
+This approach has a number of drawbacks. For example, what if we want to update the configuration? There's no easy way to do that inside the running container. Another concern is what if configuration file contains some sensitive information such as passwords or API keys?
+
+Kubernetes provides an elegant way to deal with these issues by using ConfigMaps. A ConfigMap is a Kubernetes resource that can be mounted inside a running container (or multiple containers). Let's create a ConfigMap out of our configuration file:
+
+```bash
+$ kubectl create configmap config --from-file=config.yaml
+$ kubectl get configmaps/config -oyaml
+```
+
+We can see that Kubernetes converted our configuration file into a ConfigMap. Let's now rebuild our image to remove embedded configuration file and update the pod to use ConfigMap:
+
+```bash
+$ docker build -t $registry:5000/config:0.0.1 -f config-fix.dockerfile .
+$ docker push $registry:5000/config:0.0.1
+$ kubectl delete -f pod.yaml
+$ kubectl create -f pod-fix.yaml
+```
+
 ### Production Pattern: Circuit Breaker
 
 In this example we will explore a more generic production pattern that's not necessarily Kubernetes-specific but we'll be using our local Kubernetes cluster to play with it. The pattern is called "circuit breaker".
