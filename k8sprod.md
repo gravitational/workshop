@@ -259,37 +259,33 @@ nginx-65f88748fd-fd2sk   1/1     Running   0          4s
 
 ```bash
 $ cd prod/background
-$ docker build -t $(minikube ip):5000/background:0.0.1 .
-$ docker push $(minikube ip):5000/background:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/background:0.0.1 .
+$ docker push $registry:5000/background:0.0.1
 $ kubectl create -f crash.yaml
 $ kubectl get pods
 NAME      READY     STATUS    RESTARTS   AGE
 crash     1/1       Running   0          5s
 ```
 
-The container appears to be running, but let's check if our server is running there:
+Our container was supposed to start a simple Python web server on port 5000. The container appears to be running, but let's check if the server is running there:
 
 ```bash
 $ kubectl exec -ti crash /bin/bash
-root@crash:/# 
-root@crash:/# 
 root@crash:/# ps uax
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.0  21748  1596 ?        Ss   00:17   0:00 /bin/bash /start.sh
 root         6  0.0  0.0   5916   612 ?        S    00:17   0:00 sleep 100000
 root         7  0.0  0.0  21924  2044 ?        Ss   00:18   0:00 /bin/bash
 root        11  0.0  0.0  19180  1296 ?        R+   00:18   0:00 ps uax
-root@crash:/# 
 ```
+
+The server is not running because we made a mistake in our script, however the container itself is happily running.
 
 **Using Probes**
 
-We made a mistake and the HTTP server is not running there but there is no indication of this as the parent
-process is still running.
-
 The first obvious fix is to use a proper init system and monitor the status of the web service.
 However, let's use this as an opportunity to use liveness probes:
-
 
 ```yaml
 apiVersion: v1
@@ -314,7 +310,7 @@ spec:
 $ kubectl create -f fix.yaml
 ```
 
-The liveness probe will fail and the container will get restarted.
+Our Python HTTP server still crashes, however this time the liveness probe will fail and the container will get restarted.
 
 ```bash
 $ kubectl get pods
@@ -323,9 +319,13 @@ crash     1/1       Running   0          11m
 fix       1/1       Running   1          1m
 ```
 
+An even better solution would be avoid using background processes inside containers. Instead, decouple services from each other by running them in separate containers (process per container) and if they need to run as a single "entity", colocate them in a single pod.
+
+This approach has many benefits, including easier resources monitoring, ease of use and efficiency resulting in more light-weight and reusable infrastructure.
+
 ### Production Pattern: Logging
 
-Set up your logs to go to stdout:
+When configuring logging for your application running inside a container, make sure the logs go to standard output:
 
 ```bash
 $ kubectl create -f logs/logs.yaml
@@ -333,19 +333,21 @@ $ kubectl logs logs
 hello, world!
 ```
 
-Kubernetes and Docker have a system of plugins to make sure logs sent to stdout and stderr will get
-collected, forwarded and rotated.
+Kubernetes and Docker have a system of plugins to make sure logs sent to stdout and stderr will get collected, forwarded and rotated.
 
 **NOTE:** This is one of the patterns of [The Twelve Factor App](https://12factor.net/logs) and Kubernetes supports it out of the box!
 
-### Production Pattern: Immutable containers
+### Production Pattern: Immutable Containers
 
-Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
+Every time you write something to a container's filesystem, it activates the [copy-on-write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers). This approach is what makes containers efficient.
 
-A new storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
-it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
+The way it works is, all layers in a Docker image are read-only. When a container starts, a thin writable layer is added on top of its other read-only layers. Any changes the container makes to the filesystem are stored there and files that do not change never get copied to that writable layer, which makes it as small as possible. 
 
-Make sure your containers write data only to volumes. You can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
+When an existing file in a container is modified, the storage driver (`devicemapper`, `overlay` or others) performs a copy-on-write operation and copies that file to the writable layer. In case of active usage, it can put a lot of stress on a storage driver, especially in case of Devicemapper or BTRFS.
+
+For write-heavy applications it is recommended to not store data in the container but rather make sure that containers write data only to volumes which are independent of a running container and designed for I/O efficiency.
+
+For non-persistent data, Kubernetes provides a special volume type called `emptyDir`:
 
 ```yaml
 apiVersion: v1
@@ -364,12 +366,15 @@ spec:
     emptyDir: {}
 ```
 
-### Anti-Pattern: Using `latest` tag
+By default the volume is backed by whatever disk is backing the node, however note that it is cleared permanently if the pod leaves the node for whatever reason (it's persists across container restarts within a pod though).
 
-Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app this is.
+For small files it may be beneficial to set `emptyDir.medium` field to `Memory` which will make Kubernetes to use a RAM-backed filesystem, `tmpfs` instead.
 
-It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure
-Kubernetes always pulls the latest version when creating a pod:
+### Anti-Pattern: Using `latest` Tag
+
+It is not recommended to use use `latest` tag in production as it creates ambiguity. For example, looking at tha "latest" tag, it is not possible to tell which version of the application is actually running.
+
+It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure Kubernetes always pulls the latest version when creating a pod:
 
 ```yaml
 apiVersion: v1
@@ -387,7 +392,9 @@ spec:
 
 ### Production Pattern: Pod Readiness
 
-Imagine a situation when your container takes some time to start. To simulate this, we are going to write a simple script:
+Imagine a situation when your container takes some time to start.
+
+To simulate this, we are going to write a simple script:
 
 ```bash
 #!/bin/bash
@@ -395,24 +402,25 @@ Imagine a situation when your container takes some time to start. To simulate th
 echo "Starting up"
 sleep 30
 echo "Started up successfully"
-python -m http.serve 5000
+python -m http.server 5000
 ```
 
 Push the image and start service and deployment:
 
-```yaml
+```bash
 $ cd prod/delay
-$ docker build -t $(minikube ip):5000/delay:0.0.1 .
-$ docker push $(minikube ip):5000/delay:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/delay:0.0.1 .
+$ docker push $registry:5000/delay:0.0.1
 $ kubectl create -f service.yaml
 $ kubectl create -f deployment.yaml
 ```
 
 Enter curl container inside the cluster and make sure it all works:
 
-```
-kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://delay:5000
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://delay:5000
 <!DOCTYPE html>
 ...
 ```
@@ -423,15 +431,15 @@ for the first 30 seconds.
 Update deployment to simulate deploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/delay:0.0.2 .
-$ docker push $(minikube ip):5000/delay:0.0.2
+$ docker build -t $registry:5000/delay:0.0.2 .
+$ docker push $registry:5000/delay:0.0.2
 $ kubectl replace -f deployment-update.yaml
 ```
 
 In the next window, let's try to see if we got any service downtime:
 
 ```bash
-curl http://delay:5000
+$ curl http://delay:5000
 curl: (7) Failed to connect to delay port 5000: Connection refused
 ```
 
@@ -449,18 +457,17 @@ readinessProbe:
   periodSeconds: 5
 ```
 
-Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when
-doing a deployment:
+Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when doing a deployment:
 
 ```bash
 $ kubectl replace -f deployment-fix.yaml
 ```
 
-This time we will get no downtime.
+This time, if we observe output from `kubectl get pods`, we'll see that there will be two pods running and the old pod will start terminating only when the second one becomes ready.
 
-### Anti-Pattern: unbound quickly failing jobs
+### Anti-Pattern: Unbound Quickly Failing Jobs
 
-Kubernetes provides new useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
+Kubernetes provides a useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/).
 
 However, there is a problem:
 
@@ -481,10 +488,9 @@ spec:
         command: ["/bin/sh", "-c", "exit 1"]
 ```
 
-
 ```bash
 $ cd prod/jobs
-$ kubectl create -f job.yaml
+$ kubectl create -f bad.yaml
 ```
 
 You are going to observe the race to create hundreds of containers for the job retrying forever:
@@ -515,11 +521,9 @@ Events:
   1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-0lm8k
   1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-q6ctf
   1m		1s		16	{job-controller }			Normal		SuccessfulCreate	(events with common reason combined)
-
 ```
 
-Probably not the result you expected. Over time, the load on the nodes and docker will be quite substantial,
-especially if job is failing very quickly.
+Probably not the result you expected. Over time, the jobs will accumulate and the load on the nodes and Docker will be quite substantial, especially if the job is failing very quickly.
 
 Let's clean up the busy failing job first:
 
@@ -529,14 +533,13 @@ $ kubectl delete jobs/bad
 
 Now let's use `activeDeadlineSeconds` to limit amount of retries:
 
-
 ```yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: bound
 spec:
-  activeDeadlineSeconds: 10
+  activeDeadlineSeconds: 30
   template:
     metadata:
       name: bound
@@ -552,16 +555,13 @@ spec:
 $ kubectl create -f bound.yaml
 ```
 
-Now you will see that after 10 seconds, the job has failed:
+Now you will see that after 30 seconds, the job has failed and no more pods will be created:
 
 ```bash
   11s		11s		1	{job-controller }			Normal		DeadlineExceeded	Job was active longer than specified deadline
 ```
 
-
-**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from
-accidental DDOS on your cluster.
-
+**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from accidental DDOS on your cluster.
 
 ### Production pattern: Circuit Breaker
 
