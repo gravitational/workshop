@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: config
+  namespace: default
+spec:
+  containers:
+  - name: config
+    image: localhost:5000/config:0.0.1
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: config
+      mountPath: /opt/config
+  volumes:
+  - name: config
+    configMap:
+      name: config

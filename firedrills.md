@@ -19,7 +19,7 @@ Gravity runs Kubernetes inside a container. This master container (which is usua
 Since all Kubernetes services and their dependencies are containerized, you cannot interact with them (e.g. see the logs, start/stop/restart, etc.) directly from the host. Let’s explore:
 
 ```bash
-node-1$ ps aux
+node-1$ ps wwauxf | less
 ```
 
 We can see that all Kubernetes processes appear to be running. However, if we try to query their status it won’t work:
@@ -209,7 +209,7 @@ The `kubectl logs` command has a couple of other flags that are often useful in 
 For example, to fetch only the most recent 5 minutes of logs and keep watching them, you can do:
 
 ```bash
-node-1$ kubectl -nkube-system logs gravity-site -f --since=5m
+node-1$ kubectl -nkube-system logs gravity-site-xxx -f --since=5m
 ```
 
 The same `kubectl logs` command can be used to check the logs for the application pods.
@@ -257,10 +257,13 @@ node-1$ less /opt/gravity/planet/share/audit.log
 
 Oftentimes, it is useful to get a shell inside one of the running containers to test various things, for example, when experiencing pod-to-pod or pod-to-service communication issues. The “problem” with existing running pods is that more often than not they either do not include shell at all or are missing many tools that are useful in troubleshooting (dig, netstat, etc.) - in order to keep Docker images small.
 
-To facilitate our debugging, we can create a special “debug” pod that will have access to all tools from the Planet environment. Define it’s spec in a file called `debug.yaml`:
+To facilitate our debugging, we can create a special “debug” pod that will have access to all tools from the Planet environment:
 
 ```bash
-node-1$ cat <<EOF > debug.yaml
+node-1$ cat ~/workshop/firedrills/debug.yaml
+```
+
+```yaml
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
@@ -294,13 +297,12 @@ spec:
         - name: rootfs
           hostPath:
             path: /
-EOF
 ```
 
-And create it:
+Let's create it:
 
 ```bash
-node-1$ kubectl create -f debug.yaml
+node-1$ kubectl create -f ~/workshop/firedrills/debug.yaml
 ```
 
 Now, an instance of the debug pod is running on each node in the default namespace:
@@ -512,7 +514,9 @@ The two most common firewall services are `firewalld` and `iptables` and they bo
 node-1$ sudo iptables-save
 ```
 
-As we’ve found, misconfigured `firewalld` is quite often the reason the traffic gets blocked. You can check whether `firewalld` is running using the following commands:
+As we’ve found, misconfigured firewall is quite often the reason the traffic gets blocked. This applies not just to `firewalld` (which is more common on CentOS/RHEL) but to other table manipulation tools like `ufw` (most commonly used on Ubuntu), `csf` and more recent `nftables`.
+
+If we take `firewalld` for instance, you can check whether it is running using the following commands:
 
 ```bash
 node-1$ sudo systemctl status firewalld
@@ -551,7 +555,7 @@ The problem with such services is that, like those two we've just mentioned, the
 When suspecting that the issue may be caused by such security software, a good place to start would be to inspect a list of all running processes:
 
 ```bash
-node-1$ ps aux
+node-1$ ps wwauxf
 ```
 
 And loaded kernel modules:
@@ -849,7 +853,7 @@ Note that we need to force-remove in this case because the node is offline. For 
 If you launch `gravity status` command now, you will see that Gravity launched “shrink” operation that is working on properly evicting the node from the cluster and Kubernetes state.
 
 ```bash
-node-1$ gravity status
+node-1$ watch gravity status
 ...
 Active operations:
    * operation_shrink (71266b23-d0ea-46b6-a5c4-15906eeb770a)
@@ -902,7 +906,7 @@ Behind the scenes the upgrade works as a state machine. Gravity generates an upg
 In some situations there may be no easy way to move forward with the interrupted upgrade so you might want to rollback the cluster to the previous state instead. Let’s simulate the failed upgrade by launching the operation and interrupting in a middle of a phase.
 
 ```bash
-node-1$ cd ~/upgrade
+node-1$ cd ~/v3
 node-1$ sudo ./upgrade
 <progress output…>
 <ctrl-c>

@@ -46,36 +46,30 @@ Note that currently `tele` can build cluster images on Linux only, due to some q
 
 As a next step, we need to create a cluster manifest. Cluster manifest is a “Dockerfile” for your cluster image - it is used to describe basic cluster metadata, provide requirements for the cluster nodes, define various cluster lifecycle hooks and so on.
 
-Our documentation provides a full list of parameters that the manifest lets you tweak, but for now let’s create the simplest possible manifest file. The manifest file is usually named `app.yaml`. Let’s create a directory for our future cluster image:
+Our [documentation](https://gravitational.com/gravity/docs/pack/#application-manifest) provides a full list of parameters that the manifest lets you tweak, but for now let’s create the simplest possible manifest file. The manifest file is usually named `app.yaml`.
+
+The simplest possible manifest file looks like this:
 
 ```bash
-build$ mkdir -p ~/v1
+build$ cat ~/workshop/gravity101/v1-simplest/app.yaml
 ```
 
-And create the file named `app.yaml` with the following contents inside this directory:
-
-```bash
-build$ cat <<EOF > ~/v1/app.yaml
+```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
 metadata:
  name: cluster-image
  resourceVersion: 0.0.1
-EOF
 ```
 
-Let’s inspect the manifest file a bit closer:
-
-```bash
-build$ cat ~/v1/app.yaml
-```
+Let’s inspect it a bit closer.
 
 As you can see, it has YAML format and resembles the structure of Kubernetes resource specs. So far all the fields in the manifest should be self-explanatory. One thing worth mentioning is that the image version must be a valid semver - it is used to ensure stable comparisons of two versions, for example during upgrades.
 
 Now let’s build the cluster image:
 
 ```bash
-build$ tele build ~/v1/app.yaml
+build$ tele build ~/workshop/gravity101/v1-simplest/app.yaml
 * [1/6] Selecting base image version
        Will use base image version 5.5.8
 * [2/6] Downloading dependencies from https://get.gravitational.io
@@ -106,7 +100,6 @@ The resulting file, `cluster-image-0.0.1.tar`, is our cluster image:
 build$ ls -lh
 total 1.3G
 -rw-rw-r-- 1 ubuntu ubuntu 1.3G May 28 19:06 cluster-image-0.0.1.tar
-drwxrwxr-x 2 ubuntu ubuntu 4.0K May 28 19:04 v1
 ```
 
 This image can now be transferred to a node or a set of nodes and used to install a Kubernetes cluster.
@@ -154,27 +147,37 @@ The first approach is to download `tele` version `5.5.8` and build the image usi
 
 Another option is to “pin” the base image version explicitly in the manifest file. The advantage of this approach is that it eliminates the possibility of accidentally upgrading your runtime when upgrading the `tele` tool.
 
-Let’s update our manifest:
+Let’s look at the manifest that pins base image to version `5.5.8` explicitly:
 
 ```bash
-build$ nano ~/v1/app.yaml
+build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
+```
 
-// edit manifest to include “baseImage” field
-
+```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
 baseImage: gravity:5.5.8
 metadata:
-  name: cluster-image
-  resourceVersion: 0.0.1
+ name: cluster-image
+ resourceVersion: 0.0.1
+```
 
-// <ctrl-x> && “y” && <enter> to exit & save
+If we look at the difference between the two, we'll see that the new manifest specifies the base image:
+
+```bash
+build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1-with-base/app.yaml
+apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
+kind: Cluster                                                   kind: Cluster
+                                                              > baseImage: gravity:5.5.8
+metadata:                                                       metadata:
+ name: cluster-image                                             name: cluster-image
+ resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
 ```
 
 If we build our cluster image now, `tele` will use the base image explicitly specified in the manifest. Let’s rebuild the image and make sure the proper base image is selected:
 
 ```bash
-build$ tele build ~/v1/app.yaml --overwrite
+build$ tele build ~/workshop/gravity101/v1-with-base/app.yaml --overwrite
 ```
 
 Note that we had to provide `--overwrite` flag to replace cluster image we built before.
@@ -187,30 +190,50 @@ Of course, since it’ll be just a regular Kubernetes cluster, you will be able 
 
 Most often, however, you want to pre-package your application with the cluster image and have it installed automatically when the cluster is deployed. In order to do so, let’s add a simple Helm chart to our cluster image.
 
-Let’s create a Chartfile at `charts/alpine/Chart.yaml` with the following content:
+Let's explore the chart that we've added to our cluster image.
 
 ```bash
-build$ mkdir -p ~/v1/charts/alpine/templates
-build$ cat <<EOF > ~/v1/charts/alpine/Chart.yaml
+build$ tree ~/workshop/gravity101/v1-with-resources
+~/workshop/gravity101/v1-with-resources
+├── app.yaml
+└── charts
+    └── alpine
+        ├── Chart.yaml
+        ├── templates
+        │   └── pod.yaml
+        └── values.yaml
+```
+
+We have a Chartfile that contains metadata for our chart:
+
+```bash
+build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/Chart.yaml
+```
+
+```yaml
 name: alpine
 description: Deploy a basic Alpine 3.3 Linux pod
 version: 0.0.1
-EOF
 ```
 
-The values file at `charts/alpine/values.yaml`:
+The values file:
 
 ```bash
-build$ cat <<EOF > ~/v1/charts/alpine/values.yaml
+build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/values.yaml
+```
+
+```yaml
 version: 3.3
 registry:
-EOF
 ```
 
-And the actual pod resource at `charts/alpine/templates/pod.yaml`:
+And the actual pod resource:
 
 ```bash
-build$ cat <<EOF > ~/v1/charts/alpine/templates/pod.yaml
+build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/templates/pod.yaml
+```
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -220,7 +243,6 @@ spec:
   - name: alpine
     image: "{{ .Values.registry }}alpine:{{ .Values.version }}"
     command: ["/bin/sleep", "90000"]
-EOF
 ```
 
 This chart, when installed, will launch a single pod of Alpine Linux.
@@ -230,7 +252,7 @@ Note, that we have added a template variable, `registry`, to the container image
 Now that we’ve added the Helm chart, let’s try to build the image again:
 
 ```bash
-build$ tele build ~/v1/app.yaml --overwrite
+build$ tele build ~/workshop/gravity101/v1-with-resources/app.yaml --overwrite
 * [1/6] Selecting base image version
        Will use base image version 6.0.0-alpha.1.61 set in manifest
 * [2/6] Local package cache is up-to-date
@@ -258,10 +280,15 @@ There is one final tweak we need to do before we proceed with installing our clu
 
 A “hook” is a plain Kubernetes job that runs at a certain point in the cluster lifecycle. Gravity provides support for different hooks, all supported hooks are described in the sample application manifest in our documentation. For now, we need to define the install hook which is called to install the application packaged with the cluster image.
 
-Our application is a Helm chart so the install hook should execute `helm install` command on it in order to install it. Let’s define the following install hook in the `install.yaml` file (in the same directory where `app.yaml` is) and then explore:
+Our application is a Helm chart so the install hook should execute `helm install` command on it in order to install it.
+
+Let’s define the following install hook in the `install.yaml` file (in the same directory where `app.yaml` is) and then explore:
 
 ```bash
-build$ cat <<EOF > ~/v1/install.yaml
+build$ cat ~/workshop/gravity101/v1/install.yaml
+```
+
+```yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -283,14 +310,9 @@ spec:
             - registry=registry.local:5000/
             - --name
             - example
-EOF
 ```
 
 As you can see, this is just a regular Kubernetes job definition. Let’s inspect it more closely.
-
-```bash
-build$ cat ~/v1/install.yaml
-```
 
 One field of interest is “image”. We use `gravitational/debian-tall` Docker image to run our install job. It is a stripped down version of Debian image with the size of only 10MB. Gravitational maintains and regularly publishes updates to this image to quay.io container registry.
 
@@ -300,11 +322,11 @@ Another thing to note here is that even though the image points to quay.io repos
 
 The next field is the “command”. There are a few important bits about it. When executing any hook job, Gravity makes sure that certain things are always available for use inside it. For example, it always mounts helm and kubectl binaries under `/usr/local/bin` - you can see that we’re calling the helm binary.
 
-In addition, Gravity mounts all application resources under `/var/lib/gravity/resources` inside the hook as well. If we look at the directory with our application resources, it looks like this:
+In addition, Gravity mounts all application resources under `/var/lib/gravity/resources` inside the hook as well. If we look at the directory with our application resources, it looks like this now:
 
 ```bash
-build$ tree ~/v1
-/home/ubuntu/v1
+build$ tree ~/workshop/gravity101/v1
+~/workshop/gravity101/v1
 ├── app.yaml
 ├── charts
 │   └── alpine
@@ -342,10 +364,10 @@ In this case Docker would attempt to pull image from the default repository (Doc
 Finally, let’s update our manifest to include the install hook we’ve just written:
 
 ```bash
-build$ nano ~/v1/app.yaml
+build$ cat ~/workshop/gravity101/v1/app.yaml
+```
 
-// edit manifest to include “hooks” section
-
+```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
 baseImage: gravity:5.5.8
@@ -355,14 +377,27 @@ metadata:
 hooks:
   install:
     job: file://install.yaml
+```
 
-// <ctrl-x> && “y” && <enter> to exit & save
+If we compare our resulting manifest to the one we started with, we'll see all the changes we've made:
+
+```bash
+build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1/app.yaml
+apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
+kind: Cluster                                                   kind: Cluster
+                                                              > baseImage: gravity:5.5.8
+metadata:                                                       metadata:
+ name: cluster-image                                             name: cluster-image
+ resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
+                                                              > hooks:
+                                                              >   install:
+                                                              >     job: file://install.yaml
 ```
 
 And rebuild the image:
 
 ```bash
-build$ tele build ~/v1/app.yaml --overwrite
+build$ tele build ~/workshop/gravity101/v1/app.yaml --overwrite
 ```
 
 We’re finally ready to install a cluster using our image.
@@ -383,12 +418,12 @@ total 1.4G
 -rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 20:02 cluster-image-0.0.1.tar
 ```
 
-Let’s unpack it and see what’s inside:
+Let’s unpack it into `~/v1` directory and see what’s inside:
 
 ```bash
-node-1$ mkdir -p v1
-node-1$ tar -xvf cluster-image-0.0.1.tar -C v1
-node-1$ cd v1
+node-1$ mkdir -p ~/v1
+node-1$ tar -xvf cluster-image-0.0.1.tar -C ~/v1
+node-1$ cd ~/v1
 node-1$ ls -lh
 total 88M
 -rw-r--r-- 1 ubuntu ubuntu 3.1K May 28 19:22 app.yaml
@@ -421,7 +456,7 @@ Before we start, let’s inspect the node real quick.
 node-1$ docker info
 The program 'docker' is currently not installed.
 
-node-1$ ps aux
+node-1$ ps wwauxf
 ```
 
 Note that the node is clean - it not have Docker running on it, or anything else Kubernetes needs really. In fact, if Docker was running on it, the installer would detect this and refuse to start until the Docker is uninstalled. The reason is that all Kubernetes dependencies are packaged in our cluster image - this way we can be sure that all components work well together and we do not rely on random software that may be installed on the target nodes.
@@ -521,7 +556,7 @@ Planet, sometimes also referred to as “master container”, is a containerized
 
 When Gravity installs Kubernetes on a node, it does not install all its services (such as etcd, docker, kubelet, etc.) directly on the host. Instead, the entire Kubernetes runtime and its dependencies are packaged in a container, Planet. This allows Kubernetes nodes to be self-contained and abstracted from the “outside” environment of the node, being protected by what we call a “bubble of consistency” of the master container.
 
-![Gravity Node Diagram](gravity101/gravity-node.png)
+![Gravity Node Diagram](img/gravity-node.png)
 
 The Planet container also runs as a systemd unit on the host, we’ll learn how to interact with services running inside it in a more in-depth Fire Drills training.
 
@@ -660,6 +695,37 @@ The command has generated an invitation URL which we can now open in our browser
 
 We should now be able to log into our cluster web UI.
 
+### Connecting To Cluster
+
+Grab auth gateway address:
+
+```bash
+node-1$ gravity status
+Cluster endpoints:
+    * Authentication gateway:
+        - 10.128.0.92:32009
+```
+
+Login from `build` machine using `tsh` and providing credentials for the admin user we've just created:
+
+```bash
+build$ tsh --insecure login --proxy=10.128.0.92:32009 --user=admin
+```
+
+We can now use `tsh` to interact with the cluster from the `build` box:
+
+```bash
+build$ tsh ls
+build$ tsh ssh root@role=node
+node-1$ gravity status
+```
+
+Moreover, local `kubectl` on the `build` box has also been configured with proper credentials:
+
+```bash
+build$ kubectl get nodes
+```
+
 ### Configuring Cluster
 
 For configuring a cluster Gravity uses a concept of “configuration resources”, somewhat similar to Kubernetes itself. Configuration resources are objects described in a YAML format which are managed by the “gravity resource” set of subcommands.
@@ -671,7 +737,10 @@ Sometimes you might want to create a non-interactive user which does not necessa
 To support this use-case, Gravity has a concept of “agent” users. To create an agent user, define the following resources, say in a `agent.yaml` file:
 
 ```bash
-node-1$ cat <<EOF > ~/agent.yaml
+node-1$ cat ~/workshop/gravity101/agent.yaml
+```
+
+```yaml
 kind: user
 version: v2
 metadata:
@@ -686,7 +755,6 @@ metadata:
    name: "qwe123"
 spec:
    user: "agent@example.com"
-EOF
 ```
 
 Note that we create both the agent user and a token for it. The token is the agent’s API key that it uses to talk to the Gravity API. Also, for the sake of this exercise we assigned the same super-admin role to our agent, but a more-restricted role can be created.
@@ -694,7 +762,7 @@ Note that we create both the agent user and a token for it. The token is the age
 Let’s create the agent and its token:
 
 ```bash
-node-1$ gravity resource create agent.yaml
+node-1$ gravity resource create ~/workshop/gravity101/agent.yaml
 ```
 
 We can see which users are currently configured on the system (including agents) by running:
@@ -717,49 +785,63 @@ We can see that our token appears in the table.
 
 Now let’s say we have released a new version of our application and want to upgrade our cluster to it. Upgrade process works exactly the same way as install: we need to build the cluster image with the new version of application inside it, transfer it onto a cluster node and execute the upgrade command.
 
-Let’s start by preparing an upgrade tarball for our application. Go back to your build machine and copy all the application resources in a different directory - we will be modifying our existing cluster image.
+Let’s start by preparing an upgrade tarball for our application. Go back to your build machine and inspect the upgraded version of our cluster image:
 
 ```bash
-build$ mkdir -p ~/v2
-build$ cp -r ~/v1/* ~/v2
-build$ cd ~/v2
+build$ tree ~/workshop/gravity101/v2
+~/workshop/gravity101/v2
+├── app.yaml
+├── charts
+│   └── alpine
+│       ├── Chart.yaml
+│       ├── templates
+│       │   └── pod.yaml
+│       └── values.yaml
+├── install.yaml
+└── upgrade.yaml
 ```
 
-First, let’s update our Helm chart so change the `~/v2/charts/alpine/Chart.yaml` to:
+Note that it contains much of the same files as `v1` but let's compare the charts:
 
 ```bash
-build$ nano ~/v2/charts/alpine/Chart.yaml
-
-// bump chart versions
-
-name: alpine
-description: Deploy a basic Alpine 3.4 Linux pod
-version: 0.0.2
-
-// <ctrl-x> && “y” && <enter> to exit & save
+build$ diff -y ~/workshop/gravity101/v1/charts/alpine/Chart.yaml ~/workshop/gravity101/v2/charts/alpine/Chart.yaml
+name: alpine                                                    name: alpine
+description: Deploy a basic Alpine 3.3 Linux pod              | description: Deploy a basic Alpine 3.4 Linux pod
+version: 0.0.1                                                | version: 0.0.2
 ```
 
-And the values file at `~/v2/charts/alpine/values.yaml` to:
-
 ```bash
-build$ nano ~/v2/charts/alpine/values.yaml
-
-// bump image version
-
-version: 3.4
-registry:
-
-// <ctrl-x> && “y” && <enter> to exit & save
+build$ diff -y ~/workshop/gravity101/v1/charts/alpine/values.yaml ~/workshop/gravity101/v2/charts/alpine/values.yaml
+version: 3.3                                                  | version: 3.4
+registry:                                                       registry:
 ```
 
-Note the highlighted parts that have been changed. Now our Helm chart will use version 3.4 of the Alpine image.
-
-Next, we need to define an “upgrade” hook for our application. Similar to the “install” hook we wrote at the beginning of this session, the “upgrade” hook will be called by Gravity to update our application to a new version. In our case, the upgrade hook should execute a `helm upgrade` command to upgrade our chart to a new version.
-
-Let’s create the upgrade hook spec in a file called `upgrade.yaml` and put it next to our install hook:
+Note the highlighted parts that have changed. Now our Helm chart will use version 3.4 of the Alpine image. Let's compare the manifests:
 
 ```bash
-build$ cat <<EOF > ~/v2/upgrade.yaml
+build$ diff -y ~/workshop/gravity101/v1/app.yaml ~/workshop/gravity101/v2/app.yaml
+apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
+kind: Cluster                                                   kind: Cluster
+baseImage: gravity:5.5.8                                        baseImage: gravity:5.5.8
+metadata:                                                       metadata:
+ name: cluster-image                                             name: cluster-image
+ resourceVersion: 0.0.1                                       |  resourceVersion: 0.0.2
+hooks:                                                          hooks:
+  install:                                                        install:
+    job: file://install.yaml                                        job: file://install.yaml
+                                                              >   update:
+                                                              >     job: file://upgrade.yaml
+```
+
+The application also defines an “upgrade” hook now. Similar to the “install” hook we wrote at the beginning of this session, the “upgrade” hook will be called by Gravity to update our application to a new version. In our case, the upgrade hook should execute a `helm upgrade` command to upgrade our chart to a new version.
+
+Let’s see what the upgrade hook looks like:
+
+```bash
+build$ cat ~/workshop/gravity101/v2/upgrade.yaml
+```
+
+```yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -780,35 +862,12 @@ spec:
             - registry=registry.local:5000/
             - example
             - /var/lib/gravity/resources/charts/alpine
-EOF
-```
-
-Let’s also update the manifest file, `~/v2/app.yaml`, too to include our upgrade hook and update the image version:
-
-```bash
-node-1$ nano ~/v2/app.yaml
-
-// bump version and add update hook section
-
-apiVersion: cluster.gravitational.io/v2
-kind: Cluster
-baseImage: gravity:5.5.8
-metadata:
-  name: cluster-image
-  resourceVersion: 0.0.2
-hooks:
-  install:
-    job: file://install.yaml
-  update:
-    job: file://upgrade.yaml
-
-// <ctrl-x> && “y” && <enter> to exit & save
 ```
 
 Finally, we can build a new version of our cluster image:
 
 ```bash
-build$ tele build ~/v2/app.yaml
+build$ tele build ~/workshop/gravity101/v2/app.yaml
 ```
 
 You can see that `alpine:3.4` image is being vendored now. Note that we’re still using the same base cluster image so tele reuses the same local cache for our new cluster image.
@@ -820,15 +879,13 @@ build$ ls -lh
 total 2.7G
 -rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 20:41 cluster-image-0.0.1.tar
 -rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 21:03 cluster-image-0.0.2.tar
-drwxrwxr-x 3 ubuntu ubuntu 4.0K May 28 20:41 v1
-drwxrwxr-x 3 ubuntu ubuntu 4.0K May 28 21:02 v2
 ```
 
 ### Performing Upgrade
 
 Cluster upgrade process is very similar to cluster install. First, transfer the just-built image to `node-1`.
 
-_Note: If you’re taking this session as a part of Gravitational training program, the upgrade image will be pre-downloaded on your cluster nodes._
+_Note: If you’re taking this session as a part of Gravitational training program, the upgrade image will be pre-downloaded and unpacked on your cluster nodes._
 
 Unpack it in the `~/v2` directory:
 
@@ -842,16 +899,10 @@ node-1$ ls -l
 In order to upgrade the cluster, we need to invoke the `upgrade` script found inside the tarball:
 
 ```bash
-node-1$ sudo ./v2
+node-1$ sudo ./upgrade
 ```
 
-Once the upgrade is launched, it will take a few minutes to complete. We can monitor its progress via system logs:
-
-```bash
-node-1$ sudo journalctl -f
-```
-
-Once it’s finished, let’s run `gravity status` to see that the cluster is now running the updated version:
+Once the upgrade is launched, it will take a few minutes to complete. Once it’s finished, let’s run `gravity status` to see that the cluster is now running the updated version:
 
 ```bash
 node-1$ gravity status

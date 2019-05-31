@@ -2,17 +2,17 @@
 
 ... and anti-patterns.
 
-We are going to explore helpful techniques to improve resiliency and high availability
-of Kubernetes deployments and will take a look at some common mistakes to avoid when
-working with Docker and Kubernetes.
+We are going to explore helpful techniques to improve resiliency and high availability of Kubernetes deployments and will take a look at some common mistakes to avoid when working with Docker and Kubernetes.
 
 ## Installation
 
 First, follow [installation instructions](README.md#installation)
 
-### Anti-Pattern: Mixing build environment and runtime environment
+### Anti-Pattern: Mixing Build And Runtime
 
-Let's take a look at this dockerfile:
+The first common anti-pattern when working with Docker images, or more specifically, when writing Dockerfiles for your own images, is mixing build and runtime environments in the same image.
+
+Let's take consider this Dockerfile:
 
 ```Dockerfile
 FROM ubuntu:14.04
@@ -22,7 +22,7 @@ RUN apt-get install gcc
 RUN gcc hello.c -o /hello
 ```
 
-It compiles and runs a simple helloworld program:
+It compiles and runs a simple "hello world" program:
 
 ```bash
 $ cd prod/build
@@ -31,7 +31,7 @@ $ docker run prod
 Hello World
 ```
 
-There are a couple of problems with the resulting Dockerfile:
+There are a couple of problems with the resulting Docker image.
 
 **Size**
 
@@ -40,9 +40,7 @@ $ docker images | grep prod
 prod                                          latest              b2c197180350        14 minutes ago      293.7 MB
 ```
 
-That's almost 300 megabytes to host several kilobytes of the c program! We are bringing in package manager,
-C compiler and lots of other unnecessary tools that are not required to run this program.
-
+That's almost 300 megabytes to host several kilobytes of a C program! We are bringing in package manager, C compiler and lots of other unnecessary tools that are not required to run this program.
 
 Which leads us to the second problem:
 
@@ -61,32 +59,34 @@ int main()
 }
 ```
 
-**Splitting build environment and run environment**
+**Splitting Build And Runtime Environments**
 
-We are going to use "buildbox" pattern to build an image with build environment,
-and we will use a much smaller runtime environment to run our program:
+A better way to do this is to use a pattern called "buildbox". The idea behind it is that you build a separate "buildbox" image that provides the necessary build environment to compile/build the program and use another, much smaller, image to run the program.
 
+Let's take a look:
 
 ```bash
 $ cd prod/build-fix
 $ docker build -f build.dockerfile -t buildbox .
 ```
 
-**NOTE:** We have used new `-f` flag to specify the dockerfile we are going to use.
+**NOTE:** We have used `-f` flag to specify the Dockerfile we are going to use. By default Docker would look for a file named `Dockerfile` which we also have in this directory.
 
 Now we have a `buildbox` image that contains our build environment. We can use it to compile the C program now:
 
 ```bash
-$ docker run -v $(pwd):/build  buildbox gcc /build/hello.c -o /build/hello
+$ docker run -v $(pwd):/build buildbox gcc /build/hello.c -o /build/hello
 ```
 
-We have not used `docker build` this time, but mounted the source code and run the compiler directly.
+**NOTE:** If you have your local Docker environment configured to point to your local minikube cluster (via `eval $(minikube docker-env)` command), the command above will not work because it won't be able to mount the volume. Use your local Docker installation, you can open a new shell session for that.
 
-**NOTE:** Docker will soon support this pattern natively by introducing [build stages](https://github.com/docker/docker/pull/32063) into the build process.
+Let's explore what's just happened. Instead of building another image with the compiled binary (and the program's source code) inside it using `docker build` we mounted the source code directory in our buildbox container, compiled the program and had the container to output the resulting binary to the same volume. If we look at our local directory now, we'll see that the compiled binary is there:
 
-**UPDATE:** [Multi-stage builds is now available in CE](https://docs.docker.com/engine/userguide/eng-image/multistage-build/).
+```bash
+$ ls -lh
+```
 
-We can now use a much simpler (and smaller) dockerfile to run our image:
+Now we can build a much smaller image to run our program:
 
 ```Dockerfile
 FROM quay.io/gravitational/debian-tall:0.0.1
@@ -106,22 +106,55 @@ prod                                          latest              b2c197180350  
 
 **NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" you binaries to have them include all needed libraries.
 
-### Anti Pattern: Zombies and orphans
+Docker supports the buildbox pattern natively starting from version `17.05`, by providing a feature called [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/). With multi-stage builds you can define multiple "stages" in a single Dockerfile, each of which starts with a new `FROM` clause, and selectively copy artifacts between the stages. This way you only write a single Dockerfile and end up with a single resulting (small) image.
 
-**NOTICE:** this example demonstration will only work on Linux.
+For example:
 
-**Orphans**
+```Dockerfile
+#
+# Build stage.
+#
+FROM ubuntu:14.04
 
-It is quite easy to leave orphaned processes running in the background. Let's take an image we have built in the previous example:
+RUN apt-get update
+RUN apt-get install -y gcc
+ADD hello.c /build/hello.c
+RUN gcc /build/hello.c -o /build/hello
+
+#
+# Run stage.
+#
+FROM quay.io/gravitational/debian-tall:0.0.1
+
+COPY --from=0 /build/hello /hello
+ENTRYPOINT ["/hello"]
+```
+
+Notice how we copy the resulting binary from the first stage of the build. Let's build v3 of our image:
 
 ```bash
-docker run busybox sleep 10000
+$ docker build -f multi.dockerfile -t prod:v3 .
+$ docker run prod:v3
+```
+
+If you query `docker images` now, you'll see that `v3` version of our image is same size as `v2`.
+
+### Anti Pattern: Zombies And Orphans
+
+**NOTE:** This example demonstration will only work on Linux.
+
+It is quite easy to leave orphaned processes running in the background.
+
+Let's launch a simple container:
+
+```bash
+$ docker run busybox sleep 10000
 ```
 
 Now, let's open a separate terminal and locate the process:
 
 ```bash
-ps uax | grep sleep
+$ ps uax | grep sleep
 sasha    14171  0.0  0.0 139736 17744 pts/18   Sl+  13:25   0:00 docker run busybox sleep 10000
 root     14221  0.1  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
 ```
@@ -131,16 +164,16 @@ As you see there are in fact two processes: `docker run` and `sleep 1000` runnin
 Let's send kill signal to the `docker run` (just as CI/CD job would do for long running processes):
 
 ```bash
-kill 14171
+$ kill 14171
 ```
 
-`docker run` process has not exited, and `sleep` process is running!
+However, `docker run` process has not exited, and `sleep` process is running!
 
 ```bash
-ps uax | grep sleep
-root     14221  0.0  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
+$ ps uax | grep sleep
+sasha    14171  0.0  0.0 139736 17744 pts/18   Sl+  13:25   0:00 docker run busybox sleep 10000
+root     14221  0.1  0.0   1188     4 ?        Ss   13:25   0:00 sleep 10000
 ```
-
 
 Yelp engineers have a good answer for why this happens [here](https://github.com/Yelp/dumb-init):
 
@@ -149,59 +182,112 @@ Yelp engineers have a good answer for why this happens [here](https://github.com
 
 > However, if the process receiving the signal is PID 1, it gets special treatment by the kernel; if it hasn't registered a handler for the signal, the kernel won't fall back to default behavior, and nothing happens. In other words, if your process doesn't explicitly handle these signals, sending it SIGTERM will have no effect at all.
 
-To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily `Yelp` engineers built the simple and lightweight init system, `dumb-init`:
+Let's enter our container and see for ourselves:
 
 ```bash
-docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+06703112d6ac        busybox             "sleep 10000"       5 minutes ago       Up 5 minutes                            nervous_jennings
+$ docker exec -ti 06703112d6ac /bin/sh
+$ ps -ef
+PID   USER     TIME  COMMAND
+    1 root      0:00 sleep 10000
+   12 root      0:00 /bin/sh
+   18 root      0:00 ps -ef
 ```
 
-Now you can simply stop `docker run` process using SIGTERM and it will handle shutdown properly.
+Indeed, the `sleep` command is running as PID 1, and since it does not explicitly register any signal handlers, our TERM signal gets ignores. Let's kill the container:
+
+```bash
+$ docker kill 06703112d6ac
+```
+
+To solve this (and other) issues, you need a simple init system that has proper signal handlers specified. Luckily, Yelp engineers built a simple and lightweight init system, `dumb-init`:
+
+```bash
+$ docker run quay.io/gravitational/debian-tall /usr/bin/dumb-init /bin/sh -c "sleep 10000"
+```
+
+If you send SIGTERM signal to the `docker run` process now, it will handle shutdown properly.
 
 ### Anti-Pattern: Direct Use Of Pods
 
-[Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that itself is not durable.
+[Kubernetes Pod](https://kubernetes.io/docs/user-guide/pods/#what-is-a-pod) is a building block that by itself does not provide any durability guarantees. As Kubernetes docs say, a pod won't survive scheduling failures, node failures, or other evictions, for example due to lack of resources.
 
-Do not use Pods directly in production. They won't get rescheduled, retain their data or guarantee any durability.
+For example, let's create a single nginx pod:
 
-Instead, you can use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled
-and will survive eviction or node loss.
+```bash
+$ cd prod/pod
+$ kubectl create -f pod.yaml
+$ kubectl get pods
+NAME    READY   STATUS    RESTARTS   AGE
+nginx   1/1     Running   0          18s
+```
 
+This pod will keep running, for now. It will also restart in case its container crashes, provided it has an appropriate restart policy. However, in the event a node goes down or starts running out of resources triggering evictions, the pod will be lost. Let's delete it now:
 
-### Anti-Pattern: Using background processes
+```bash
+$ kubectl delete pod/nginx
+$ kubectl get pods        
+No resources found.
+```
+
+The pod is gone.
+
+Do not use pods directly in production. Instead, you should almost always use controllers that provide self-healing on the cluster scope - there are plenty to choose from: `Deployments`, `ReplicaSets`, `DaemonSets`, `StatefulSets` and so on.
+
+Even for singletons, use `Deployment` with replication factor 1, which will guarantee that pods will get rescheduled and survive eviction or node loss:
+
+```bash
+$ kubectl create -f deploy.yaml
+$ kubectl get pods
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-w2klm   1/1     Running   0          19s
+```
+
+If we delete the pod now, it will get rescheduled right back on:
+
+```bash
+$ kubectl delete pod/nginx-65f88748fd-w2klm
+pod "nginx-65f88748fd-w2klm" deleted
+$ kubectl get pods                         
+NAME                     READY   STATUS    RESTARTS   AGE
+nginx-65f88748fd-fd2sk   1/1     Running   0          4s
+```
+
+### Anti-Pattern: Using Background Processes
+
+**NOTE:** You need to have executed `eval $(minikube docker-env)` command for the following to work properly.
 
 ```bash
 $ cd prod/background
-$ docker build -t $(minikube ip):5000/background:0.0.1 .
-$ docker push $(minikube ip):5000/background:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/background:0.0.1 .
+$ docker push $registry:5000/background:0.0.1
 $ kubectl create -f crash.yaml
 $ kubectl get pods
 NAME      READY     STATUS    RESTARTS   AGE
 crash     1/1       Running   0          5s
 ```
 
-The container appears to be running, but let's check if our server is running there:
+Our container was supposed to start a simple Python web server on port 5000. The container appears to be running, but let's check if the server is running there:
 
 ```bash
 $ kubectl exec -ti crash /bin/bash
-root@crash:/# 
-root@crash:/# 
 root@crash:/# ps uax
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.0  0.0  21748  1596 ?        Ss   00:17   0:00 /bin/bash /start.sh
 root         6  0.0  0.0   5916   612 ?        S    00:17   0:00 sleep 100000
 root         7  0.0  0.0  21924  2044 ?        Ss   00:18   0:00 /bin/bash
 root        11  0.0  0.0  19180  1296 ?        R+   00:18   0:00 ps uax
-root@crash:/# 
 ```
+
+The server is not running because we made a mistake in our script, however the container itself is happily running.
 
 **Using Probes**
 
-We made a mistake and the HTTP server is not running there but there is no indication of this as the parent
-process is still running.
-
 The first obvious fix is to use a proper init system and monitor the status of the web service.
 However, let's use this as an opportunity to use liveness probes:
-
 
 ```yaml
 apiVersion: v1
@@ -226,7 +312,7 @@ spec:
 $ kubectl create -f fix.yaml
 ```
 
-The liveness probe will fail and the container will get restarted.
+Our Python HTTP server still crashes, however this time the liveness probe will fail and the container will get restarted.
 
 ```bash
 $ kubectl get pods
@@ -235,9 +321,13 @@ crash     1/1       Running   0          11m
 fix       1/1       Running   1          1m
 ```
 
+An even better solution would be avoid using background processes inside containers. Instead, decouple services from each other by running them in separate containers (process per container) and if they need to run as a single "entity", colocate them in a single pod.
+
+This approach has many benefits, including easier resources monitoring, ease of use and efficiency resulting in more light-weight and reusable infrastructure.
+
 ### Production Pattern: Logging
 
-Set up your logs to go to stdout:
+When configuring logging for your application running inside a container, make sure the logs go to standard output:
 
 ```bash
 $ kubectl create -f logs/logs.yaml
@@ -245,19 +335,21 @@ $ kubectl logs logs
 hello, world!
 ```
 
-Kubernetes and Docker have a system of plugins to make sure logs sent to stdout and stderr will get
-collected, forwarded and rotated.
+Kubernetes and Docker have a system of plugins to make sure logs sent to stdout and stderr will get collected, forwarded and rotated.
 
 **NOTE:** This is one of the patterns of [The Twelve Factor App](https://12factor.net/logs) and Kubernetes supports it out of the box!
 
-### Production Pattern: Immutable containers
+### Production Pattern: Immutable Containers
 
-Every time you write something to container's filesystem, it activates [copy on write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers).
+Every time you write something to a container's filesystem, it activates the [copy-on-write strategy](https://docs.docker.com/engine/userguide/storagedriver/imagesandcontainers/#container-and-layers). This approach is what makes containers efficient.
 
-A new storage layer is created using a storage driver (devicemapper, overlayfs or others). In case of active usage,
-it can put a lot of load on storage drivers, especially in case of Devicemapper or BTRFS.
+The way it works is, all layers in a Docker image are read-only. When a container starts, a thin writable layer is added on top of its other read-only layers. Any changes the container makes to the filesystem are stored there and files that do not change never get copied to that writable layer, which makes it as small as possible. 
 
-Make sure your containers write data only to volumes. You can use `tmpfs` for small (as tmpfs stores everything in memory) temporary files:
+When an existing file in a container is modified, the storage driver (`devicemapper`, `overlay` or others) performs a copy-on-write operation and copies that file to the writable layer. In case of active usage, it can put a lot of stress on a storage driver, especially in case of Devicemapper or BTRFS.
+
+For write-heavy applications it is recommended to not store data in the container but rather make sure that containers write data only to volumes which are independent of a running container and designed for I/O efficiency.
+
+For non-persistent data, Kubernetes provides a special volume type called `emptyDir`:
 
 ```yaml
 apiVersion: v1
@@ -276,12 +368,15 @@ spec:
     emptyDir: {}
 ```
 
-### Anti-Pattern: Using `latest` tag
+By default the volume is backed by whatever disk is backing the node, however note that it is cleared permanently if the pod leaves the node for whatever reason (it's persists across container restarts within a pod though).
 
-Do not use `latest` tag in production. It creates ambiguity, as it's not clear what real version of the app this is.
+For small files it may be beneficial to set `emptyDir.medium` field to `Memory` which will make Kubernetes to use a RAM-backed filesystem, `tmpfs` instead.
 
-It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure
-Kubernetes always pulls the latest version when creating a pod:
+### Anti-Pattern: Using `latest` Tag
+
+It is not recommended to use use `latest` tag in production as it creates ambiguity. For example, looking at tha "latest" tag, it is not possible to tell which version of the application is actually running.
+
+It is ok to use `latest` for development purposes, although make sure you set `imagePullPolicy` to `Always`, to make sure Kubernetes always pulls the latest version when creating a pod:
 
 ```yaml
 apiVersion: v1
@@ -299,7 +394,9 @@ spec:
 
 ### Production Pattern: Pod Readiness
 
-Imagine a situation when your container takes some time to start. To simulate this, we are going to write a simple script:
+Imagine a situation when your container takes some time to start.
+
+To simulate this, we are going to write a simple script:
 
 ```bash
 #!/bin/bash
@@ -307,24 +404,27 @@ Imagine a situation when your container takes some time to start. To simulate th
 echo "Starting up"
 sleep 30
 echo "Started up successfully"
-python -m http.serve 5000
+python -m http.server 5000
 ```
+
+**NOTE:** You need to have executed `eval $(minikube docker-env)` command for the following to work properly.
 
 Push the image and start service and deployment:
 
-```yaml
+```bash
 $ cd prod/delay
-$ docker build -t $(minikube ip):5000/delay:0.0.1 .
-$ docker push $(minikube ip):5000/delay:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/delay:0.0.1 .
+$ docker push $registry:5000/delay:0.0.1
 $ kubectl create -f service.yaml
 $ kubectl create -f deployment.yaml
 ```
 
 Enter curl container inside the cluster and make sure it all works:
 
-```
-kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://delay:5000
+```bash
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://delay:5000
 <!DOCTYPE html>
 ...
 ```
@@ -335,15 +435,15 @@ for the first 30 seconds.
 Update deployment to simulate deploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/delay:0.0.2 .
-$ docker push $(minikube ip):5000/delay:0.0.2
+$ docker build -t $registry:5000/delay:0.0.2 .
+$ docker push $registry:5000/delay:0.0.2
 $ kubectl replace -f deployment-update.yaml
 ```
 
 In the next window, let's try to see if we got any service downtime:
 
 ```bash
-curl http://delay:5000
+$ curl http://delay:5000
 curl: (7) Failed to connect to delay port 5000: Connection refused
 ```
 
@@ -361,18 +461,17 @@ readinessProbe:
   periodSeconds: 5
 ```
 
-Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when
-doing a deployment:
+Readiness probe indicates the readiness of the pod containers and Kubernetes will take this into account when doing a deployment:
 
 ```bash
 $ kubectl replace -f deployment-fix.yaml
 ```
 
-This time we will get no downtime.
+This time, if we observe output from `kubectl get pods`, we'll see that there will be two pods running and the old pod will start terminating only when the second one becomes ready.
 
-### Anti-Pattern: unbound quickly failing jobs
+### Anti-Pattern: Unbound Quickly Failing Jobs
 
-Kubernetes provides new useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/)
+Kubernetes provides a useful tool to schedule containers to perform one-time task: [jobs](https://kubernetes.io/docs/concepts/jobs/run-to-completion-finite-workloads/).
 
 However, there is a problem:
 
@@ -393,10 +492,9 @@ spec:
         command: ["/bin/sh", "-c", "exit 1"]
 ```
 
-
 ```bash
 $ cd prod/jobs
-$ kubectl create -f job.yaml
+$ kubectl create -f bad.yaml
 ```
 
 You are going to observe the race to create hundreds of containers for the job retrying forever:
@@ -427,11 +525,9 @@ Events:
   1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-0lm8k
   1m		1m		1	{job-controller }			Normal		SuccessfulCreate	Created pod: bad-q6ctf
   1m		1s		16	{job-controller }			Normal		SuccessfulCreate	(events with common reason combined)
-
 ```
 
-Probably not the result you expected. Over time, the load on the nodes and docker will be quite substantial,
-especially if job is failing very quickly.
+Probably not the result you expected. Over time, the jobs will accumulate and the load on the nodes and Docker will be quite substantial, especially if the job is failing very quickly.
 
 Let's clean up the busy failing job first:
 
@@ -441,14 +537,13 @@ $ kubectl delete jobs/bad
 
 Now let's use `activeDeadlineSeconds` to limit amount of retries:
 
-
 ```yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: bound
 spec:
-  activeDeadlineSeconds: 10
+  activeDeadlineSeconds: 30
   template:
     metadata:
       name: bound
@@ -464,31 +559,89 @@ spec:
 $ kubectl create -f bound.yaml
 ```
 
-Now you will see that after 10 seconds, the job has failed:
+Now you will see that after 30 seconds, the job has failed and no more pods will be created:
 
 ```bash
   11s		11s		1	{job-controller }			Normal		DeadlineExceeded	Job was active longer than specified deadline
 ```
 
+**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from accidental DDOS on your cluster.
 
-**NOTE:** Sometimes it makes sense to retry forever. In this case make sure to set a proper pod restart policy to protect from
-accidental DDOS on your cluster.
+### Production Pattern: Pod Quotas
 
+One of important Kubernetes features is resource management. Kubernetes allows to configure CPU/RAM resource quotas for containers to ensure that no single container can starve the entire system.
 
-### Production pattern: Circuit Breaker
+Suppose we have a container that tends to hog memory:
 
-In this example, our web application is an imaginary web server for email. To render the page,
-our frontend has to make two requests to the backend:
+```bash
+$ cd prod/quotas
+$ docker build -t $registry:5000/memhog:0.0.1 .
+$ docker push $registry:5000/memhog:0.0.1
+$ kubectl create -f quota.yaml
+```
 
-* Talk to the weather service to get current weather
-* Fetch current mail from the database
+The container consumes about 100 megabytes of memory but the limit we set on our pod allows only 20. Let's see how Kubernetes handled it:
 
-If the weather service is down, user still would like to review the email, so weather service
-is auxilliary, while current mail service is critical.
+```bash
+$ kubectl get pods/quota
+quota                       0/1     OOMKilled          1          4s
+```
 
-Here is our frontend, weather and mail services written in python:
+Kubernetes's OOM killer killed the container, so if the application running inside it leaks memory gradually, it will restart.
 
-**Weather**
+Kubernetes also allows to configure quotas per namespace and utilizes intelligent scheduling algorithm to ensure that pods are distributed across the cluster nodes appropriately. For example, it won't schedule a pod on a node if that pod's quota request exceeds resources available on the node.
+
+Proper quotas configuration is mandatory to ensure smooth sailing in production. Check Kubernetes resources for more information:
+
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/
+https://kubernetes.io/docs/tasks/configure-pod-container/assign-cpu-resource/
+
+### Anti-Pattern: Putting Configuration Inside Image
+
+Oftentimes an application needs a configuration file to run. It might be tempting to just put the configuration file alongside your program inside the container:
+
+```bash
+$ cd prod/config
+$ docker build -t $registry:5000/config:0.0.1 -f config.dockerfile .
+$ docker push $registry:5000/config:0.0.1
+$ kubectl create -f pod.yaml
+```
+
+This approach has a number of drawbacks. For example, what if we want to update the configuration? There's no easy way to do that inside the running container. Another concern is what if configuration file contains some sensitive information such as passwords or API keys?
+
+Kubernetes provides an elegant way to deal with these issues by using ConfigMaps. A ConfigMap is a Kubernetes resource that can be mounted inside a running container (or multiple containers). Let's create a ConfigMap out of our configuration file:
+
+```bash
+$ kubectl create configmap config --from-file=config.yaml
+$ kubectl get configmaps/config -oyaml
+```
+
+We can see that Kubernetes converted our configuration file into a ConfigMap. Let's now rebuild our image to remove embedded configuration file and update the pod to use ConfigMap:
+
+```bash
+$ docker build -t $registry:5000/config:0.0.1 -f config-fix.dockerfile .
+$ docker push $registry:5000/config:0.0.1
+$ kubectl delete -f pod.yaml
+$ kubectl create -f pod-fix.yaml
+```
+
+### Production Pattern: Circuit Breaker
+
+In this example we will explore a more generic production pattern that's not necessarily Kubernetes-specific but we'll be using our local Kubernetes cluster to play with it. The pattern is called "circuit breaker".
+
+Our web application is an imaginary web server for email. To render the page, our frontend has to make two requests to the backend:
+
+* Talk to the weather service to get current weather.
+* Fetch current mail from the database.
+
+We will make the following assumptions:
+
+* The weather service is auxiliary and its downtime shouldn't affect the whole system.
+* The mail service is critical and users should still be able to view mail if weather service is down.
+
+Here is our frontend, weather and mail services written in Python:
+
+**Weather Service Backend**
 
 ```python
 from flask import Flask
@@ -509,7 +662,7 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0')
 ```
 
-**Mail**
+**Mail Service Backend**
 
 ```python
 from flask import Flask,jsonify
@@ -575,11 +728,11 @@ if __name__ == "__main__":
 
 Let's create our deployments and services:
 
-
 ```bash
 $ cd prod/cbreaker
-$ docker build -t $(minikube ip):5000/mail:0.0.1 .
-$ docker push $(minikube ip):5000/mail:0.0.1
+$ export registry=$(kubectl get svc/registry -ojsonpath="{.spec.clusterIP}")
+$ docker build -t $registry:5000/mail:0.0.1 .
+$ docker push $registry:5000/mail:0.0.1
 $ kubectl apply -f service.yaml
 deployment "frontend" configured
 deployment "weather" configured
@@ -631,8 +784,8 @@ if __name__ == "__main__":
 Build and redeploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/weather-crash:0.0.1 -f weather-crash.dockerfile .
-$ docker push $(minikube ip):5000/weather-crash:0.0.1
+$ docker build -t $registry:5000/weather-crash:0.0.1 -f weather-crash.dockerfile .
+$ docker push $registry:5000/weather-crash:0.0.1
 $ kubectl apply -f weather-crash.yaml 
 deployment "weather" configured
 ```
@@ -652,19 +805,7 @@ However our frontend should be all good:
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://frontend
-<html>
-<body>
-  <h3>Weather</h3>
-  <p>weather unavailable</p>
-  <h3>Email</h3>
-  <p>
-    <ul>
-      <li>From: <bob@example.com> Subject: lunch at noon tomorrow</li><br/><li>From: <alice@example.com> Subject: compiler docs</li>
-    </ul>
-  </p>
-</body>
-root@cli:/# curl http://frontend                    
+$ curl http://frontend
 <html>
 <body>
   <h3>Weather</h3>
@@ -701,16 +842,17 @@ if __name__ == "__main__":
 Build and redeploy:
 
 ```bash
-$ docker build -t $(minikube ip):5000/weather-crash-slow:0.0.1 -f weather-crash-slow.dockerfile .
-$ docker push $(minikube ip):5000/weather-crash-slow:0.0.1
+$ docker build -t $registry:5000/weather-crash-slow:0.0.1 -f weather-crash-slow.dockerfile .
+$ docker push $registry:5000/weather-crash-slow:0.0.1
 $ kubectl apply -f weather-crash-slow.yaml 
 deployment "weather" configured
 ```
 
-Just as expected, our weather service is timing out:
+Just as expected, our weather service is timing out now:
 
 ```bash
-curl http://weather 
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://weather 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>500 Internal Server Error</title>
 <h1>Internal Server Error</h1>
@@ -720,16 +862,16 @@ curl http://weather
 The problem though, is that every request to frontend takes 10 seconds as well:
 
 ```bash
-curl http://frontend
+$ curl http://frontend
 ```
 
-This is a much more common outage - users leave in frustration as the service is unavailable.
+This is a much more common type of outage - users leave in frustration as the service is unavailable.
+
 To fix this issue we are going to introduce a special proxy with [circuit breaker](http://vulcand.github.io/proxy.html#circuit-breakers).
 
 ![standby](http://vulcand.github.io/_images/CircuitStandby.png)
 
 Circuit breaker is a special middleware that is designed to provide a fail-over action in case the service has degraded. It is very helpful to prevent cascading failures - where the failure of the one service leads to failure of another. Circuit breaker observes requests statistics and checks the stats against a special error condition.
-
 
 ![tripped](http://vulcand.github.io/_images/CircuitTripped.png)
 
@@ -796,19 +938,27 @@ if __name__ == "__main__":
 Let's build and redeploy circuit breaker:
 
 ```bash
-$ docker build -t $(minikube ip):5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
-$ docker push $(minikube ip):5000/cbreaker:0.0.1
+$ docker build -t $registry:5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
+$ docker push $registry:5000/cbreaker:0.0.1
 $ kubectl apply -f weather-cbreaker.yaml 
 deployment "weather" configured
-$  kubectl apply -f weather-service.yaml
+$ kubectl apply -f weather-service.yaml
 service "weather" configured
 ```
 
+Circuit breaker runs as a separate container next to the weather service container in the same pod:
+
+```bash
+$ cat weather-cbreaker.yaml
+```
+
+Note that we have reconfigured our service so requests are handled by the circuit breaker first which forwards requests to the weather service running in the same pod, and trips if the request fails.
 
 Circuit breaker will detect service outage and auxilliary weather service will not bring our mail service down any more:
 
 ```bash
-curl http://frontend
+$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ curl http://frontend
 <html>
 <body>
   <h3>Weather</h3>
@@ -822,22 +972,20 @@ curl http://frontend
 </body>
 ```
 
-**NOTE:** There are some production level proxies that natively support circuit breaker pattern - such as [Vulcand](http://vulcand.github.io/), [Nginx plus](https://www.nginx.com/products/) or [Envoy](https://lyft.github.io/envoy/)
+**NOTE:** There are some production level proxies that natively support circuit breaker pattern - such as [Vulcand](http://vulcand.github.io/), [Nginx Plus](https://www.nginx.com/products/) or [Envoy](https://lyft.github.io/envoy/)
 
+### Production Pattern: Sidecar For Rate And Connection Limiting
 
-### Production Pattern: Sidecar For Rate and Connection Limiting
-
-In the previous example we have used a sidecar pattern - a special proxy local to the Pod, that adds additional logic to the service, such as error detection, TLS termination
-and other features.
+In the previous example we used a pattern called a "sidecar container". A sidecar is a container colocated with other containers in the same pod, which adds additional logic to the service, such as error detection, TLS termination and other features.
 
 Here is an example of sidecar nginx proxy that adds rate and connection limits:
 
 ```bash
 $ cd prod/sidecar
-$ docker build -t $(minikube ip):5000/sidecar:0.0.1 -f sidecar.dockerfile .
-$ docker push $(minikube ip):5000/sidecar:0.0.1
-$ docker build -t $(minikube ip):5000/service:0.0.1 -f service.dockerfile .
-$ docker push $(minikube ip):5000/service:0.0.1
+$ docker build -t $registry:5000/sidecar:0.0.1 -f sidecar.dockerfile .
+$ docker push $registry:5000/sidecar:0.0.1
+$ docker build -t $registry:5000/service:0.0.1 -f service.dockerfile .
+$ docker push $registry:5000/service:0.0.1
 $ kubectl apply -f sidecar.yaml
 deployment "sidecar" configured
 ```
@@ -846,7 +994,7 @@ Try to hit the service faster than one request per second and you will see the r
 
 ```bash
 $ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
-curl http://sidecar
+$ curl http://sidecar
 ```
 
-[Istio](https://istio.io/docs/concepts/what-is-istio/overview.html#architecture) is an example of platform that embodies this design and more for instance.
+For instance, [Istio](https://istio.io/docs/concepts/policies-and-telemetry/) is an example of platform that embodies this design.

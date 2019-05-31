@@ -1,0 +1,5 @@
+apiVersion: cluster.gravitational.io/v2
+kind: Cluster
+metadata:
+ name: cluster-image
+ resourceVersion: 0.0.1
