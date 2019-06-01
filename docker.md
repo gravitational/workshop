@@ -32,7 +32,7 @@ Docker is as easy as Linux! To prove that let us write classic "Hello, World" in
 $ docker run busybox echo "hello world"
 ```
 
-Docker containers are just as simple as linux processes, but they also provide many more features that we are going to explore.
+Docker containers are just as simple as Linux processes, but they also provide many more features that we are going to explore.
 
 Let's review the structure of the command we just used:
 
@@ -43,27 +43,31 @@ busybox            # container image used by the run command
 echo "hello world" # actual command to run (and arguments)
 ```
 
-Container images carry within themselves all the needed libraries, binaries and directories in order to be able to run.
+Container IMAGES carry within themselves all the needed libraries, binaries and directories in order to be able to run.
 
-Specifically that means that the running command will not use the host operating system shell but one provided by the busybox Docker container image.
+*NOTE:* Docker images could be abstracted as "the blueprint for an object", while containers are the actualization of the project into a real instance/entity.
+
+Commands running in containers won't normally use the host operating system shell and binaries but will execute those provided by the chosen container image (the `busybox` one in the example).
 
 ### Where is my container?
 
-Running containers can be listed using the command
+Running containers can be listed using the command:
 ```bash
 $ docker ps
 CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
 eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
 
-* Container ID - auto generated unique running id.
-* Container image - image name.
-* Command - Linux process running as the PID 1 in the container.
+The fields shown in the output can be summarized as:
+
+* Container ID - auto generated unique running id
+* Container image - image name
+* Command - Linux process running as the PID 1 in the container
 * Names - user friendly name of the container
 
 After running the "hello world" example above there will be no running container since the entire life cycle of the command (echo-ing "hello world") has already finished and thus the container has been stopped.
 
-Once the command running inside the container finishes its execution the container will stop but will still be available, even if it's not listed by default.
+Once the command running inside the container finishes its execution, the container will stop running but will still be available, even if it's not listed in `ps` output by default.
 
 To list stopped containers use:
 ```bash
@@ -133,7 +137,7 @@ total 0
 What if we want to expose one or more directories inside a container? To do so the option `-v/--volume` mounts must be used as shown in the following example:
 
 ```
-$ docker run -v /data/repo:/home busybox ls -l /home
+$ docker run -v $(pwd):/home busybox ls -l /home
 total 72
 -rw-rw-r--    1 1000     1000         11315 Nov 23 19:42 LICENSE
 -rw-rw-r--    1 1000     1000         30605 Mar 22 23:19 README.md
@@ -146,7 +150,7 @@ drwxrwxr-x    4 1000     1000          4096 Nov 23 19:30 mattermost
 -rw-rw-r--    1 1000     1000           399 Nov 23 19:30 my-nginx-typo.yaml
 ```
 
-This command "mounted" the directory `/data/repo` from the host inside the container, so that it appeared to be "/home" inside the container!
+This command "mounted" the current directory from the host inside the container, so that it appeared to be "/home" inside the container!
 
 In this configuration all changes done in the repository directory will be immediately seen in the container's `/home` directory.
 
@@ -176,7 +180,6 @@ lo        Link encap:Local Loopback
 ```
 
 If the We can use the `-p` flag to forward a port on the host to the port 5000 inside the container:
-
 
 ```bash
 $ docker run -p 5000:5000 library/python:3.3 python -m http.server 5000
