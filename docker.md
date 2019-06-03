@@ -51,9 +51,9 @@ echo "hello world" # actual command to run (and arguments)
 
 *Container images* carry within themselves all the needed libraries, binaries and directories in order to be able to run.
 
-*TIP:* Container images could be abstracted as "the blueprint for an object", while containers themselves are the actualization of the project into a real instance/entity.
+*TIP:* Container images could be abstracted as "the blueprint for an object", while containers themselves are the actualization of the object into a real instance/entity.
 
-Commands running in containers won't normally use the host operating system shell and binaries but will execute those provided by the chosen container image (`busybox` in the example above).
+Commands running in containers normally use anything but the kernel from the host operating system. They will execute instead binaries provided within the chosen container image (`busybox` in the example above).
 
 ### Where is my container?
 
@@ -146,7 +146,7 @@ $ docker run busybox ls -l /home
 total 0
 ```
 
-What if we want to expose one or more directories inside a container? To do so the option `-v/--volume` mounts must be used as shown in the following example:
+What if we want to expose one or more directories inside a container? To do so the option `-v/--volume` must be used as shown in the following example:
 
 ```
 $ docker run -v $(pwd):/home busybox ls -l /home
