@@ -423,7 +423,7 @@ $ kubectl create -f deployment.yaml
 Enter curl container inside the cluster and make sure it all works:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://delay:5000
 <!DOCTYPE html>
 ...
@@ -448,7 +448,12 @@ curl: (7) Failed to connect to delay port 5000: Connection refused
 ```
 
 We've got a production outage despite setting `maxUnavailable: 0` in our rolling update strategy!
-This happened because Kubernetes did not know about startup delay and readiness of the service.
+
+This happened because Kubernetes did not know about startup delay and readiness of the service. If we look at the list of pods, we'll see that the old pod was deleted immediately after the new one has been created thus leaving us w/o a functioning service for the next 30 seconds:
+
+```bash
+$ kubectl get pods
+```
 
 Let's fix that by using readiness probe:
 
@@ -467,7 +472,16 @@ Readiness probe indicates the readiness of the pod containers and Kubernetes wil
 $ kubectl replace -f deployment-fix.yaml
 ```
 
-This time, if we observe output from `kubectl get pods`, we'll see that there will be two pods running and the old pod will start terminating only when the second one becomes ready.
+This time, if we observe output from `kubectl get pods`, we'll see that there will be two pods running and the old pod will start terminating only when the second one becomes ready:
+
+```bash
+$ kubectl get pods
+NAME                        READY   STATUS    RESTARTS   AGE
+delay-5fb9c6fb8b-prw86      1/1     Running   0          2m15s
+delay-f7f84dff9-m5hw7       0/1     Running   0          3s
+```
+
+And the `curl` command consistently works while the service is being redeployed.
 
 ### Anti-Pattern: Unbound Quickly Failing Jobs
 
@@ -745,7 +759,7 @@ service "weather" configured
 Check that everyting is running smoothly:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://frontend
 <html>
 <body>
@@ -793,7 +807,7 @@ deployment "weather" configured
 Let's make sure that it is crashing:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://weather
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>500 Internal Server Error</title>
@@ -804,7 +818,7 @@ $ curl http://weather
 However our frontend should be all good:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://frontend
 <html>
 <body>
@@ -851,7 +865,7 @@ deployment "weather" configured
 Just as expected, our weather service is timing out now:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://weather 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <title>500 Internal Server Error</title>
@@ -957,7 +971,7 @@ Note that we have reconfigured our service so requests are handled by the circui
 Circuit breaker will detect service outage and auxilliary weather service will not bring our mail service down any more:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://frontend
 <html>
 <body>
@@ -993,7 +1007,7 @@ deployment "sidecar" configured
 Try to hit the service faster than one request per second and you will see the rate limiting in action:
 
 ```bash
-$ kubectl run -i -t --rm cli --image=tutum/curl --restart=Never
+$ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
 $ curl http://sidecar
 ```
 
