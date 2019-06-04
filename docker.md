@@ -40,7 +40,7 @@ Docker containers are just as simple as Linux processes, but they also provide m
 
 Let's review the structure of the command we just used:
 
-```bash
+```bashFixed Git conflicts leftovers
 docker             # Docker client binary used to interact with Docker
 run                # Docker subcommand - runs a command in a container
 busybox            # container image used by the run command
@@ -82,7 +82,6 @@ Once the command running inside the container finishes its execution, the contai
 To list all containers, including stopped ones, use:
 ```bash
 docker ps -a
-<<<<<<< HEAD
 ```
 
 Stopped containers will remain available until cleaned. You can then removed stopped containers by using:
@@ -90,7 +89,6 @@ Stopped containers will remain available until cleaned. You can then removed sto
 docker rm my_container_name_or_id
 ```
 
-=======
 ```
 
 Stopped containers will remain available until cleaned. You can then removed stopped containers by using:
@@ -98,7 +96,6 @@ Stopped containers will remain available until cleaned. You can then removed sto
 docker rm my_container_name_or_id
 ```
 
->>>>>>> master
 The argument used for the `rm` command can be the container ID or the container name.
 
 If you prefer, it's possible to add the option `--rm` to the `run` subcommand so that the container will be cleaned automatically as soon as it stops its execution.
