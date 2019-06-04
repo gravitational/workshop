@@ -8,15 +8,13 @@ Docker 101 workshop - introduction to Docker and basic concepts
 
 You will need an MacOS or Linux based system with at least `8GB RAM` and `10GB of free disk space` available.
 
-While it is possible to use Docker on Windows 10 systems, for the sake of simplicity, in this workshop will focus on POSIX compatible systems that support are officially supported by Docker like MacOS and Linux.
+While it is possible to use Docker on Windows 10 systems, for the sake of simplicity, in this workshop will focus on POSIX compatible systems that are officially supported by Docker, like MacOS and Linux.
 
 ### Software Requirements
 
 The main software required to follow this workshop is *Docker* itself.
 
-In order to install it on va
-
-*Linux*: follow instructions provided [here](https://docs.docker.com/engine/installation/linux/).
+In order to install it on *Linux*: follow instructions provided [here](https://docs.docker.com/engine/installation/linux/).
 
 If you have Mac OS X (Yosemite or newer), please download Docker for Mac [here](https://download.docker.com/mac/stable/Docker.dmg).
 
