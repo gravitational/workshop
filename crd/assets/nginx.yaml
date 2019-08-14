@@ -1,0 +1,15 @@
+#
+# This spec describes a custom resource of kind Nginx.
+#
+# The custom resource kind is defined in crd.yaml and should be registered
+# before this resource can be created.
+#
+# When created, this resource will trigger creation of a single nginx pod, if
+# the custom controller is running in the cluster.
+#
+apiVersion: training.example.com/v1
+kind: Nginx
+metadata:
+  name: nginx-web
+spec:
+  version: 1.9.1
