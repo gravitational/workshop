@@ -1,6 +1,6 @@
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:5.5.8
+baseImage: gravity:6.0.4
 metadata:
  name: cluster-image
  resourceVersion: 0.0.2
