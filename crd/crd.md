@@ -86,9 +86,8 @@ spec:
 
 ## Creating Custom Resource
 
-As already mentioned, after having been registered, custom resources are
-treated in exactly the same way as the core resources, so to create our custom
-resource we can just use:
+Since custom resources are treated exactly like built-in resources, to create
+an instance of a new custom resource we can use:
 
 ```shell
 $ kubectl create -f ~/workshop/crd/assets/nginx.yaml
@@ -113,7 +112,7 @@ On their own custom resources already provide a lot of value as they allow to
 store and retrieve structured data using native Kubernetes tools.
 
 It is also possible to create a custom controller that can monitor custom
-resources and take specific actions, thus unlocking a true declarative
+resources and take specific actions, thus unlocking true declarative
 capabilities of custom resources.
 
 When combined together, custom resources and custom controllers, constitute

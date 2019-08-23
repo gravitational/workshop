@@ -98,5 +98,6 @@ func run() error {
 		return trace.Wrap(err, "error running Nginx controller")
 	}
 
+	close(stopCh)
 	return nil
 }

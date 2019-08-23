@@ -128,11 +128,11 @@ func (c *nginxController) processWorkItem() bool {
 	err := c.handleItem(key)
 	if err != nil {
 		c.queue.AddRateLimited(key)
-		logrus.WithError(err).Errorf("Failed to process: %v.", key)
+		logrus.WithField("key", key).WithError(err).Error("Failed to process.")
 		return true
 	}
-	// The resource has been processed successfully, remove it from the
-	// work queue.
+	// The resource has been processed successfully, remove its rate-limiting
+	// context.
 	c.queue.Forget(keyI)
 	return true
 }
@@ -142,10 +142,10 @@ func (c *nginxController) handleItem(key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
-		logrus.WithError(err).Errorf("Invalid key format: %v.", key)
+		logrus.WithField("key", key).WithError(err).Error("Invalid key format.")
 		return nil
 	}
-	logrus.Infof("New resource: %v.", key)
+	logrus.WithField("key", key).Info("New resource")
 	// Retrieve the custom Nginx resource.
 	nginx, err := c.nginxLister.Nginxes(namespace).Get(name)
 	if err != nil {
@@ -159,7 +159,7 @@ func (c *nginxController) handleItem(key string) error {
 		// already manages a pod. Ideally, here we would check that
 		// the pod is actually running (it may have been deleted)
 		// and re-create it if it's not.
-		logrus.Infof("Resource %v already manages pod %v.", key, podName)
+		logrus.WithField("key", key).Infof("Resource already manages pod %v.", podName)
 		return nil
 	}
 	// There's no pod for this Nginx resource yet, create it.
@@ -167,7 +167,7 @@ func (c *nginxController) handleItem(key string) error {
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	logrus.Infof("Created pod %v for %v.", pod.Name, key)
+	logrus.WithField("key", key).Infof("Created pod %v.", pod.Name)
 	// Update the status field on the Nginx resource to indicate the name
 	// of its child pod.
 	nginxCopy := nginx.DeepCopy()
@@ -183,7 +183,7 @@ func (c *nginxController) handleItem(key string) error {
 func (c *nginxController) enqueueNginx(obj interface{}) {
 	key, err := cache.MetaNamespaceKeyFunc(obj)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to parse key: %v.", obj)
+		logrus.WithError(err).Errorf("Failed to parse key: %v.", obj)
 	} else {
 		c.queue.Add(key)
 	}
