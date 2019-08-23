@@ -1,0 +1,32 @@
+#
+# This deployment launches a custom controller that monitors Nginx custom
+# resources and spins up respective nginx pods.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-controller
+  namespace: default
+  labels:
+    app: nginx-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-controller
+  template:
+    metadata:
+      labels:
+        app: nginx-controller
+    spec:
+      containers:
+      - name: controller
+        image: quay.io/gravitational/nginx-controller:0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: tmp
+        hostPath:
+          path: /tmp

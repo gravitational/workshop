@@ -1,0 +1,29 @@
+#
+# This custom resource spec defines a new Kubernetes resource kind Nginx.
+#
+# Nginx resource, when created, will trigger a creation of a single nginx pod
+# if the custom controller is running inside the cluster.
+#
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: nginxes.training.example.com
+spec:
+  group: training.example.com
+  version: v1
+  scope: Namespaced
+  names:
+    kind: Nginx
+    plural: nginxes
+    singular: nginx
+    shortNames:
+      - ng
+  validation:
+    openAPIV3Schema:
+      required: ["spec"]
+      properties:
+        spec:
+          required: ["version"]
+          properties:
+            version:
+              type: "string"
