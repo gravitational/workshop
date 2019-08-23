@@ -36,24 +36,24 @@ Follow the instructions here: https://github.com/kubernetes/minikube/blob/master
 
 For macOS:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/darwin/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.15.2/bin/darwin/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 For Linux:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.14.0/bin/linux/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.15.2/bin/linux/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 ### Minikube
 
 For macOS:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.1.0/minikube-darwin-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.3.1/minikube-darwin-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 For Linux:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.1.0/minikube-linux-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.3.1/minikube-linux-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 Also, you can install drivers for various VM providers to optimize your minikube VM performance.
@@ -71,7 +71,7 @@ To run cluster:
 
 ```bash
 # starts minikube
-$ minikube start --kubernetes-version=v1.14.0
+$ minikube start --kubernetes-version=v1.15.2
 # this command should work
 $ kubectl get nodes
 # use docker from minikube
@@ -84,7 +84,7 @@ $ docker ps
 
 ```bash
 # starts minikube
-$ minikube start --kubernetes-version=v1.14.0 --vm-driver=kvm2
+$ minikube start --kubernetes-version=v1.15.2 --vm-driver=kvm2
 # this command should work
 $ kubectl get nodes
 # use docker from minikube

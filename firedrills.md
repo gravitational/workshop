@@ -219,7 +219,7 @@ The same `kubectl logs` command can be used to check the logs for the applicatio
 Gravity also provides a command to generate a cluster-wide debug report:
 
 ```bash
-node-1$ gravity report
+node-1$ sudo gravity report
 ```
 
 It may take a while to execute, but as a result it will produce a `report.tar.gz` file with a lot of diagnostic information about the cluster, including all system/operation logs, OS and node configuration (such as iptables rules, loaded kernel modules, available disk space and so on), etc.
@@ -356,15 +356,15 @@ node-1$ sudo sysctl -w net.ipv4.ip_forward=0
 
 The probability of this happening on a real cluster is actually non-negligible because Linux kernel forwarding is off by default and this kernel setting sometimes gets disabled as a security precaution by the ops teams sweeps, but is required for Kubernetes networking to work.
 
-Let’s see what happened to the cluster pods. We can use one of our debug pods to explore:
+Let's imagine we've got a cluster with a weird networking problem that manifests itself in the connections timing out. First, we might want to see for ourselves. We can use one of our debug pods to explore:
 
 ```bash
 node-1$ kubectl exec -ti debug-jl8nr /bin/sh
 debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
-// hangs
+// hangs, may produce result after a long while
 ```
 
-This service URL points to the active cluster controller (`gravity-site`) and is supposed to return 200OK but the pod can no longer reach it. All pods seems to be running and healthy though:
+This service URL points to the active cluster controller (`gravity-site`) and is supposed to immediately return `200 OK` but the pod can no longer reach it. All pods seem to be running and healthy though:
 
 ```bash
 node-1$ kubectl get pods -owide --all-namespaces
@@ -431,8 +431,8 @@ Now, on another node let’s pick a couple of pods running on different nodes an
 
 ```bash
 node-2$ kubectl get pods -owide --all-namespaces | grep coredns
-kube-system   coredns-8mklv                         1/1     Running     0          3h32m   10.244.78.3  
-kube-system   coredns-c9gzd                         1/1     Running     0          3h28m   10.244.13.2  
+kube-system   coredns-8mklv                         1/1     Running     0          3h32m   10.244.78.3
+kube-system   coredns-c9gzd                         1/1     Running     0          3h28m   10.244.13.2
 kube-system   coredns-sh74m                         1/1     Running     0          3h45m   10.244.93.3
 ```
 
@@ -779,7 +779,7 @@ But the Teleport actually keeps running:
 
 ```bash
 node-3$ systemctl list-unit-files | grep teleport
-gravity__gravitational.io__teleport__3.0.5.service      enabled 
+gravity__gravitational.io__teleport__3.0.5.service      enabled
 node-3$ systemctl status gravity__gravitational.io__teleport__3.0.5.service
 ```
 
@@ -903,18 +903,23 @@ Now we’re going to take a look at the cluster upgrade. In the ideal scenario c
 
 Behind the scenes the upgrade works as a state machine. Gravity generates an upgrade plan that consists of multiple “phases” - see [documentation](https://gravitational.com/gravity/docs/cluster/#displaying-operation-plan) - and launches an upgrade agent that executes phases of the plan one-by-one. If the automatic upgrade agent encounters an error during the execution of one of the phases, it stops. There is no automatic rollback, for safety and flexibility reasons. This approach allows an operator to inspect the upgrade operation plan, see where it failed, fix the issue and continue with the upgrade, either in automatic or manual fashion.
 
-In some situations there may be no easy way to move forward with the interrupted upgrade so you might want to rollback the cluster to the previous state instead. Let’s simulate the failed upgrade by launching the operation and interrupting in a middle of a phase.
+In some situations there may be no easy way to move forward with the interrupted upgrade so you might want to rollback the cluster to the previous state instead. Let’s simulate the failed upgrade by causing some issue on the node:
 
-```bash
-node-1$ cd ~/v3
-node-1$ sudo ./upgrade
-<progress output…>
-<ctrl-c>
+```shell
+node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
+node-1$ sudo mkdir /var/lib/gravity/site/update/gravity
+node-1$ sudo chattr +i /var/lib/gravity/site/update/gravity
 ```
 
-We have interrupted the upgrade and ended up with a partially upgraded cluster. If you run `gravity status`, you’ll see that the cluster is now in the “updating” state. From here we have two options: either resume the upgrade (supposedly, after fixing the issue that caused the upgrade to fail in the first place), or perform a rollback and re-attempt the upgrade later.
+Then launch the upgrade operation and watch the logs:
 
-For the sake of this exercise, let’s assume that the upgrade have encountered an issue that can’t be easily fixed here and now and we want to rollback.
+```shell
+node-1$ cd ~/v3
+node-1$ sudo ./upgrade
+node-1$ sudo journalctl -f
+```
+
+The operation will fail pretty quickly and we'll end up with a partially upgraded cluster. From here we have two options: either resume the upgrade (supposedly, after fixing the issue that caused the upgrade to fail in the first place), or perform a rollback and re-attempt the upgrade later. For the sake of this exercise, let’s assume that the upgrade has encountered an issue that can’t be easily fixed here and now and we want to rollback.
 
 The first thing to do is to see which step of the plan the upgrade failed on. Gravity provides a set of commands that let you interact with the operation plan. Let’s inspect it:
 
@@ -924,7 +929,12 @@ node-1$ sudo ./gravity plan
 
 Note: It is important to interact with the upgrade operation and operation plan using the new binary.
 
-Depending on where you canceled the operation, some of the phases may be marked as “completed”. The phase that you interrupted is likely marked as “in progress”. In the event of a real failure, it would be marked as “failed”.
+We can see that the `/init` phase is marked as "failed" and shows the error:
+
+```
+The /init phase ("Initialize update operation") has failed
+        remove /var/lib/gravity/site/update/gravity: operation not permitted
+```
 
 In order to rollback the operation, we need to rollback all phases that have been completed (or failed) thus far, in reverse order. Let’s do it:
 
@@ -940,7 +950,12 @@ If you look at that `gravity plan` again now, you'll see that the phase has been
 node-1$ sudo ./gravity plan complete
 ```
 
-Check `gravity status` to make sure that the cluster is back to active.
+Check `gravity status` to make sure that the cluster is back to active and don't forget to fix the node:
+
+```shell
+node-1$ sudo chattr -i /var/lib/gravity/site/update/gravity
+node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
+```
 
 ### Scenario 2.4. Resuming Upgrade
 
@@ -1019,11 +1034,7 @@ Wed May  8 21:37:37 UTC Operation failure: failed to execute phase "/bootstrap/n
 Wed May  8 21:37:37 UTC Installation failed in 9.726002255s, check /var/log/gravity-install.log and /var/log/gravity-system.log for details
 ```
 
-The installation will fail while trying to bootstrap the node.
-
-**Note: Do not cancel the installer process when it fails and let it run.**
-
-We can also launch another shell on `node-1` and check the install log to see what happened:
+The installation will fail while trying to bootstrap the node. We can now check the install log to see what happened:
 
 ```bash
 node-1$ sudo cat /var/log/gravity-install.log
