@@ -364,7 +364,7 @@ debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healt
 // hangs, may produce result after a long while
 ```
 
-This service URL points to the active cluster controller (`gravity-site`) and is supposed to immediately return 200OK but the pod can no longer reach it. All pods seems to be running and healthy though:
+This service URL points to the active cluster controller (`gravity-site`) and is supposed to immediately return `200 OK` but the pod can no longer reach it. All pods seem to be running and healthy though:
 
 ```bash
 node-1$ kubectl get pods -owide --all-namespaces
@@ -919,7 +919,7 @@ node-1$ sudo ./upgrade
 node-1$ sudo journalctl -f
 ```
 
-The operation will fail pretty quickly and we'll end up with a partially upgraded cluster. From here we have two options: either resume the upgrade (supposedly, after fixing the issue that caused the upgrade to fail in the first place), or perform a rollback and re-attempt the upgrade later. For the sake of this exercise, let’s assume that the upgrade have encountered an issue that can’t be easily fixed here and now and we want to rollback.
+The operation will fail pretty quickly and we'll end up with a partially upgraded cluster. From here we have two options: either resume the upgrade (supposedly, after fixing the issue that caused the upgrade to fail in the first place), or perform a rollback and re-attempt the upgrade later. For the sake of this exercise, let’s assume that the upgrade has encountered an issue that can’t be easily fixed here and now and we want to rollback.
 
 The first thing to do is to see which step of the plan the upgrade failed on. Gravity provides a set of commands that let you interact with the operation plan. Let’s inspect it:
 
