@@ -259,7 +259,7 @@ Restrictions:
 - Secrets are limited to 1MiB in size
 - Secrets that create env variables will be skipped if the keys are not valid environment variable names
 
-Securipty Properties:
+Security Properties:
 - Secret objects are less likely to be accidentally exposed, because they're an independent object from the pods that use them.
 - A secret is only sent to a node if a pod on that node requires the secret. 
 - On the node, the secret will not be written to disk. Instead it will be written to a tmpfs mount.
@@ -275,12 +275,195 @@ Risks:
 Gravity doesn't support encryption at rest.
 
 ### Pod security policies
+Reference: https://kubernetes.io/docs/concepts/policy/pod-security-policy/
 
+Pod Security Policies (PSPs) enable fine-grained authorization of pod creation and updates. Through a set of rules, they create security rules / defaults that a pod must meet in order to be scheduled to the cluster.
 
+The following privileges can be controlled:
+- Running of privileged containers
+- Usage of host namespaces
+- Usage of host networking and ports
+- Usage of volume types
+- Usage of the host filesystem
+- White list of Flexvolume drivers
+- Allocating an FSGroup that owns the pod’s volumes
+- Requiring the use of a read only root file system
+- The user and group IDs of the container
+- Restricting escalation to root privileges
+- Linux capabilities
+- The SELinux context of the container
+- The Allowed Proc Mount types for the container
+- The AppArmor profile used by containers
+- The seccomp profile used by containers
+- The sysctl profile used by containers
+
+#### Policy Reference
+The kubernetes docs describe these best: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#policy-reference
+
+Notes:
+- Gravity by default prevents any privileged containers from running, as a security best practice.
+- AppArmor is difficult to use with gravity. If the host kernel does not have AppArmor enabled, pods with apparmor annotations will not get scheduled.
+- Seccomp is also difficult, as the profile to apply is pulled from the host, and gravity doesn't currently include any aids in loading seccomp profiles for kubernetes to reference. The runtime/default profile is adequate in most cases.
+
+#### Example PSP
+A sample PSP for restricted access:
+```
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: privileged
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: '*'
+spec:
+  privileged: true
+  allowPrivilegeEscalation: true
+  allowedCapabilities:
+  - '*'
+  volumes:
+  - '*'
+  hostNetwork: true
+  hostPorts:
+  - min: 0
+    max: 65535
+  hostIPC: true
+  hostPID: true
+  runAsUser:
+    rule: 'RunAsAny'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  ```
+
+#### Exercise: kubernetes PSP example
+Follow the kubernetes docs example, on creating a PSP, and how to bind specific accounts: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#example
 
 ### Quality of Service and Limits
+Reference: https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/
+Reference: https://medium.com/google-cloud/quality-of-service-class-qos-in-kubernetes-bb76a89eb2c6
+
+
+Kubernetes pods can be assigned quality of service settings, that the kubernetes scheduling algorithms consider when making scheduling decisions.
+
+There are 3 classes:
+- Guaranteed
+- Burstable
+- BestEffort
+
+#### Guaranteed
+Pods are considered top-priority and are guaranteed to not be killed until they exceed their limits.
+
+Conditions:
+- Every Container in the Pod must have a memory limit and a memory request, and they must be the same.
+- Every Container in the Pod must have a CPU limit and a CPU request, and they must be the same.
+
+Example guaranteed pod:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: qos-demo
+  namespace: qos-example
+spec:
+  containers:
+  - name: qos-demo-ctr
+    image: nginx
+    resources:
+      limits:
+        memory: "200Mi"
+        cpu: "700m"
+      requests:
+        memory: "200Mi"
+        cpu: "700m"
+```
+
+#### Burstable
+Pods have some form of minimal resource guarantee, but can use more resources when available. Under system memory pressure, these containers are more likely to be killed once they exceed their requests and no Best-Effort pods exist.
+
+Conditions:
+- The Pod does not meet the criteria for QoS class Guaranteed.
+- At least one Container in the Pod has a memory or CPU request.
+
+Example burstable pod:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: qos-demo-2
+  namespace: qos-example
+spec:
+  containers:
+  - name: qos-demo-2-ctr
+    image: nginx
+    resources:
+      limits:
+        memory: "200Mi"
+      requests:
+        memory: "100Mi"
+```
+
+#### Best Effort
+Pods will be treated as lowest priority. Processes in these pods are the first to get killed if the system runs out of memory. These containers can use any amount of free memory in the node though.
+
+For a Pod to be given a QoS class of BestEffort, the Containers in the Pod must not have any memory or CPU limits or requests.
+
+Example best-effort pod:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: qos-demo-3
+  namespace: qos-example
+spec:
+  containers:
+  - name: qos-demo-3-ctr
+    image: nginx
+
+### Pod Priority and Preemption
+Reference: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+
+Pod priority is an indicator to the kubernetes scheduler how important a particular pod is, so that under resource pressure low priority tasks can be killed to make room for higher priority tasks.
+
+Pods with lower numeric priorities will be preempted by pods with higher numeric priorities, with 1000000 considered the highest priority, equivalent with critical system tasks.
+
+Kubernetes 1.11 and higher include a flag on the priorityClass that disables preemption of lower priority tasks, and will wait for scheduling until sufficient resources are free.
+
+Example non-preempting priority class:
+```
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority-nonpreempting
+value: 1000000
+preemptionPolicy: Never
+globalDefault: false
+description: "This priority class will not cause other pods to be preempted."
+```
+
+To use a priority class, specify the priorityClassName field in the pod spec or pod template:
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    env: test
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    imagePullPolicy: IfNotPresent
+  priorityClassName: high-priority
+```
 
 ### Network Policy
+Reference: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+Reference: https://kubernetes.io/docs/tasks/administer-cluster/network-policy-provider/kube-router-network-policy/
+
+Note: gravity does not include a network policy controller by default. A Network policy controller such as kube-router can be added on top of a gravity cluster.
+
+
 
 ## Container Security
 - Supply chain / notary
