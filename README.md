@@ -93,6 +93,12 @@ $ eval $(minikube docker-env)
 $ docker ps
 ```
 
+## Clone the Workshop repository
+```bash
+$ git clone https://github.com/gravitational/workshop.git
+$ cd workshop
+```
+
 ## Configure registry
 
 ```
