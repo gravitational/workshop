@@ -254,7 +254,7 @@ This feature is particularly useful to predict and plan for enough resources to 
 
 ### Capabilities
 
-Capabilitites provide enhanced permission checks on the running process, and can limit the interface configuration, even for a root user - for example if `CAP_NET_ADMIN` is disabled users inside a container (including root) won't be able to manage network interfaces (add, delete, change), change network routes and so on.
+Capabilities provide enhanced permission checks on the running process, and can limit the interface configuration, even for a root user - for example if `CAP_NET_ADMIN` is disabled users inside a container (including root) won't be able to manage network interfaces (add, delete, change), change network routes and so on.
 
 You can find a lot of additional low level detail [here](http://crosbymichael.com/creating-containers-part-1.html) or see `man capabilities` for more info about this topic.
 
