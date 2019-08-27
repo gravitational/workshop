@@ -7,6 +7,19 @@ This workshop task will explore security concepts and the kubernetes primitives 
 ## Kubernetes security primitives
 Kubernetes provides a number of security primitives, that allow for an application to indicate what access it should have to the system.
 
+### Authentication
+Reference: https://kubernetes.io/docs/reference/access-authn-authz/authentication/
+
+Two types of users:
+- Normal Users
+- Service Accounts
+
+#### Normal Accounts
+Normal accounts in kubernetes are controlled by an external system. Kubernetes does not include it's own internal user management system, and is built around using external identity providers.
+
+#### Service Accounts
+Service accounts are internal to kubernetes accounts, that are assigned to services (pods) to gain access to the kubernetes API.
+
 ### Role-based application controls
 Reference: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
 
@@ -32,6 +45,8 @@ Users and Groups don't directly exist within kubernetes. The authentication laye
 
 Creating gravity users is covered in gravity101.md.
 
+
+
 #### Service Accounts
 Reference: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
 
@@ -44,11 +59,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: build-robot
+  namespace: test-namespace
 automountServiceAccountToken: false
 EOF
 ```
 
 Each namespace automatically has a default serviceAccount called `default`
+
+Note: `automountServiceAccountToken: false` prevents the pod from automatically mounting the service account, which prevents access to the API. Definitly use this for services that don't need to interact with the kubernetes API.
 
 #### Role and ClusterRole
 Role and ClusterRole are kubernetes objects that contain rules that represent a set of allowed permissions. 
@@ -86,7 +104,7 @@ EOF
 What a cluster role can do that individual roles cannot:
 - Access cluster-scoped resources (like nodes)
 - Non-resource endpoints (like /healthz)
-- Namespaces resources (like pods) across all namespaces (`kubectl get pods --all-namespaces`)
+- Namespaced resources (like pods) across all namespaces (`kubectl get pods --all-namespaces`)
 
 #### RoleBinding and ClusterRoleBinding
 RoleBinding and ClusterRoleBinding create the links between users or groups, and the roles they're allowed to use.
@@ -159,10 +177,27 @@ EOF
 ```
 
 Verify the RBAC permissions assigned to the pod:
-`kubectl exec -it rbac-example kubectl -- auth can-i --list`
+```
+kubectl exec -it rbac-example kubectl -- auth can-i --list
+```
 
-### Authentication
-TODO: Refer to use creation in gravity101 and how to connect to a gravity cluster.
+Find out the permissions assigned to kubectl:
+```
+kubectl auth can-i --list
+```
+
+Find out the permissions for another users:
+```
+kubectl auth can-i --list --as rbac-example
+```
+
+Find the the permissions for another user as a fully qualified name:
+
+```
+kubectl auth can-i --list --as system:serviceaccount:kube-system:rbac-example
+```
+
+
 
 ### Secrets
 Reference: https://kubernetes.io/docs/concepts/configuration/secret/
@@ -463,17 +498,20 @@ Reference: https://kubernetes.io/docs/tasks/administer-cluster/network-policy-pr
 
 Note: gravity does not include a network policy controller by default. A Network policy controller such as kube-router can be added on top of a gravity cluster.
 
-
-
-## Container Security
-- Supply chain / notary
-- Vulnerability scanning
-- image signing
-- privileged users
-
-## Crypto Right Answers
+## Cloud Security
+### The metadata API
+Most cloud providers provide an API to each cloud instance, that can be used to control aspects of the cloud environment. When running untrusted software within a kubernetes cluster, or by proxying external traffic through a kubernetes service, it's easy to accidentally grant an external user access to this API. There are controllers / firewalls that can be installed ontop of a kubernetes cluster, which are cloud specific.
 
 ## Tools
+An ecosystem like kubernetes, with inherent complexity also creates an ecosystem for tools to help navigate and implement sound policies.
 
-
-## 12 Factor Apps
+Some of the tools we find helpful at gravitational are:
+- KubeAudit: https://github.com/Shopify/kubeaudit
+- KubeSec: https://kubesec.io
+- KubeIAM: https://github.com/uswitch/kiam
+- Trivy: https://github.com/aquasecurity/trivy
+- Clair: https://github.com/coreos/clair
+  - Clair doesn't tell you when it doesn't work!!
+- kubectl-who-can: https://github.com/aquasecurity/kubectl-who-can
+- rakkess: https://github.com/corneliusweig/rakkess
+- rback: https://github.com/team-soteria/rback
