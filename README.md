@@ -28,9 +28,11 @@ Let’s install VirtualBox first.
 
 Get latest stable version from https://www.virtualbox.org/wiki/Downloads.
 
+**Note:** When using Ubuntu you may need to disable Secure Boot. An alternative approach to installing with Secure Boot enabled, follow the guide [here](https://torstenwalter.de/virtualbox/ubuntu/2019/06/13/install-virtualbox-ubuntu-secure-boot.html). 
+
 ### Linux: KVM2
 
-Follow the instructions here: https://github.com/kubernetes/minikube/blob/master/docs/drivers.md#kvm2-driver
+Follow the instructions here: https://minikube.sigs.k8s.io/docs/reference/drivers/kvm2/
 
 ### Kubectl
 
