@@ -71,13 +71,13 @@ Now let’s build the cluster image:
 ```bash
 build$ tele build ~/workshop/gravity101/v1-simplest/app.yaml
 * [1/6] Selecting base image version
-       Will use base image version 5.5.8
+       Will use base image version 6.1.10
 * [2/6] Downloading dependencies from https://get.gravitational.io
 * [3/6] Embedding application container images
        Detected application manifest app.yaml
        Found no images to vendor in application manifest app.yaml
-       Pulling remote image quay.io/gravitational/debian-tall:0.0.1
-       Vendored image gravitational/debian-tall:0.0.1
+       Pulling remote image quay.io/gravitational/debian-tall:buster
+       Vendored image gravitational/debian-tall:buster
 * [4/6] Creating application
 * [5/6] Generating the cluster snapshot
 * [6/6] Saving the snapshot as cluster-image-0.0.1.tar
@@ -98,8 +98,8 @@ The resulting file, `cluster-image-0.0.1.tar`, is our cluster image:
 
 ```bash
 build$ ls -lh
-total 1.3G
--rw-rw-r-- 1 ubuntu ubuntu 1.3G May 28 19:06 cluster-image-0.0.1.tar
+total 1.4G
+-rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 19:06 cluster-image-0.0.1.tar
 ```
 
 This image can now be transferred to a node or a set of nodes and used to install a Kubernetes cluster.
@@ -123,16 +123,22 @@ Let’s check:
 ```bash
 build$ tele version
 ...
-Version:        5.5.8
+Edition:	enterprise
+Version:	6.1.10
+Git Commit:	4c4ebfcb33c5b31dcc637b57edba18f5bf9ffbea
+Helm Version:	v2.14
 ```
 
 From the build progress output above we can see that `tele` picked matching base image. How do you know which Kubernetes is included into certain base image, or just explore available images in general? For this `tele` provides a list command:
 
 ```bash
 build$ tele ls
-Name:Version    Image Type      Created (UTC)           Description
-------------    ----------      -------------           -----------
-gravity:5.6.1   Cluster         2019-04-18 01:48        Base cluster image with Kubernetes v1.14.0
+Displaying latest stable versions of images. Use --all flag to show all.
+
+Name:Version	Image Type	Created (UTC)		Description
+------------	----------	-------------		-----------
+gravity:6.2.2	Cluster		2019-10-18 02:52	Base cluster image with Kubernetes v1.16.2
+hub:6.2.2	Cluster		2019-10-18 02:52	Remote cluster management and operations center
 ```
 
 The command displays the latest stable available cluster images; it also takes a `--all` flag to display everything.
