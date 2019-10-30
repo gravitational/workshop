@@ -47,7 +47,7 @@ Let’s install VirtualBox.
 
 Get latest stable version from https://www.virtualbox.org/wiki/Downloads.
 
-**Note:** When using Ubuntu you may need to disable Secure Boot. An alternative approach to installing with Secure Boot enabled,
+**Note:** When using Ubuntu you may need to disable Secure Boot. For an alternative approach to installing with Secure Boot enabled,
 follow the guide [here](https://torstenwalter.de/virtualbox/ubuntu/2019/06/13/install-virtualbox-ubuntu-secure-boot.html).
 
 ### Kubectl
