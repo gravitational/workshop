@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: frontend
@@ -20,9 +20,9 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
-          protocol: TCP        
+          protocol: TCP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: weather
@@ -44,9 +44,9 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
-          protocol: TCP        
+          protocol: TCP
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mail
