@@ -147,13 +147,13 @@ Note that the base image version does not match the version of included Kubernet
 
 How do you pick a base image? The Releases page is a good starting point as it contains a table with all current releases and changelog for each new patch release. As a general advice, most of the time you probably want the latest stable release. In some cases you may want to stick to the latest LTS release which may not have the latest features/Kubernetes but is more “battle-tested”.
 
-Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `5.5.8`. There are a couple of ways to go about this.
+Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `6.1.10`. There are a couple of ways to go about this.
 
-The first approach is to download `tele` version `5.5.8` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `5.5.8`.
+The first approach is to download `tele` version `6.1.10` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `6.1.10`.
 
 Another option is to “pin” the base image version explicitly in the manifest file. The advantage of this approach is that it eliminates the possibility of accidentally upgrading your runtime when upgrading the `tele` tool.
 
-Let’s look at the manifest that pins base image to version `5.5.8` explicitly:
+Let’s look at the manifest that pins base image to version `6.1.10` explicitly:
 
 ```bash
 build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
@@ -162,7 +162,7 @@ build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:5.5.8
+baseImage: gravity:6.1.10
 metadata:
  name: cluster-image
  resourceVersion: 0.0.1
@@ -174,7 +174,7 @@ If we look at the difference between the two, we'll see that the new manifest sp
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1-with-base/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:5.5.8
+                                                              > baseImage: gravity:6.1.10
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -260,7 +260,7 @@ Now that we’ve added the Helm chart, let’s try to build the image again:
 ```bash
 build$ tele build ~/workshop/gravity101/v1-with-resources/app.yaml --overwrite
 * [1/6] Selecting base image version
-       Will use base image version 6.0.0-alpha.1.61 set in manifest
+       Will use base image version 6.1.10 set in manifest
 * [2/6] Local package cache is up-to-date
 * [3/6] Embedding application container images
        Detected application manifest app.yaml
@@ -376,7 +376,7 @@ build$ cat ~/workshop/gravity101/v1/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:5.5.8
+baseImage: gravity:6.1.10
 metadata:
   name: cluster-image
   resourceVersion: 0.0.1
@@ -391,7 +391,7 @@ If we compare our resulting manifest to the one we started with, we'll see all t
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:5.5.8
+                                                              > baseImage: gravity:6.1.10
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -547,7 +547,7 @@ Once this is done, all the nodes are bootstrapped and have their configuration p
 
 ```
 Wed May 22 20:45:32 UTC Install system software on master node node-1
-Wed May 22 20:45:33 UTC Install system package teleport:3.2.5 on master node node-1
+Wed May 22 20:45:33 UTC Install system package teleport:3.2.13 on master node node-1
 ```
 
 Teleport is a standalone Gravitational product. It is a drop-in SSH replacement that provides additional security and auditing features, such as short-lived certificates, role-based access control, recorded sessions and so on. Gravity uses Teleport to provide remote access to the cluster nodes. Teleport nodes run as systemd units on the cluster nodes.
@@ -555,7 +555,7 @@ Teleport is a standalone Gravitational product. It is a drop-in SSH replacement 
 Next service that’s being installed is called Planet:
 
 ```
-Wed May 22 20:45:34 UTC Install system package planet:6.0.1-11401 on master node node-1
+Wed May 22 20:45:34 UTC Install system package planet:6.1.8-11505 on master node node-1
 ```
 
 Planet, sometimes also referred to as “master container”, is a containerized Kubernetes distribution. This needs a bit more explaining.
@@ -596,9 +596,9 @@ At this point we have a fully-functional Kubernetes cluster but it does not have
 Wed May 22 20:46:48 UTC Install system application dns-app:0.3.0
 Wed May 22 20:47:02 UTC Install system application logging-app:5.0.2
 Wed May 22 20:47:15 UTC Install system application monitoring-app:6.0.1
-Wed May 22 20:47:38 UTC Install system application tiller-app:6.0.0
-Wed May 22 20:47:57 UTC Install system application site:6.0.0-alpha.1.61
-Wed May 22 20:48:50 UTC Install system application kubernetes:6.0.0-alpha.1.61
+Wed May 22 20:47:38 UTC Install system application tiller-app:6.1.0
+Wed May 22 20:47:57 UTC Install system application site:6.1.10
+Wed May 22 20:48:50 UTC Install system application kubernetes:6.1.10
 ```
 
 These system apps are a part of the base cluster image which, if you remember, we selected when we built our cluster image. They are always installed and provide basic in-cluster functionality such as in-cluster DNS, logging/monitoring facilities and Gravitational-specific cluster management plane and UI.
@@ -637,12 +637,12 @@ First, the `kubectl` binary - a main tool used to interact with Kubernetes - has
 node-1$ kubectl version
 ```
 
-Great! We’ve got Kubernetes 1.13.5 cluster. Now let’s see if our node has registered:
+Great! We’ve got Kubernetes `v1.15.5` cluster. Now let’s see if our node has registered:
 
 ```bash
 node-1$ kubectl get nodes
 NAME              STATUS   ROLES    AGE     VERSION
-192.168.121.197   Ready    <none>   2m58s   v1.14.1
+192.168.121.197   Ready    <none>   2m58s   v1.15.5
 ```
 
 And finally if we have anything running in the cluster:
@@ -657,8 +657,8 @@ Next, the `helm` binary has also been configured and made available for use on h
 
 ```bash
 node-1$ helm ls
-NAME            REVISION        UPDATED                         STATUS          CHART           APP VERSION     NAMESPACE
-nonplussed-cow  1               Thu May 23 17:30:45 2019        DEPLOYED        alpine-0.0.1                    kube-system
+NAME   	REVISION	UPDATED                 	STATUS  	CHART       	APP VERSION	NAMESPACE
+example	1       	Tue Oct 29 17:49:41 2019	DEPLOYED	alpine-0.0.1	           	kube-system
 ```
 
 Great, that works too.
@@ -724,12 +724,14 @@ We can now use `tsh` to interact with the cluster from the `build` box:
 build$ tsh ls
 build$ tsh ssh root@role=node
 node-1$ gravity status
+node-1$ exit
 ```
 
 Moreover, local `kubectl` on the `build` box has also been configured with proper credentials:
 
 ```bash
 build$ kubectl get nodes
+build$ kubectl get pods --all-namespaces -owide
 ```
 
 ### Configuring Cluster
@@ -828,7 +830,7 @@ Note the highlighted parts that have changed. Now our Helm chart will use versio
 build$ diff -y ~/workshop/gravity101/v1/app.yaml ~/workshop/gravity101/v2/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-baseImage: gravity:5.5.8                                        baseImage: gravity:5.5.8
+baseImage: gravity:6.1.10                                       baseImage: gravity:6.1.10
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                       |  resourceVersion: 0.0.2
@@ -906,6 +908,11 @@ In order to upgrade the cluster, we need to invoke the `upgrade` script found in
 
 ```bash
 node-1$ sudo ./upgrade
+Tue Oct 29 17:58:44 UTC	Importing application cluster-image v0.0.2
+Tue Oct 29 17:58:44 UTC	Synchronizing application with Docker registry 10.128.0.59:5000
+Tue Oct 29 17:58:57 UTC	Application has been uploaded
+Tue Oct 29 17:58:59 UTC	Upgrading application cluster-image from 0.0.1 to 0.0.2
+Tue Oct 29 17:58:59 UTC	Deploying upgrade agents on the nodes
 ```
 
 Once the upgrade is launched, it will take a few minutes to complete. Once it’s finished, let’s run `gravity status` to see that the cluster is now running the updated version:
@@ -918,6 +925,8 @@ And we can use `helm` too to confirm that our upgrade hook job has indeed upgrad
 
 ```bash
 node-1$ helm ls
+NAME   	REVISION	UPDATED                 	STATUS  	CHART       	APP VERSION	NAMESPACE
+example	2       	Tue Oct 29 17:59:19 2019	DEPLOYED	alpine-0.0.2	           	kube-system
 ```
 
 ## Expanding Cluster

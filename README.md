@@ -5,6 +5,8 @@ Open source series of workshops delivered by Gravitational services team.
 * [Docker 101 workshop](docker.md)
 * [Kubernetes 101 workshop using Minikube and Mattermost](k8s101.md)
 * [Kubernetes production patterns](k8sprod.md)
+* [Kubernetes security patterns](k8ssecurity.md)
+* [Kubernetes custom resources](crd/crd.md)
 * [Gravity 101](gravity101.md)
 * [Gravity fire drill exercises](firedrills.md)
 
@@ -22,40 +24,54 @@ If you have macOS (Yosemite or newer), please download Docker for Mac [here](htt
 
 *Older docker package for OSes older than Yosemite -- Docker Toolbox located [here](https://www.docker.com/products/docker-toolbox).*
 
-### VirtualBox
+### Hypervisor
 
-Let’s install VirtualBox first.
+#### HyperKit [macOS only]
+
+HyperKit is a lightweight macOS hypervisor which minikube supports out of the box and which should be
+already installed on your machine if you have Docker for Desktop installed.
+
+More information: https://minikube.sigs.k8s.io/docs/reference/drivers/hyperkit/.
+
+Alternatively, install VirtualBox like described below.
+
+#### KVM2 [Linux only]
+
+Follow the instructions here: https://minikube.sigs.k8s.io/docs/reference/drivers/kvm2/.
+
+Alternatively, install VirtualBox like described below.
+
+#### VirtualBox [both macOS and Linux]
+
+Let’s install VirtualBox.
 
 Get latest stable version from https://www.virtualbox.org/wiki/Downloads.
 
-**Note:** When using Ubuntu you may need to disable Secure Boot. An alternative approach to installing with Secure Boot enabled, follow the guide [here](https://torstenwalter.de/virtualbox/ubuntu/2019/06/13/install-virtualbox-ubuntu-secure-boot.html). 
-
-### Linux: KVM2
-
-Follow the instructions here: https://minikube.sigs.k8s.io/docs/reference/drivers/kvm2/
+**Note:** When using Ubuntu you may need to disable Secure Boot. An alternative approach to installing with Secure Boot enabled,
+follow the guide [here](https://torstenwalter.de/virtualbox/ubuntu/2019/06/13/install-virtualbox-ubuntu-secure-boot.html).
 
 ### Kubectl
 
 For macOS:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.15.2/bin/darwin/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/darwin/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 For Linux:
 
-    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.15.2/bin/linux/amd64/kubectl \
+    curl -O https://storage.googleapis.com/kubernetes-release/release/v1.16.2/bin/linux/amd64/kubectl \
         && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 
 ### Minikube
 
 For macOS:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.3.1/minikube-darwin-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.5.1/minikube-darwin-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 For Linux:
 
-    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.3.1/minikube-linux-amd64 \
+    curl -Lo minikube https://storage.googleapis.com/minikube/releases/v1.5.1/minikube-linux-amd64 \
         && chmod +x minikube && sudo mv minikube /usr/local/bin/
 
 Also, you can install drivers for various VM providers to optimize your minikube VM performance.
@@ -73,7 +89,7 @@ To run cluster:
 
 ```bash
 # starts minikube
-$ minikube start --kubernetes-version=v1.15.2
+$ minikube start --kubernetes-version=v1.16.2
 # this command should work
 $ kubectl get nodes
 # use docker from minikube
@@ -86,7 +102,7 @@ $ docker ps
 
 ```bash
 # starts minikube
-$ minikube start --kubernetes-version=v1.15.2 --vm-driver=kvm2
+$ minikube start --kubernetes-version=v1.16.2 --vm-driver=kvm2
 # this command should work
 $ kubectl get nodes
 # use docker from minikube
