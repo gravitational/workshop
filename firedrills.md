@@ -922,7 +922,7 @@ In some situations there may be no easy way to move forward with the interrupted
 
 ```shell
 node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
-node-1$ sudo mkdir /var/lib/gravity/site/update/gravity
+node-1$ sudo mkdir -p /var/lib/gravity/site/update/gravity
 node-1$ sudo chattr +i /var/lib/gravity/site/update/gravity
 ```
 
