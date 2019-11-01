@@ -26,6 +26,9 @@ We can see that all Kubernetes processes appear to be running. However, if we tr
 
 ```bash
 node-1$ sudo systemctl status kube-apiserver
+● kube-apiserver.service
+   Loaded: not-found (Reason: No such file or directory)
+   Active: inactive (dead)
 ```
 
 Gravity provides a way to obtain a shell inside the Planet container:
@@ -130,14 +133,14 @@ Oftentimes it is useful to inspect the logs of these units, for example to figur
 
 ```bash
 node-1$ sudo systemctl list-unit-files | grep planet
-gravity__gravitational.io__planet__5.6.0-11305-10-g9e464aa.service enabled
+gravity__gravitational.io__planet__6.1.8-11505.service enabled
 ```
 
 Once we've found the service name, we can use `journalctl` to see its logs:
 
 ```
 node-1$ sudo journalctl \
-    -u gravity__gravitational.io__planet__5.6.0-11305-10-g9e464aa \
+    -u gravity__gravitational.io__planet__6.1.8-11505 \
     --no-pager
 ```
 
@@ -156,6 +159,11 @@ Most often than not, however, it is more convenient to just launch Gravity shell
 ```bash
 node-1$ sudo gravity shell
 node-1-planet$ systemctl list-unit-files | grep kube
+kube-apiserver.service                 static
+kube-controller-manager.service        static
+kube-kubelet.service                   static
+kube-proxy.service                     static
+kube-scheduler.service                 static
 node-1-planet$ journalctl -u kube-apiserver --no-pager
 node-1-planet$ journalctl -u kube-kubelet --no-pager
 ```
@@ -193,7 +201,8 @@ node-1$ kubectl -nkube-system logs corednx-xxx coredns
 The kubectl command works both from host and inside the planet environment. Inside the planet there is a convenient shorthand for `kubectl -nkube-system` - `kctl`.
 
 ```bash
-node-1$ sudo gravity exec kctl logs coredns-xxx
+node-1$ sudo gravity shell
+node-1-planet$ kctl logs coredns-xxx
 ```
 
 Another crucial pod runs the Gravity cluster controller. It has many responsibilities: handles cluster operations (expand, upgrade, etc.), keeps cluster-local registries in-sync, provides an API for the `gravity` command-line utility, serves as an authentication gateway and so on. It is called “gravity-site” and runs as a DaemonSet on master nodes.
@@ -361,7 +370,9 @@ Let's imagine we've got a cluster with a weird networking problem that manifests
 ```bash
 node-1$ kubectl exec -ti debug-jl8nr /bin/sh
 debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
-// hangs, may produce result after a long while
+curl: (6) Could not resolve host: gravity-site.kube-system.svc.cluster.local
+debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
+{"info":"service is up and running","status":"ok"}  # after a long while
 ```
 
 This service URL points to the active cluster controller (`gravity-site`) and is supposed to immediately return `200 OK` but the pod can no longer reach it. All pods seem to be running and healthy though:
@@ -388,7 +399,7 @@ Bingo! Satellite just saved us (possibly) hours of troubleshooting and pointed t
 node-1$ sudo sysctl -w net.ipv4.ip_forward=1
 ...
 debug-pod$ curl -k https://gravity-site.kube-system.svc.cluster.local:3009/healthz
-{"info":"service is up and running","status":"ok"}
+{"info":"service is up and running","status":"ok"}  # fast
 ...
 node-1$ gravity status
 ...
@@ -655,11 +666,13 @@ node-3$ sudo gravity exec tcpdump -n -l -i any host 10.244.4.21
 Obviously, replace the IP with the IP of your debug pod. Then, execute another `curl` from the debug container. One of the running `tcpdump` sessions should start producing output like this:
 
 ```
-19:19:28.678062 IP 10.244.4.21.44651 > gravity.domain: 46573+ A? gravity-site.kube-system.svc.cluster.local. (60)
-19:19:28.678130 IP 10.244.4.21.44651 > gravity.domain: 47613+ AAAA? gravity-site.kube-system.svc.cluster.local. (60)
+19:54:19.140739 IP 10.244.96.4.35584 > 10.100.72.196.53: 46011+ A? gravity-site.kube-system.svc.cluster.local.default.svc.cluster.local. (86)
+19:54:19.140788 IP 10.244.96.1 > 10.244.96.4: ICMP 10.100.72.196 udp port 53 unreachable, length 122
+19:54:19.140810 IP 10.244.96.4.35584 > 10.100.72.196.53: 24204+ AAAA? gravity-site.kube-system.svc.cluster.local.default.svc.cluster.local. (86)
+19:54:19.140818 IP 10.244.96.1 > 10.244.96.4: ICMP 10.100.72.196 udp port 53 unreachable, length 122
 ```
 
-We can now see DNS queries made by our debug pod to the DNS Kubernetes service IP but it produces no response - the traffic only flows one way. This means something's wrong with our in-cluster DNS service so let’s check our CoreDNS pods and their logs (do not forget to Ctrl-C `tcpdump` running on all nodes):
+We can now see DNS queries made by our debug pod to the DNS Kubernetes service IP but they receive "port unreachable" response. This means something's wrong with our in-cluster DNS service so let’s check our CoreDNS pods and their logs (do not forget to Ctrl-C `tcpdump` running on all nodes):
 
 ```bash
 node-1$ kubectl -nkube-system get pods -owide
@@ -678,7 +691,7 @@ Keep in mind that DNS resolution issues can also be a side effect of broader net
 
 ### Scenario 1.5: Etcd
 
-Etcd is the backbone of a Kubernetes cluster. It is a distributed key-value database which Kubernetes uses to keep and replicate all of its state. Gravity also uses etcd as a database for all local cluster data, metadata for in-cluster object storage, leader information and so on. In short, when etcd is unhappy, the cluster falls apart: basic cluster operations (e.g. retrieving a list of pods) are timing out, Kubernetes is not able to schedule new pods, etc. (existings pods should keep running though).
+Etcd is the backbone of a Kubernetes cluster. It is a distributed key-value database which Kubernetes uses to keep and replicate all of its state. Gravity also uses etcd as a database for all local cluster data, metadata for in-cluster object storage, leader information and so on. In short, when etcd is unhappy, the cluster falls apart: basic cluster operations (e.g. retrieving a list of pods) are timing out, Kubernetes is not able to schedule new pods, etc. (existing pods should keep running though).
 
 Being a distributed database, etcd relies on a distributed consensus algorithm which requires a majority of all members (“quorum”) to vote in order for cluster to be able to make progress. This is important to keep in mind: it means that in an etcd cluster of N nodes, at least N/2+1 of them must be healthy in order for the whole system to keep functioning. To put this in concrete numbers, in a 3-node cluster you can afford to lose 1 member and the cluster will keep running (albeit at degraded performance), while in a 2-node cluster losing a single member means cluster outage. Etcd documentation has a nice table that explains fault tolerance depending on cluster size: https://coreos.com/etcd/docs/latest/v2/admin_guide.html#optimal-cluster-size.
 
@@ -765,22 +778,22 @@ To shut down the planet, find out its systemd unit name (note, that we’re on `
 
 ```bash
 node-3$ sudo systemctl list-unit-files | grep planet
-gravity__gravitational.io__planet__5.5.17-11305.service enabled
-node-3$ sudo systemctl stop gravity__gravitational.io__planet__5.5.17-11305.service
+gravity__gravitational.io__planet__6.1.8-11505.service enabled
+node-3$ sudo systemctl stop gravity__gravitational.io__planet__6.1.8-11505
 ```
 
 Once the planet has shut down, you can perform whatever maintenance necessary. Note that all Kubernetes services have shut down together with Planet:
 
 ```bash
-node-3$ ps aux
+node-3$ ps wwauxf
 ```
 
 But the Teleport actually keeps running:
 
 ```bash
 node-3$ systemctl list-unit-files | grep teleport
-gravity__gravitational.io__teleport__3.0.5.service      enabled
-node-3$ systemctl status gravity__gravitational.io__teleport__3.0.5.service
+gravity__gravitational.io__teleport__3.2.13.service    enabled
+node-3$ systemctl status gravity__gravitational.io__teleport__3.2.13
 ```
 
 Teleport node is still operational so it is possible to connect to it, for example via web terminal to perform maintenance if necessary.
@@ -804,7 +817,7 @@ node-1$ kubectl get nodes
 Keep in mind that if you restart the node, Planet will automatically start when the node boots up. Once the maintenance has been completed, let's bring Planet back up:
 
 ```bash
-node-3$ sudo systemctl start gravity__gravitational.io__planet__5.5.17-11305.service
+node-3$ sudo systemctl start gravity__gravitational.io__planet__6.1.8-11505
 ```
 
 It will take the cluster a minute or so to recover, after which let's uncordon the node and let Kubernetes start scheduling pods on it again:
@@ -837,6 +850,8 @@ As we found out before, a 3-node cluster can afford to lose 1 node so the cluste
 node-1$ gravity status
 node-1$ kubectl get nodes
 node-1$ sudo gravity exec etcdctl cluster-health
+...
+cluster is degraded
 ```
 
 We should note again here, that in our case we have (or had, rather) a 3-master HA cluster, thus we could afford to lose one of the masters. If we had a 3-node cluster with less than 3 masters, we would not have any etcd redundancy and wouldn't be able to afford the loss of a single master.
@@ -907,7 +922,7 @@ In some situations there may be no easy way to move forward with the interrupted
 
 ```shell
 node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
-node-1$ sudo mkdir /var/lib/gravity/site/update/gravity
+node-1$ sudo mkdir -p /var/lib/gravity/site/update/gravity
 node-1$ sudo chattr +i /var/lib/gravity/site/update/gravity
 ```
 
