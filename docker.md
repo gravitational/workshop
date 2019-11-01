@@ -4,7 +4,7 @@ Docker 101 workshop - introduction to Docker and basic concepts
 
 ## Installation
 
-### Hardare Requirements
+### Hardware Requirements
 
 You will need an MacOS or Linux based system with at least `8GB RAM` and `10GB of free disk space` available.
 
@@ -40,7 +40,7 @@ Docker containers are just as simple as Linux processes, but they also provide m
 
 Let's review the structure of the command we just used:
 
-```bashFixed Git conflicts leftovers
+```bash
 docker             # Docker client binary used to interact with Docker
 run                # Docker subcommand - runs a command in a container
 busybox            # container image used by the run command
@@ -89,8 +89,6 @@ Stopped containers will remain available until cleaned. You can then removed sto
 docker rm my_container_name_or_id
 ```
 
-```
-
 Stopped containers will remain available until cleaned. You can then removed stopped containers by using:
 ```bash
 docker rm my_container_name_or_id
@@ -100,9 +98,9 @@ The argument used for the `rm` command can be the container ID or the container 
 
 If you prefer, it's possible to add the option `--rm` to the `run` subcommand so that the container will be cleaned automatically as soon as it stops its execution.
 
-### Adding envrionment variables
+### Adding environment variables
 
-Let's see what environment variables there are by default:
+Let's see what environment variables are used by default:
 
 ```
 $ docker run busybox env
@@ -111,7 +109,7 @@ HOSTNAME=0a0169cdec9a
 HOME=/root
 ```
 
-The environment variables to the container may be different on other systems and the hostname is randomized per container, unless specified differently.
+The environment variables passed to the container may be different on other systems and the hostname is randomized per container, unless specified differently.
 
 When needed we can extend the environment by passing variable flags as `docker run` arguments:
 
@@ -200,7 +198,7 @@ lo        Link encap:Local Loopback
 
 In case you're not familiar with Python, one of the built-in modules offer simple HTTP server features and by default it will serve the current directory via HTTP on the port specified as the command argument (5000) in our case.
 
-The following command should work on any Linux or MacOS system that has Python intalled, and will offer your current directory content via HTTP on port 5000:
+The following command should work on any Linux or MacOS system that has Python installed, and will offer your current directory content via HTTP on port 5000:
 ```bash
 $ python -m http.server 5000
 ```
@@ -209,7 +207,7 @@ We'll now translate that command in a Docker container, so that you won't need P
 To forward port 5000 from the host system to port 5000 inside the container the `-p` flag should be added to the `run` command:
 
 ```bash
-$ docker run -p 5000:5000 library/python:3.3 python -m http.server 5000
+$ docker run -p 5000:5000 library/python:3 python -m http.server 5000
 ```
 
 This command remains alive and attached to the current session because the server will keep listening for requests.
@@ -239,11 +237,11 @@ Multiple Linux subsystems help to create the container foundations:
 
 Namespaces create isolated stacks of Linux primitives for a running process.
 
-* NET namespace creates a separate networking stack for the container, with its own routing tables and devices
+* NET namespace creates a separate networking stack for the container, with its own routing tables and devices.
 * PID namespace is used to assign isolated process IDs that are separate from host OS. This is important to avoid any information exposure from the host about processes.
 * MNT namespace creates a scoped view of a filesystem using [VFS](http://www.tldp.org/LDP/khg/HyperNews/get/fs/vfstour.html). It allows a container to get its own "root" filesystem and map directories from one location on the host to the other location inside container.
 * UTS namespace lets container to get to its own hostname.
-* IPC namespace is used to isolate inter-process communication (e.g. IPC, pipes, message queues and so on)
+* IPC namespace is used to isolate inter-process communication (e.g. IPC, pipes, message queues and so on).
 * USER namespace allows container processes have different users and IDs from the host OS.
 
 ### Control groups
@@ -325,13 +323,13 @@ One little note about the additional options specified in the `exec` command.
 * `-t` flag attaches terminal for interactive typing
 * `-i` flag attaches input/output from the terminal to the process
 
-Now that we hav ea shell inside the container, let's find what process is running as PID 1:
+Now that we have opened a new shell inside the container, let's find what process is running as PID 1:
 
 This workflow is similar to using `SSH` to connect in the container, however there is no remote network connection involved.
 The process `/bin/sh` shell session is started running in the container namespaces instead of the host OS ones.
 
 ```bash
-# ps uax
+$ ps uax
 USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
 root         1  0.5  0.0  74456 17512 ?        Ss   18:07   0:00 python -m http.server 5000
 root         7  0.0  0.0   4336   748 ?        Ss   18:08   0:00 /bin/sh
@@ -343,21 +341,21 @@ root        13  0.0  0.0  19188  2284 ?        R+   18:08   0:00 ps uax
 To best illustrate the impact of `-i` or `--interactive` in the expanded version, consider this example:
 
 ```bash
-$ echo "hello there " | docker run busybox grep hello
+$ echo "hello there" | docker run busybox grep hello
 ```
 
 The example above won't work as the container's input is not attached to the host stdout. The `-i` flag fixes just that:
 
 ```bash
-$ echo "hello there " | docker run -i busybox grep hello
-hello there 
+$ echo "hello there" | docker run -i busybox grep hello
+hello there
 ```
 
 ### Starting and stopping containers
 
 It is possible to stop and start long-living containers using `stop` and `start` commands:
 
-```
+```bash
 $ docker stop simple1
 $ docker start simple1
 ```
@@ -368,7 +366,7 @@ $ docker start simple1
 
 So far we have been using container images downloaded from Docker's public registry.
 
-One of the key success factors for Docker among competitors was the possibility to easily create, customize, share and improve container images cooperatively. 
+One of the key success factors for Docker among competitors was the possibility to easily create, customize, share and improve container images cooperatively.
 
 Let's see how it works.
 
@@ -376,7 +374,7 @@ Let's see how it works.
 
 `Dockerfile` is a special file that instructs `docker build` command how to build an image:
 
-```
+```bash
 $ cd docker/scratch
 $ cat hello.sh
 $ docker build -t hello .
@@ -403,7 +401,7 @@ ADD hello.sh /hello.sh
 
 `docker images` command is used to display images that we have built:
 
-```
+```bash
 docker images
 REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
 hello                                         latest              4dce466cf3de        10 minutes ago      34 B
@@ -427,7 +425,8 @@ $ docker run hello /hello.sh
 write pipe: bad file descriptor
 ```
 
-or 
+or
+
 ```bash
 standard_init_linux.go:211: exec user process caused "no such file or directory"
 ```
@@ -570,7 +569,6 @@ Sometimes it is helpful to supply arguments during build process
 (for example, user ID to be created inside the container). 
 We can supply build arguments as flags to `docker build` as we already did to the `run` command:
 
-
 ```bash
 $ cd docker/busybox-arg
 $ docker build --build-arg=BUILD1="Alice and Bob" -t hello:v5 .
@@ -633,7 +631,7 @@ Let's update the script.sh
 cp script2.sh script.sh
 ```
 
-They are only differrent by one letter, but this makes a difference:
+They are only different by one letter, but this makes a difference:
 
 
 ```bash
@@ -670,7 +668,7 @@ Docker images are composed of layers:
 
 ![images](https://docs.docker.com/storage/storagedriver/images/container-layers.jpg)
 
-Every layer is a the result of the execution of a command in the Dockerfile. 
+Every layer is a the result of the execution of a command in the Dockerfile.
 
 ### RUN command
 
@@ -715,7 +713,7 @@ REPOSITORY                                    TAG                 IMAGE ID      
 myubuntu                                      latest              50928f386c70        53 seconds ago      221.8 MB
 ```
 
-That is 220MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside. 
+That is 220MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside.
 If base on your use-case you still need it though, Docker will save you some space by re-using the base layer, so images with slightly different bases would not repeat each other.
 
 ### Operations with images
@@ -726,7 +724,7 @@ You are already familiar with one command, `docker images`. You can also remove 
 
 Let's start with removing the image that takes too much disk space:
 
-```
+```bash
 $ docker rmi myubuntu
 Error response from daemon: conflict: unable to remove repository reference "myubuntu" (must force) - container 292d1e8d5103 is using its referenced image 50928f386c70
 ```
@@ -763,7 +761,7 @@ Deleted: sha256:50928f386c704610fb16d3ca971904f3150f3702db962a4770958b8bedd9759b
 
 We have quite a lot of versions of `hello` built, but latest still points to the old `v1`.
 
-```
+```bash
 $ docker images | grep hello
 hello                                         v7                  d0ec3cfed6f7        33 minutes ago      1.11 MB
 hello                                         v6                  db7c6f36cba1        42 minutes ago      1.11 MB
@@ -790,7 +788,6 @@ hello                                         v2                  195aa31a5e4d  
 
 Both `v7` and `latest` point to the same image ID `d0ec3cfed6f7`.
 
-
 ### Publishing images
 
 Images are distributed with a special service - `docker registry`.
@@ -804,7 +801,7 @@ $ docker run -p 5000:5000 --name registry -d registry:2
 
 To instruct where we want to publish, we need to prepend registry address to image name:
 
-```
+```bash
 $ docker tag hello:v7 127.0.0.1:5000/hello:v7
 $ docker push 127.0.0.1:5000/hello:v7
 ```
@@ -825,4 +822,4 @@ Status: Image is up to date for 127.0.0.1:5000/hello:v7
 We have learned how to start, build and publish containers and learned the containers building blocks.
 However, there is much more to learn. Just check out the [official docker documentation!](https://docs.docker.com/engine/userguide/).
 
-Thanks to Docker team for such an amazing product!
+Thanks to the Docker team for such an amazing product!
