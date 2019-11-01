@@ -71,7 +71,7 @@ Now let’s build the cluster image:
 ```bash
 build$ tele build ~/workshop/gravity101/v1-simplest/app.yaml
 * [1/6] Selecting base image version
-       Will use base image version 6.1.10
+       Will use base image version 6.1.11
 * [2/6] Downloading dependencies from https://get.gravitational.io
 * [3/6] Embedding application container images
        Detected application manifest app.yaml
@@ -124,7 +124,7 @@ Let’s check:
 build$ tele version
 ...
 Edition:	enterprise
-Version:	6.1.10
+Version:	6.1.11
 Git Commit:	4c4ebfcb33c5b31dcc637b57edba18f5bf9ffbea
 Helm Version:	v2.14
 ```
@@ -147,13 +147,13 @@ Note that the base image version does not match the version of included Kubernet
 
 How do you pick a base image? The Releases page is a good starting point as it contains a table with all current releases and changelog for each new patch release. As a general advice, most of the time you probably want the latest stable release. In some cases you may want to stick to the latest LTS release which may not have the latest features/Kubernetes but is more “battle-tested”.
 
-Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `6.1.10`. There are a couple of ways to go about this.
+Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `6.1.11`. There are a couple of ways to go about this.
 
-The first approach is to download `tele` version `6.1.10` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `6.1.10`.
+The first approach is to download `tele` version `6.1.11` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `6.1.11`.
 
 Another option is to “pin” the base image version explicitly in the manifest file. The advantage of this approach is that it eliminates the possibility of accidentally upgrading your runtime when upgrading the `tele` tool.
 
-Let’s look at the manifest that pins base image to version `6.1.10` explicitly:
+Let’s look at the manifest that pins base image to version `6.1.11` explicitly:
 
 ```bash
 build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
@@ -162,7 +162,7 @@ build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:6.1.10
+baseImage: gravity:6.1.11
 metadata:
  name: cluster-image
  resourceVersion: 0.0.1
@@ -174,7 +174,7 @@ If we look at the difference between the two, we'll see that the new manifest sp
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1-with-base/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:6.1.10
+                                                              > baseImage: gravity:6.1.11
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -260,7 +260,7 @@ Now that we’ve added the Helm chart, let’s try to build the image again:
 ```bash
 build$ tele build ~/workshop/gravity101/v1-with-resources/app.yaml --overwrite
 * [1/6] Selecting base image version
-       Will use base image version 6.1.10 set in manifest
+       Will use base image version 6.1.11 set in manifest
 * [2/6] Local package cache is up-to-date
 * [3/6] Embedding application container images
        Detected application manifest app.yaml
@@ -376,7 +376,7 @@ build$ cat ~/workshop/gravity101/v1/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:6.1.10
+baseImage: gravity:6.1.11
 metadata:
   name: cluster-image
   resourceVersion: 0.0.1
@@ -391,7 +391,7 @@ If we compare our resulting manifest to the one we started with, we'll see all t
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:6.1.10
+                                                              > baseImage: gravity:6.1.11
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -597,8 +597,8 @@ Wed May 22 20:46:48 UTC Install system application dns-app:0.3.0
 Wed May 22 20:47:02 UTC Install system application logging-app:5.0.2
 Wed May 22 20:47:15 UTC Install system application monitoring-app:6.0.1
 Wed May 22 20:47:38 UTC Install system application tiller-app:6.1.0
-Wed May 22 20:47:57 UTC Install system application site:6.1.10
-Wed May 22 20:48:50 UTC Install system application kubernetes:6.1.10
+Wed May 22 20:47:57 UTC Install system application site:6.1.11
+Wed May 22 20:48:50 UTC Install system application kubernetes:6.1.11
 ```
 
 These system apps are a part of the base cluster image which, if you remember, we selected when we built our cluster image. They are always installed and provide basic in-cluster functionality such as in-cluster DNS, logging/monitoring facilities and Gravitational-specific cluster management plane and UI.
@@ -830,7 +830,7 @@ Note the highlighted parts that have changed. Now our Helm chart will use versio
 build$ diff -y ~/workshop/gravity101/v1/app.yaml ~/workshop/gravity101/v2/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-baseImage: gravity:6.1.10                                       baseImage: gravity:6.1.10
+baseImage: gravity:6.1.11                                       baseImage: gravity:6.1.11
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                       |  resourceVersion: 0.0.2
