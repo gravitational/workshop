@@ -198,7 +198,7 @@ kubectl auth can-i --list --as rbac-example
 Find the the permissions for another user as a fully qualified name:
 
 ```
-kubectl auth can-i --list --as system:serviceaccount:kube-system:rbac-example
+kubectl auth can-i --list --as system:serviceaccount:default:rbac-example
 ```
 
 
@@ -449,6 +449,7 @@ Pods will be treated as lowest priority. Processes in these pods are the first t
 For a Pod to be given a QoS class of BestEffort, the Containers in the Pod must not have any memory or CPU limits or requests.
 
 Example best-effort pod:
+```
 apiVersion: v1
 kind: Pod
 metadata:
@@ -458,6 +459,7 @@ spec:
   containers:
   - name: qos-demo-3-ctr
     image: nginx
+```
 
 ### Pod Priority and Preemption
 Reference: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
