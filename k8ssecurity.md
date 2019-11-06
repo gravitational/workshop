@@ -111,15 +111,19 @@ RoleBinding and ClusterRoleBinding create the links between users or groups, and
 
 ```
 kubectl apply -f - <<EOF
+kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
 metadata:
-  # "namespace" omitted since ClusterRoles are not namespaced
-  name: secret-reader
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "watch", "list"]
+  namespace: default
+  name: example-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader
+subjects:
+- kind: ServiceAccount
+  name: build-robot
+  namespace: default
 EOF
 ```
 
