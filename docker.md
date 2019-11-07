@@ -677,7 +677,7 @@ The most frequently used command is `RUN` as it executes the command in a contai
 Let's us use existing package managers to compose our images:
 
 ```Dockerfile
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 RUN apt-get update
 RUN apt-get install -y curl
 ENTRYPOINT curl
@@ -710,10 +710,10 @@ However, it all comes at a price:
 ```bash
 $ docker images
 REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
-myubuntu                                      latest              50928f386c70        53 seconds ago      221.8 MB
+myubuntu                                      latest              50928f386c70        53 seconds ago      106 MB
 ```
 
-That is 220MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside.
+That is 106MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside.
 If base on your use-case you still need it though, Docker will save you some space by re-using the base layer, so images with slightly different bases would not repeat each other.
 
 ### Operations with images

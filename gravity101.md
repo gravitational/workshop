@@ -10,7 +10,7 @@ For this training we’ll need:
 
 * 1 machine for building installers. Can be any Linux (preferably Ubuntu 18.04 or recent CentOS) with installed Docker 18.06 or newer.
 
-* 3 machines for deploying a cluster. Clean nodes, preferably Ubuntu 16.04 or recent CentOS.
+* 3 machines for deploying a cluster. Clean nodes, preferably Ubuntu 18.04 or recent CentOS.
 
 _Note: If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment._
 
