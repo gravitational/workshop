@@ -16,7 +16,7 @@ spec:
         run: my-nginx
     spec:
       containers:
-      - image: nginx:1.91
+      - image: nginx:999 # <-- TYPO: non-existent version
         name: my-nginx
         ports:
         - containerPort: 80

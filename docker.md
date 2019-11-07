@@ -274,7 +274,7 @@ It's still working and now we can see it running with the `ps` command:
 ```bash
 docker ps
 CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
-eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
+eea49c9314db        library/python:3     "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
 
 ### Inspecting a running container
