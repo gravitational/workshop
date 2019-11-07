@@ -88,12 +88,6 @@ Stopped containers will remain available until cleaned. You can then removed sto
 ```bash
 docker rm my_container_name_or_id
 ```
-
-Stopped containers will remain available until cleaned. You can then removed stopped containers by using:
-```bash
-docker rm my_container_name_or_id
-```
-
 The argument used for the `rm` command can be the container ID or the container name.
 
 If you prefer, it's possible to add the option `--rm` to the `run` subcommand so that the container will be cleaned automatically as soon as it stops its execution.
@@ -136,7 +130,7 @@ PID   USER     TIME  COMMAND
     1 root       0:00 ps uax
 ```
 
-*NOTE:* Oh my! Am I running this command as root? Technically yes, although remember as we anticipated this is not the actual root of your host system but a very limited one running inside the container. We will get back to the topic of users and security a bit later.
+*Oh my!* Am I running this command as root? Technically yes, although remember as we anticipated this is not the actual root of your host system but a very limited one running inside the container. We will get back to the topic of users and security a bit later.
 
 In fact, as you can see, the process runs in a very limited and isolated environment where it cannot see or access all the other processes running on your machine.
 
