@@ -412,7 +412,7 @@ Here's a quick explanation of the columns shown in that output:
 
 ### Running the image
 
-Trying running our newly built image will result in an error similar to one of the following, depending on the Docker version:
+Trying to run our newly built image will result in an error similar to one of the following, depending on the Docker version:
 
 ```bash
 $ docker run --rm hello /hello.sh
@@ -497,7 +497,7 @@ ENTRYPOINT ["/hello.sh"]
 $ docker build -t hello:v3 .
 ```
 
-We should be now able to run the new image version without supply additional arguments:
+We should now be able to run the new image version without supplying additional arguments:
 
 ```bash
 $ docker run --rm hello:v3
