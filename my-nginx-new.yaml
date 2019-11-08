@@ -16,7 +16,7 @@ spec:
         run: my-nginx
     spec:
       containers:
-      - image: nginx:1.11.5
+      - image: nginx:1.17.5
         name: my-nginx
         ports:
         - containerPort: 80

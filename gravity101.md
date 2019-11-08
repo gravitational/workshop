@@ -10,7 +10,7 @@ For this training we’ll need:
 
 * 1 machine for building installers. Can be any Linux (preferably Ubuntu 18.04 or recent CentOS) with installed Docker 18.06 or newer.
 
-* 3 machines for deploying a cluster. Clean nodes, preferably Ubuntu 16.04 or recent CentOS.
+* 3 machines for deploying a cluster. Clean nodes, preferably Ubuntu 18.04 or recent CentOS.
 
 _Note: If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment._
 
@@ -18,15 +18,15 @@ _Note: If you’re taking this training as a part of Gravitational training prog
 
 ### What is Gravity?
 
-Gravity is a set of tools that let you the following things:
+Gravity is a set of tools that let you achieve the following results:
 
 * Package complex Kubernetes application(-s) as self-contained, deployable “images”.
 
-* Use those images to provision multi-node hardened HA Kubernetes clusters from scratch on any fleet of servers, including fully air-gapped environments, with a single command (or a click).
+* Use those images to provision multi-node hardened HA Kubernetes clusters from scratch on any fleet of servers in the cloud or on-prem, including fully air-gapped environments, with a single command (or a click).
 
 * Perform cluster health monitoring and lifecycle management (such as scaling up/down), provide controlled, secure and audited access to the cluster nodes, automatically push application updates to many clusters and much more.
 
-You can think of Gravity as an “image” management toolkit and draw an analogy with Docker: with Docker you build a “filesystem image” and use that image to spin up many containers, whereas Gravity allows you build a “cluster image” and spin up many Kubernetes cluster with it.
+You can think of Gravity as an “image” management toolkit and draw an analogy with Docker: with Docker you build a “filesystem image” and use that image to spin up many containers, whereas Gravity allows you to build a “cluster image” and spin up many Kubernetes cluster with it.
 
 Let’s take a look at how we build a cluster image.
 
@@ -40,11 +40,11 @@ Tele can be downloaded from the Downloads page.
 
 _Note: If you were provided with a pre-build environment for the training, `tele` should already be present on the build machine._
 
-Note that currently `tele` can build cluster images on Linux only, due to some quirks with Docker on macOS.
+_Note: Currently `tele` can build cluster images on Linux only, due to some quirks with Docker on MacOS._
 
 ### Cluster Manifest
 
-As a next step, we need to create a cluster manifest. Cluster manifest is a “Dockerfile” for your cluster image - it is used to describe basic cluster metadata, provide requirements for the cluster nodes, define various cluster lifecycle hooks and so on.
+As a next step, we need to create a cluster manifest. Cluster manifest is the equivalent of a “Dockerfile” for your cluster image - it is used to describe basic cluster metadata, provide requirements for the cluster nodes, define various cluster lifecycle hooks and so on.
 
 Our [documentation](https://gravitational.com/gravity/docs/pack/#application-manifest) provides a full list of parameters that the manifest lets you tweak, but for now let’s create the simplest possible manifest file. The manifest file is usually named `app.yaml`.
 

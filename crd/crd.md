@@ -81,7 +81,7 @@ kind: Nginx
 metadata:
   name: mynginx
 spec:
-  version: 1.9.1
+  version: 1.17.5
 ```
 
 ## Creating Custom Resource

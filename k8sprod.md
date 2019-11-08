@@ -15,7 +15,7 @@ The first common anti-pattern when working with Docker images, or more specifica
 Let's take consider this Dockerfile:
 
 ```Dockerfile
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 RUN apt-get update
 RUN apt-get install gcc
@@ -114,7 +114,7 @@ For example:
 #
 # Build stage.
 #
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 
 RUN apt-get update
 RUN apt-get install -y gcc

@@ -88,12 +88,6 @@ Stopped containers will remain available until cleaned. You can then removed sto
 ```bash
 docker rm my_container_name_or_id
 ```
-
-Stopped containers will remain available until cleaned. You can then removed stopped containers by using:
-```bash
-docker rm my_container_name_or_id
-```
-
 The argument used for the `rm` command can be the container ID or the container name.
 
 If you prefer, it's possible to add the option `--rm` to the `run` subcommand so that the container will be cleaned automatically as soon as it stops its execution.
@@ -103,7 +97,7 @@ If you prefer, it's possible to add the option `--rm` to the `run` subcommand so
 Let's see what environment variables are used by default:
 
 ```
-$ docker run busybox env
+$ docker run --rm busybox env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=0a0169cdec9a
 HOME=/root
@@ -114,7 +108,7 @@ The environment variables passed to the container may be different on other syst
 When needed we can extend the environment by passing variable flags as `docker run` arguments:
 
 ```bash
-$ docker run -e HELLO=world busybox env
+$ docker run --rm -e HELLO=world busybox env
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 HOSTNAME=8ee8ba3443b6
 HELLO=world
@@ -126,7 +120,7 @@ HOME=/root
 Let's now take a look at process tree running in the container:
 
 ```bash
-$ docker run busybox ps uax
+$ docker run --rm busybox ps uax
 ```
 
 My terminal prints out something similar to:
@@ -136,7 +130,7 @@ PID   USER     TIME  COMMAND
     1 root       0:00 ps uax
 ```
 
-*NOTE:* Oh my! Am I running this command as root? Technically yes, although remember as we anticipated this is not the actual root of your host system but a very limited one running inside the container. We will get back to the topic of users and security a bit later.
+*Oh my!* Am I running this command as root? Technically yes, although remember as we anticipated this is not the actual root of your host system but a very limited one running inside the container. We will get back to the topic of users and security a bit later.
 
 In fact, as you can see, the process runs in a very limited and isolated environment where it cannot see or access all the other processes running on your machine.
 
@@ -145,14 +139,14 @@ In fact, as you can see, the process runs in a very limited and isolated environ
 The filesystem used inside running containers is also isolated and separated from the one in the host:
 
 ```bash
-$ docker run busybox ls -l /home
+$ docker run --rm busybox ls -l /home
 total 0
 ```
 
 What if we want to expose one or more directories inside a container? To do so the option `-v/--volume` must be used as shown in the following example:
 
 ```
-$ docker run -v $(pwd):/home busybox ls -l /home
+$ docker run --rm -v $(pwd):/home busybox ls -l /home
 total 72
 -rw-rw-r--    1 1000     1000         11315 Nov 23 19:42 LICENSE
 -rw-rw-r--    1 1000     1000         30605 Mar 22 23:19 README.md
@@ -174,7 +168,7 @@ In this configuration all changes done in the specified directory will be immedi
 Networking in Docker containers is also isolated. Let's look at the interfaces inside a running container:
 
 ```bash
-$ docker run busybox ifconfig
+$ docker run --rm busybox ifconfig
 eth0      Link encap:Ethernet  HWaddr 02:42:AC:11:00:02  
           inet addr:172.17.0.2  Bcast:0.0.0.0  Mask:255.255.0.0
           inet6 addr: fe80::42:acff:fe11:2/64 Scope:Link
@@ -207,7 +201,7 @@ We'll now translate that command in a Docker container, so that you won't need P
 To forward port 5000 from the host system to port 5000 inside the container the `-p` flag should be added to the `run` command:
 
 ```bash
-$ docker run -p 5000:5000 library/python:3 python -m http.server 5000
+$ docker run --rm -p 5000:5000 library/python:3 python -m http.server 5000
 ```
 
 This command remains alive and attached to the current session because the server will keep listening for requests.
@@ -263,7 +257,7 @@ You can find a lot of additional low level detail [here](http://crosbymichael.co
 Our last python server example was inconvenient as it worked in foreground so it was bound to our shell. If we closed our shell the container would also die with it. In order to fix this problem let's change our command to:
 
 ```bash
-$ docker run -d -p 5000:5000 --name=simple1 library/python:3.3 python -m http.server 5000
+$ docker run --rm -d -p 5000:5000 --name=simple1 library/python:3 python -m http.server 5000
 ```
 
 Flag `-d` instructs Docker to start the process in background. Let's see if our HTTP connection still works after we close our session:
@@ -280,7 +274,7 @@ It's still working and now we can see it running with the `ps` command:
 ```bash
 docker ps
 CONTAINER ID        IMAGE                COMMAND                  CREATED             STATUS              PORTS                    NAMES
-eea49c9314db        library/python:3.3   "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
+eea49c9314db        library/python:3     "python -m http.serve"   3 seconds ago       Up 2 seconds        0.0.0.0:5000->5000/tcp   simple1
 ```
 
 ### Inspecting a running container
@@ -341,13 +335,13 @@ root        13  0.0  0.0  19188  2284 ?        R+   18:08   0:00 ps uax
 To best illustrate the impact of `-i` or `--interactive` in the expanded version, consider this example:
 
 ```bash
-$ echo "hello there" | docker run busybox grep hello
+$ echo "hello there" | docker run --rm busybox grep hello
 ```
 
 The example above won't work as the container's input is not attached to the host stdout. The `-i` flag fixes just that:
 
 ```bash
-$ echo "hello there" | docker run -i busybox grep hello
+$ echo "hello there" | docker run --rm -i busybox grep hello
 hello there
 ```
 
@@ -418,10 +412,10 @@ Here's a quick explanation of the columns shown in that output:
 
 ### Running the image
 
-Trying running our newly built image will result in an error similar to one of the following, depending on the Docker version:
+Trying to run our newly built image will result in an error similar to one of the following, depending on the Docker version:
 
 ```bash
-$ docker run hello /hello.sh
+$ docker run --rm hello /hello.sh
 write pipe: bad file descriptor
 ```
 
@@ -457,7 +451,7 @@ hello                                         latest              c8c3f1ea6ede  
 We can run our script now:
 
 ```bash
-$ docker run hello /hello.sh
+$ docker run --rm hello /hello.sh
 hello, world!
 ```
 
@@ -486,7 +480,7 @@ hello                                         latest              47060b048841  
 Execute the script using `image:tag` notation:
 
 ```bash
-$ docker run hello:v2 /hello.sh
+$ docker run --rm hello:v2 /hello.sh
 hello, world v2!
 ```
 
@@ -503,17 +497,17 @@ ENTRYPOINT ["/hello.sh"]
 $ docker build -t hello:v3 .
 ```
 
-We should be now able to run the new image version without supply additional arguments:
+We should now be able to run the new image version without supplying additional arguments:
 
 ```bash
-$ docker run hello:v3
+$ docker run --rm hello:v3
 hello, world !
 ```
 
 What happens if you pass an additional argument as in previous examples? They will be passed to the `ENTRYPOINT` command as arguments:
 
 ```bash
-$ docker run hello:v3 woo
+$ docker run --rm hello:v3 woo
 hello, world woo!
 ```
 
@@ -553,13 +547,13 @@ Let's build and run:
 ```bash
 cd docker/busybox-env
 $ docker build -t hello:v4 .
-$ docker run -e RUN1=Alice hello:v4
+$ docker run --rm -e RUN1=Alice hello:v4
 hello, Bob and Alice!
 ```
 
 Though it's important to know that **variables specified at runtime takes precedence over those specified at build time**:
 ```bash
-$ docker run -e BUILD1=Jon -e RUN1=Alice hello:v4
+$ docker run --rm -e BUILD1=Jon -e RUN1=Alice hello:v4
 hello, Jon and Alice!
 ```
 
@@ -621,7 +615,7 @@ Step 4 : ENTRYPOINT /script.sh
 Removing intermediate container 50f057fd89cb
 Successfully built db7c6f36cba1
 
-$ docker run hello:v6
+$ docker run --rm hello:v6
 hello, hello!
 ```
 
@@ -636,7 +630,7 @@ They are only different by one letter, but this makes a difference:
 
 ```bash
 $ docker build -t hello:v7 .
-$ docker run hello:v7
+$ docker run --rm hello:v7
 Hello, hello!
 ```
 
@@ -677,7 +671,7 @@ The most frequently used command is `RUN` as it executes the command in a contai
 Let's us use existing package managers to compose our images:
 
 ```Dockerfile
-FROM ubuntu:14.04
+FROM ubuntu:18.04
 RUN apt-get update
 RUN apt-get install -y curl
 ENTRYPOINT curl
@@ -693,6 +687,7 @@ $ docker build -t myubuntu .
 We can use our newly created ubuntu to curl pages:
 
 ```bash
+$ # don't use `--rm` this time
 $ docker run myubuntu https://google.com
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
@@ -710,10 +705,10 @@ However, it all comes at a price:
 ```bash
 $ docker images
 REPOSITORY                                    TAG                 IMAGE ID            CREATED             SIZE
-myubuntu                                      latest              50928f386c70        53 seconds ago      221.8 MB
+myubuntu                                      latest              50928f386c70        53 seconds ago      106 MB
 ```
 
-That is 220MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside.
+That is 106MB for curl! As we know, there is no mandatory requirement to have images with all the OS inside.
 If base on your use-case you still need it though, Docker will save you some space by re-using the base layer, so images with slightly different bases would not repeat each other.
 
 ### Operations with images
@@ -794,7 +789,7 @@ Images are distributed with a special service - `docker registry`.
 Let us spin up a local registry:
 
 ```bash
-$ docker run -p 5000:5000 --name registry -d registry:2
+$ docker run --rm -p 5000:5000 --name registry -d registry:2
 ```
 
 `docker push` is used to publish images to registries.
