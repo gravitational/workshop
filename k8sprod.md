@@ -12,7 +12,7 @@ First, follow [installation instructions](README.md#installation)
 
 The first common anti-pattern when working with Docker images, or more specifically, when writing Dockerfiles for your own images, is mixing build and runtime environments in the same image.
 
-Let's take consider this Dockerfile:
+Let's consider this Dockerfile:
 
 ```Dockerfile
 FROM ubuntu:18.04
@@ -37,10 +37,10 @@ There are a couple of problems with the resulting Docker image.
 
 ```bash
 $ docker images | grep prod
-prod                                          latest              b2c197180350        14 minutes ago      293.7 MB
+prod                                          latest              b2c197180350        14 minutes ago      201MB
 ```
 
-That's almost 300 megabytes to host several kilobytes of a C program! We are bringing in package manager, C compiler and lots of other unnecessary tools that are not required to run this program.
+That's almost 200 megabytes to host several kilobytes of a C program! We are bringing in package manager, C compiler and lots of other unnecessary tools that are not required to run this program.
 
 Which leads us to the second problem:
 
@@ -101,7 +101,7 @@ $ docker run prod:v2
 Hello World
 $ docker images | grep prod
 prod                                          v2                  ef93cea87a7c        17 seconds ago       11.05 MB
-prod                                          latest              b2c197180350        45 minutes ago       293.7 MB
+prod                                          latest              b2c197180350        45 minutes ago       201 MB
 ```
 
 **NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" you binaries to have them include all needed libraries.
