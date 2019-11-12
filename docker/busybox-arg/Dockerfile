@@ -1,5 +1,5 @@
 FROM busybox
 ADD hello.sh /hello.sh
-ARG BUILD1
-ENV BUILD1 $BUILD1
+ARG ARG1
+ENV BUILD1 $ARG1
 ENTRYPOINT ["/hello.sh"]

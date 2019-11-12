@@ -565,7 +565,7 @@ We can supply build arguments as flags to `docker build` as we already did to th
 
 ```bash
 $ cd docker/busybox-arg
-$ docker build --build-arg=BUILD1="Alice and Bob" -t hello:v5 .
+$ docker build --build-arg=ARG1="Alice and Bob" -t hello:v5 .
 $ docker run hello:v5
 hello, Alice and Bob!
 ```
