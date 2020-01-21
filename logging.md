@@ -50,7 +50,7 @@ Log forwarder runs on every node of the cluster as a part of a DaemonSet:
 $ kubectl -nkube-system get ds,pods -lname=log-forwarder
 ```
 
-This component uses `remote_syslog2` to monitor files in the following directories:
+This component uses [remote_syslog2](https://github.com/papertrail/remote_syslog2) to monitor files in the following directories:
 
 * `/var/log/containers/*.log`
 
@@ -64,11 +64,11 @@ This directory contains Gravity-specific operation logs:
 $ ls -l /var/lib/gravity/site/*/*.log
 ```
 
-The forwarder Docker image and its configuration can be found here.
+The forwarder Docker image and its configuration can be found [here](https://github.com/gravitational/logging-app/tree/version/5.5.x/images/forwarder).
 
 ## Collector
 
-Log collector is an rsyslogd server that’s running as a part of Deployment:
+Log collector is an rsyslogd server that’s running as a part of a Deployment:
 
 ```bash
 $ kubectl -nkube-system get deploy,pods -lrole=log-collector
@@ -88,14 +88,16 @@ The collector itself writes all logs into `/var/log/messages` which is mounted i
 planet$ less /var/log/messages
 ```
 
-The collector Docker image and its configuration can be found here.
+Keep in mind that since the collector runs on a single node at a time and writes to the local `/var/log/messages`, the logs may become scattered across multiple nodes if the pod gets rescheduled to another node.
+
+The collector Docker image and its configuration can be found [here](https://github.com/gravitational/logging-app/tree/version/5.5.x/images/collector).
 
 ### wstail
 
 In addition to running rsyslog daemon, the log collector container also runs a program called “wstail”. It adds the following functionality:
 
 * Serves an HTTP API that allows to query all collected logs. The API is exposed via the same Kubernetes service and is used by Gravity Control Panel to provide search functionality.
-* Is responsible for creating/deleting log forwarder configurations when they are created by users.
+* Is responsible for creating/deleting log forwarder configurations when they are created/deleted by users.
 
 ## Custom Log Forwarders
 
@@ -151,7 +153,7 @@ $ kubectl -nkube-system exec log-collector-697d94486-2fgxp -- cat /etc/rsyslog.d
 *.* @192.168.99.102:514
 ```
 
-From here on out, the rsyslog server running inside the log collector pod will be forwarding all logs it receives to the configured destination using the rsyslog protocol.
+From here on, the rsyslog server running inside the log collector pod will be forwarding all logs it receives to the configured destinations using the rsyslog protocol.
 
 We can test this by capturing all traffic on this port using netcat:
 
