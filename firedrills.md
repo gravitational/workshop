@@ -33,7 +33,7 @@ node-1$ sudo systemctl status kube-apiserver
 
 #### Planet Container Properties
 
-Planet is a runc-based container that unshares the following namespaces:
+Planet is a runc-based container that creates private copies of the following namespaces so it is able to manage resources independently of other processes:
 
 * `NEWNS`, mounts.
 * `NEWUTS`, hostname.
@@ -41,11 +41,11 @@ Planet is a runc-based container that unshares the following namespaces:
 * `PID`, allows to launch systemd as PID 1.
 * `CGROUP`, isolates cgroup hierarchy (on supported kernels, 4.6+).
 
-All Linux capabilities available on host are assigned to the Planet container as well. In addition, the Planet container gets access to all block and character devices on host and included a udev monitor that propagates device/partition information from host.
+All Linux capabilities available on host are assigned to the Planet container as well. In addition, the Planet container gets access to all block and character devices on host and includes a udev monitor that propagates device/partition information from host.
 
 This set of properties make Planet container similar to what Docker calls a "privileged" container.
 
-The Planet's rootfs is located under `/var/lib/gravity/local/packages/unpacked/gravitational.io/planet/<version>/rootfs/` so to be able access certain information from host, it sets up several bind mounts:
+The Planet's rootfs is located under `/var/lib/gravity/local/packages/unpacked/gravitational.io/planet/<version>/rootfs/` so to be able to access certain information from host, it sets up several bind mounts:
 
 * `/proc`, `/sys` and a few things from `/dev`.
 * Several Gravity system directories such as `/var/lib/gravity`.
@@ -217,6 +217,12 @@ Once the file has been edited, we need to tell systemd to reload the configurati
 node-1-planet$ systemctl daemon-reload
 ```
 
+Alternatively, we can use systemctl to edit the service file which will take care of reloading configuration automatically:
+
+```bash
+node-1-planet$ EDITOR=nano systemctl edit --full kube-kubelet
+```
+
 Finally, we can restart kubelet which will start producing more debug output in its logs:
 
 ```bash
@@ -224,7 +230,7 @@ node-1-planet$ systemctl restart kube-kubelet
 node-1-planet$ journalctl -u kube-kubelet -f
 ```
 
-Note that the changes we've made to the systemd unit will persist across the Planet container restarts but will be reset when a new version of Planet is rolled during system upgrade, for example.
+Note that the changes we've made to the systemd unit will persist across Planet container restarts but will be lost during a gravity upgrade that includes a new version of planet due to the inclusion of a new rootfs.
 
 #### Other System Logs
 
