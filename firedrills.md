@@ -12,7 +12,7 @@ _Note: If you’re taking this training as a part of Gravitational training prog
 
 ## General Troubleshooting Tools
 
-### Gravity Shell
+### Planet Container
 
 Gravity runs Kubernetes inside a container. This master container (which is usually referred to as Planet) provides a “bubble of consistency” for all Kubernetes components and their dependencies and ensures that all nodes in the cluster look identical to each other. The Planet container is based on Debian Stretch.
 
@@ -30,6 +30,30 @@ node-1$ sudo systemctl status kube-apiserver
    Loaded: not-found (Reason: No such file or directory)
    Active: inactive (dead)
 ```
+
+#### Planet Container Properties
+
+Planet is a runc-based container that creates private copies of the following namespaces so it is able to manage resources independently of other processes:
+
+* `NEWNS`, mounts.
+* `NEWUTS`, hostname.
+* `IPC`, prevents inter-process communication with host processes.
+* `PID`, allows to launch systemd as PID 1.
+* `CGROUP`, isolates cgroup hierarchy (on supported kernels, 4.6+).
+
+All Linux capabilities available on host are assigned to the Planet container as well. In addition, the Planet container gets access to all block and character devices on host and includes a udev monitor that propagates device/partition information from host.
+
+This set of properties make Planet container similar to what Docker calls a "privileged" container.
+
+The Planet's rootfs is located under `/var/lib/gravity/local/packages/unpacked/gravitational.io/planet/<version>/rootfs/` so to be able to access certain information from host, it sets up several bind mounts:
+
+* `/proc`, `/sys` and a few things from `/dev`.
+* Several Gravity system directories such as `/var/lib/gravity`.
+* Mounts specified in the cluster image manifest.
+
+We'll explore how to share information between Planet and host in more detail soon.
+
+### Gravity Shell
 
 Gravity provides a way to obtain a shell inside the Planet container:
 
@@ -154,7 +178,7 @@ Note that since these services run inside Planet, we need to use Gravity shell, 
 node-1$ sudo gravity exec journalctl -u etcd --no-pager
 ```
 
-Most often than not, however, it is more convenient to just launch Gravity shell session on a node and keep exploring, rather than prefixing every command with `gravity exec`:
+More often than not, however, it is more convenient to just launch Gravity shell session on a node and keep exploring, rather than prefixing every command with `gravity exec`:
 
 ```bash
 node-1$ sudo gravity shell
@@ -167,6 +191,46 @@ kube-scheduler.service                 static
 node-1-planet$ journalctl -u kube-apiserver --no-pager
 node-1-planet$ journalctl -u kube-kubelet --no-pager
 ```
+
+Most of these services run with standard logging settings (usually logging at INFO level) and you may want to increase the verbosity of the log output of a certain component when troubleshooting something. Different processes have different ways of increasing the log verbosity, Kubernetes services usually take a `-v` flag followed by a numeric verbosity level, 1-10.
+
+Let's see how we can get kubelet to log more information.
+
+First, we need to identify where its systemd unit file is located as we'll need to edit it to add the flag. Depending on the service, its unit file may be found in `/lib/systemd/system` or `/etc/systemd/system` so to know for sure let's check the unit status:
+
+```bash
+node-1-planet$ systemctl status kube-kubelet
+● kube-kubelet.service - Kubernetes Kubelet
+   Loaded: loaded (/lib/systemd/system/kube-kubelet.service; static; vendor preset: enabled)
+   Active: active (running) since Mon 2019-10-07 19:19:13 UTC; 3 months 9 days ago
+```
+
+Once the unit's service spec file is identified, edit it and add a `-v5` flag somewhere to the `ExecStart` command:
+
+```bash
+node-1-planet$ nano /lib/systemd/system/kube-kubelet.service
+```
+
+Once the file has been edited, we need to tell systemd to reload the configuration, otherwise the changes won't take effect:
+
+```bash
+node-1-planet$ systemctl daemon-reload
+```
+
+Alternatively, we can use systemctl to edit the service file which will take care of reloading configuration automatically:
+
+```bash
+node-1-planet$ EDITOR=nano systemctl edit --full kube-kubelet
+```
+
+Finally, we can restart kubelet which will start producing more debug output in its logs:
+
+```bash
+node-1-planet$ systemctl restart kube-kubelet
+node-1-planet$ journalctl -u kube-kubelet -f
+```
+
+Note that the changes we've made to the systemd unit will persist across Planet container restarts but will be lost during a gravity upgrade that includes a new version of planet due to the inclusion of a new rootfs.
 
 #### Other System Logs
 
@@ -234,6 +298,22 @@ node-1$ sudo gravity report
 It may take a while to execute, but as a result it will produce a `report.tar.gz` file with a lot of diagnostic information about the cluster, including all system/operation logs, OS and node configuration (such as iptables rules, loaded kernel modules, available disk space and so on), etc.
 
 It is useful to remember this command and ask users to collect the debug report so it can be shared with your support team (or Gravitational team) for offline troubleshooting. The report provides a comprehensive overview of the cluster state and usually contains enough information to figure our (or at least narrow down) a particular issue.
+
+If you want to collect only Kubernetes logs of all containers running in the cluster, Kubernetes provides a command to do so:
+
+```bash
+node-1$ kubectl cluster-info dump
+```
+
+The command will output all information into stdout but can also be instructed to dump everything into a directory, in which case all the object specs and the logs will be neatly organized by namespaces / names:
+
+```bash
+node-1$ kubectl cluster-info dump --output-directory=~/k8s-dump
+```
+
+Ability to filter by namespace(-s) is also supported via `--namespaces` flag. Check the commands help output for more information.
+
+Note that this cluster dump is also a part of the Gravity debug tarball collected by `gravity report`.
 
 ### Sharing Files Between Planet And Host
 
