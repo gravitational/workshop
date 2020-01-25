@@ -20,7 +20,7 @@ There are 4 main components in the monitoring system: InfluxDB, Heapster, Grafan
 
 ### InfluxDB
 
-Is an open source time series database which is used for the main data store for current and future monitoring time series data that is handled. Provides the Kubernetes service `influxdb.monitoring.svc.cluster.local.`
+Is an open source time series database which is used for the main data store for monitoring time series data. Provides the Kubernetes service `influxdb.monitoring.svc.cluster.local.`
 
 
 ### Heapster
