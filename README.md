@@ -10,6 +10,7 @@ Open source series of workshops delivered by Gravitational services team.
 * [Gravity 101](gravity101.md)
 * [Gravity fire drill exercises](firedrills.md)
 * [Gravity logging](logging.md)
+* [Gravity monitoring & alerts](monitoring.md)
 
 ## Installation
 
