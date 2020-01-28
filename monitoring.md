@@ -135,7 +135,7 @@ We can use the same InfluxDB API to see the retention policies configured in the
 $ curl -s -u root:dSIl1LaDwO9b61tue6VzqSdmfQDgahzk http://influxdb.monitoring.svc.cluster.local:8086/query?db=k8s --data-urlencode 'q=show retention policies' | jq
 ```
 
-All metrics sent to InfluxDB by Heapster are saved using the default retention policy which means that all the high-resolution (15 sec) metrics collected are kept intact for 24 hours.
+All metrics sent to InfluxDB by Heapster are saved using the default retention policy which means that all the high-resolution metrics collected are kept intact for 24 hours.
 
 To provide historical overview some of the most commonly helpful metrics (such as CPU/memory usage, network transfer rates) are rolled up to lower resolutions and stored using the longer retention policies mentioned above.
 
