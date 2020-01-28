@@ -303,16 +303,16 @@ port no	mac addr		is local?	ageing timer
 
 
 Notes:
-- Ip link shows the state of all network interfaces. 
+- `ip link` shows the state of all network interfaces. 
     - MTU - Maximum Transmission Unit, what is the maximum packet size (without fragmentation) supported by this device.
     - UP/LOWER_UP - What is the physical state of this interface, is it UP (turned on), Down, No carrier, etc.
     - Ethernet address, this is the physical hardware address of this device. Because it’s a virtual device, the mac address will be dynamically generated, and won’t be an address programmed into the physical networking hardware.
-- Ip addr (or ip address) shows information about the IP addresses assigned to the device
+- `ip addr` (or ip address) shows information about the IP addresses assigned to the device
     - In this case we have an IPv4 (inet) and IPv6 (inet6) address assigned within the kernel.
     - Scope refers to the routing scope, the ipv6 address is a scope “link” address, meaning it’s only relevant on that particular network. The ipv4 address is scope global, so it is a routable address. This can get confusing though, because our address is in the 10.0.0.0/8 reserved range, it is not globally routable, but is still considered a routable address range by the kernel.
-- Ip neighbor show shows us the learning state of arp (address resolution protocol), which is a mapping of IP addresses to hardware addresses. 
+- `ip neighbor show` shows us the learning state of arp (address resolution protocol), which is a mapping of IP addresses to hardware addresses. 
     - When transmitting a packet to a host on the same network, the link layer address needs to be that of the destination host, so that the network switches can send the packet out the correct link. These switches don’t send packets by IP, they send by MAC. So when the system needs to send a packet to 1.1.1.1, it needs to use the mapping of IP to MAC to address the correct link layer address on the network.
-- Brctl showmacs cni0
+- `brctl showmacs cni0`
     - Brctl isn’t commonly installed on most linux distributions, but we ship a version in the gravity planet container, so it can be exec via planet by running sudo gravity exec -i
     - This shows is basically the equivalent of if we had a physical switch, which ports has the switch learned each mac address is on (note that this isn’t IP aware). 
 
