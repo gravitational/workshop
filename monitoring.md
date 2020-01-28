@@ -132,7 +132,7 @@ Let's now talk about durations the measurements are stored for. During initial i
 We can use the same InfluxDB API to see the retention policies configured in the database:
 
 ```bash
-$ curl -s -u root:dSIl1LaDwO9b61tue6VzqSdmfQDgahzk http://influxdb.monitoring.svc.cluster.local:8086/query?db=k8s --data-urlencode 'q=show retention policies' | jq
+$ curl -s -u root:$PASS http://influxdb.monitoring.svc.cluster.local:8086/query?db=k8s --data-urlencode 'q=show retention policies' | jq
 ```
 
 All metrics sent to InfluxDB by Heapster are saved using the default retention policy which means that all the high-resolution metrics collected are kept intact for 24 hours.
