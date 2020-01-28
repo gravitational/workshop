@@ -649,6 +649,8 @@ The nodes also run [Telegraf](https://github.com/influxdata/telegraf/tree/master
 
 In addition to the default metrics, Telegraf also queries the Satellite Prometheus endpoint described above and ships all metrics to the same “k8s” database in InfluxDB.
 
+Telegraf configuration can be found [here](https://github.com/gravitational/monitoring-app/tree/version/5.5.x/images/telegraf/rootfs/etc/telegraf). The respective configuration files show which input plugins each Telegraf instance has enabled.
+
 ## More about Kapacitor
 
 As mentioned Kapacitor is the alerting system that streams data from InfluxDB and handles alerts sent to users. Kapacitor can also be configured to send email alerts, or customized with other alerts.
