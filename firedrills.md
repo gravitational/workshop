@@ -491,7 +491,7 @@ Cluster nodes:  nostalgicbell4909
 
 The cluster status may take a minute to recover and get back to "healthy".
 
-### Scenario 1.2: Overlay Network 
+### Scenario 1.2: Overlay Network
 
 Overlay network is an essential component of a Kubernetes cluster that allows pods to communicate with each other. By default the overlay network is provided by Flannel with VXLAN backend.
 

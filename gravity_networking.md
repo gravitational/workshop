@@ -10,7 +10,7 @@ This training is geared towards troubleshooting the network layer of gravity clu
 ## Introduction
 Networking within gravity and kubernetes can be overwhelming at first, with lots of moving parts. As software moved to the cloud, a movement was created to break software down into smaller applications that provide a service, allowing for independent development and patching, and getting past problems with tight integration, as well as including third party software. 
 
-Within kubernetes, the design choice made is to allocate every unit of compute (each pod) an IP address. This means that from a networking perspective, each pod is it’s own addressable node on the network. 
+Within kubernetes, the design choice made is to allocate every unit of compute (each pod) an IP address. This means that from a networking perspective, each pod is its own addressable node on the network. 
 
 Within this training topic, we’ll cover some introductory networking, how gravity uses flannel to build an overlay network for kubernetes pods, how network services within ingress are created, and troubleshoot a network problem.
 
@@ -41,7 +41,7 @@ Bridges don’t create separate networks, everything connected to the bridge sti
 
 ### Switch
 
-These days a switch isn’t really a separate concept from a bridge. Switches are generally multiport devices that are intelligent, learn the topology of the network, and create separate collision domains on every port. If every device is directly connected directly to a switch, collisions no longer become a possibility.
+These days a switch isn’t really a separate concept from a bridge. Switches are generally multiport devices that are intelligent, learn the topology of the network, and create separate collision domains on every port. If every device is directly connected to a switch, collisions no longer become a possibility.
 
 Additionally, many active switches also have intelligence for preventing issues like network loops, where if there are multiple cables between two switches (a loop in the topology), the switch can identify the loop and block extra ports. Without this protection, broadcasts can be transmitted in a loop indefinitely.
 
@@ -56,7 +56,7 @@ A router is a device for connecting more than one network together. A router ope
 
 Multiple routers can exist within a single network, allowing the routers to communicate over the shared network. This allows a packet to hop between various networks to reach the packets destination.
 
-Example: To route a packet from my home laptop to google, I send a packet to my home router from my ISP, which forwards the packet across my DSL line to my routers ISP, which forwards the packet onwards to another router, until reaching the google server.
+Example: To route a packet from my home laptop to google, I send a packet to my home router from my ISP, which forwards the packet across my DSL line to my ISP router, which forwards the packet onwards to another router, until reaching the google server.
 
 Note: There is a lot more to this, but this is a good starting conceptual model.
 
@@ -65,14 +65,14 @@ Note: There is a lot more to this, but this is a good starting conceptual model.
 
 A firewall is a device for monitoring or controlling network traffic that crosses the firewall based on some configuration. At the simplest, configuration in the firewall will block or allow traffic based on simple rules, such as matching a port. However, many firewalls now have lots of features that allow for lots of flexibility in how the firewall acts.
 
-Many OSes also include an endpoint firewall, so a system such as linux can have firewall policy for all packets processes by the OS.
+Many OSes also include an endpoint firewall, so a system such as linux can have firewall policy for all packets processed by the OS.
 
 
 ### Network Address Translation (NAT) / Port Address Translation (PAT)
 
-NAT and PAT are the ability to substitute addresses or port numbers as a packet is processed by a device. The number of IPv4 addresses are limited, so many networks use privately routable IP addresses. Private IP addresses only exist within a corporation, or set of networks, so to reach the internet, a device can translate IP addresses between private IP addresses and a shared public IP address.
+NAT and PAT are the ability to substitute addresses or port numbers as a packet is processed by a device. The number of IPv4 addresses available are limited, so many networks use privately routable IP addresses. Private IP addresses only exist within a corporation, or set of networks, so to reach the internet, a device can translate IP addresses between private IP addresses and a shared public IP address.
 
-Example: Most routers provided by an ISP, at least in North America, will give all computers on the home network an IP address like 192.168.1.5. The ISP will then issues a public IP address, such as 8.8.2.3. All computers on the home network can communicate with the internet, but the ISP router will NAT the packets to 8.8.2.3 when communicating on the internet.
+Example: Most routers provided by an ISP, at least in North America, will give all computers on the home network an IP address like 192.168.1.5. The ISP will issue a public IP address, such as 8.8.2.3. All computers on the home network can communicate with the internet, but the ISP router will NAT the packets to 8.8.2.3 when communicating on the internet.
 
 Note: Commonly NAT and PAT together is just referred to as NAT.
 
@@ -119,7 +119,7 @@ To allow the hosts within a network to communicate with each other, let’s add 
 
 ![gravity_networking_2](img/gravity_networking_02.png)
 
-Each server within a network now belongs to the same network, with an assigned IP range. The switch will physically relay frames between the various switch ports to reach other servers within the same network. For example, the Accounts DB (10.0.2.2) can send it’s log to our log server (10.0.2.4/24) via the database switch. 
+Each server within a network now belongs to the same network, with an assigned IP range. The switch will physically relay frames between the various switch ports to reach other servers within the same network. For example, the Accounts DB (10.0.2.2) can send its log to our log server (10.0.2.4/24) via the database switch. 
 
 Now, let’s setup a router, so that we’re able to route packets between our various networks:
 
@@ -128,7 +128,7 @@ Now, let’s setup a router, so that we’re able to route packets between our v
 Even though our router is connected to each network, we still need to configure the servers to use the router to reach the other network. 
 
 We have a few options for the configuration:
-- Each route can be individual configured on each server
+- Each route can be individually configured on each server
 - A single larger route can be used, for all the possible subnets
 - A default gateway can be configured, as a router that knows how to reach any destination the server doesn’t know how to reach.
 
@@ -168,12 +168,12 @@ Finally, we can add some infrastructure for connectivity to the internet:
 
 ## Introduction to Overlay Networking
 
-With kubernetes and containerized applications, the idea is to disconnect the direct relationship between a running application and which physical servers are running the application. Our individual unit of software is no longer a machine running a particular application (or a set of applications), but instead is a pod that can be scheduled and started on any machine within a cluster that meets a pods requirements.
+With kubernetes and containerized applications, the idea is to disconnect the direct relationship between a running application and which physical servers are running the application. Our individual unit of software is no longer a machine running a particular application (or a set of applications), but instead is a pod that can be scheduled and started on any machine within a cluster that meets a pod's requirements.
 
-Networks running kubernetes clusters are configured in a wide variety of ways, and have very different capabilities. As a result, kubernetes itself doesn’t actually include networking, instead kubernetes provides a plugin system that allows for many different network ways to integrate networks. Instead kubernetes defines a set of requirements that the network must provide.
+Networks running kubernetes clusters are configured in a wide variety of ways, and have very different capabilities. As a result, kubernetes itself doesn’t actually include networking, instead kubernetes provides a plugin system that allows for many different ways to integrate networks. Instead kubernetes defines a set of requirements that the network must provide.
 
 These requirements are:
-Each Pod is assigned its own unique IP addresses
+Each Pod is assigned its own unique IP address
 Each Pod must be able to reach all other Pods without NAT
 Agents or software on a node must be able to communicate with all pods on the node without NAT
 
@@ -185,11 +185,11 @@ When building an overlay network, the network will look very similar to the conc
 
 As such, the requirements gravity has for the physical network, is that all gravity hosts are able to communicate with each other over a set of defined ports: https://gravitational.com/gravity/docs/requirements/#network
 
-As a starting point, let’s take 3 blank hosts (or virtual machine) that are on the same network, and start building a diagram:
+As a starting point, let’s take 3 blank hosts or virtual machine that are on the same network, and start building a diagram:
 
 ![gravity_networking_5](img/gravity_networking_05.png)
 
-With this diagram, we can see that each server has an eth0 interface, and an address within the 192.168.33.0/24 network. In most cases, this network will be provided by the customer, and we don’t know how the network is made up. But for our case, we’ll just abstract away the customers network, as long as the hosts can communicate on the required ports, the customer network doesn’t matter to us.
+With this diagram, we can see that each server has an eth0 interface, and an address within the 192.168.33.0/24 network. In most cases, this network will be provided by the customer, and we don’t know how the network is made up. But for our case, we’ll just abstract away the customer's network, as long as the hosts can communicate on the required ports, the customer network doesn’t matter to us.
 
 When building an overlay network, we need a network range for the overlay network. In this example we will use 10.90.0.0/16 for the overlay network. The overlay network used by gravity can be changed at install time using the --pod-network-cidr install flag.
 
@@ -206,7 +206,7 @@ In order to build the overlay network, the first thing we’ll look at is a virt
 
 ![gravity_networking_6](img/gravity_networking_06.png)
 
-In this example, we bridge is called cni0, which will match how gravity sets up the network. 
+In this example, the bridge is called cni0, which will match how gravity sets up the network. 
 
 Using a running gravity cluster, let’s inspect the cni0 bridge.
 
@@ -313,8 +313,8 @@ Notes:
 - `ip neighbor show` shows us the learning state of arp (address resolution protocol), which is a mapping of IP addresses to hardware addresses. 
     - When transmitting a packet to a host on the same network, the link layer address needs to be that of the destination host, so that the network switches can send the packet out the correct link. These switches don’t send packets by IP, they send by MAC. So when the system needs to send a packet to 1.1.1.1, it needs to use the mapping of IP to MAC to address the correct link layer address on the network.
 - `brctl showmacs cni0`
-    - Brctl isn’t commonly installed on most linux distributions, but we ship a version in the gravity planet container, so it can be exec via planet by running sudo gravity exec -i
-    - This shows is basically the equivalent of if we had a physical switch, which ports has the switch learned each mac address is on (note that this isn’t IP aware). 
+    - Brctl isn’t commonly installed on most linux distributions, but we ship a version in the gravity planet container, so it can be execucted via planet by running sudo gravity exec -i
+    - This shows basically the equivalent of if we had a physical switch, which ports has the switch learned each mac address is on (note that this isn’t IP aware). 
 
 ### VXLAN
 
@@ -440,9 +440,9 @@ Notes:
     - Inside the vxlan configuration, we see vlan id 1, the local IP and parent device running vxlan (in this example ens4). We also see other options such as dstport and nolearning.
     - Dstport is the udp port externally that vxlan is running on. All hosts within the cluster use the same port as per the linux kernel configuration.
     - Flannel sets the vxlan to nolearning, as flannel will take care of communicating the learning state itself and statically configure each host.
-- `bridge fdb shows` us the kernels interface forwarding database, on which interfaces a particular mac exists, and in this vxlan case, what destination IP on the host network to send packets towards matching the particular mac.
+- `bridge fdb show` is the kernel's interface forwarding database, on which interfaces a particular mac exists, and in this vxlan case, what destination IP on the host network to send packets towards matching the particular mac.
     - You will note that these are permanent records, they have been statically configured by flannel and are not dynamically discovered.
-    - Ip route shows us the IP routing table, where we indicate to get to a specific /24 network, to route via a particular router (the .0 of the network), and to use the flannel.1 (our vxlan) interface.
+- `ip route` shows us the IP routing table, where we indicate to get to a specific /24 network, to route via a particular router (the .0 of the network), and to use the flannel.1 (our vxlan) interface.
 - `ip neighbor` shows us the arp entries created using the flannel.1 vxlan interface
     - Again these are permanent entries configured by flannel, to allow IP address to physical mappings.
 
@@ -460,7 +460,7 @@ The next component to consider is routing of packets. The linux kernel can act a
 
 Notes:
 - The default route still goes towards the host network, we only want the overlay network to use the overlay network interfaces.
-- Because we’ve created more specific routes for our virtual network, if those IP addresses also exist on our customers network, the packets will no longer be routed to the customers network.
+- Because we’ve created more specific routes for our virtual network, if those IP addresses also exist on our customer's network, the packets will no longer be routed to the customers network.
 
 Let’s inspect the routing configuration:
 
@@ -545,14 +545,14 @@ Notes:
 
 The last component we need to take a look at, is the pod network itself, which will use network namespaces to virtualize the kernel network stack. 
 
-This network stack virtualization creates a bit of a wiggle however, if the pod runs in it’s own virtual network stack, it’s not part of any of the hosts networking. The linux kernel has a special virtual interface we can use to connect the namespaces, called a veth pair (a virtual ethernet pair). A veth pair acts like two network interfaces that are connected by a cable. This allows us to place one end of the cable within the pods virtual network stack, and the other end within the host network stack.
+This network stack virtualization creates a bit of a wiggle however, if the pod runs in its own virtual network stack, it’s not part of any of the hosts networking. The linux kernel has a special virtual interface we can use to connect the namespaces, called a veth pair (a virtual ethernet pair). A veth pair acts like two network interfaces that are connected by a cable. This allows us to place one end of the cable within the pods virtual network stack, and the other end within the host network stack.
 
 Lets include some pods in our conceptual diagram:
 
 ![gravity_networking_9](img/gravity_networking_09.png)
 
 
-Let’s take a look at what this looks like on our gravity cluster:
+Let’s take a look at flannel's internal configuration:
 
 ```
 root@kevin-test1:~# sudo gravity exec brctl show
@@ -1014,7 +1014,7 @@ And if we look at the answer to this packet
 
 The most important part is: `NXDomain*`
 
-This tells us the DNS server responded with a non-existant name, there are no records that match the DNS query.
+This tells us the DNS server responded with a non-existent name, there are no records that match the DNS query.
 
 An alternative answer we receive could look something like this:
 ```
