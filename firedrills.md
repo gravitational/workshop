@@ -427,7 +427,7 @@ Let’s keep the debug pods running, we’re going to use them for some of our t
 
 ## Cluster Troubleshooting
 
-### Scenario 1.1: Kernel Modules / Parameters
+### Scenario 1.1: Kernel Modules / Parameters (Deprecated: see [Gravity Network Troubleshooting](gravity_networking.md))
 
 Kubernetes requires a number of certain kernel modules to be loaded to function properly.
 
@@ -567,7 +567,7 @@ node-1$ sudo iptables -D INPUT -p udp --dport 8472 -j REJECT
 node-2$ ping -c1 10.244.93.3
 ```
 
-#### Flannel Issues
+#### Flannel Issues (Deprecated: see [Gravity Network Troubleshooting](gravity_networking.md))
 
 Overlay network issues may be caused by issues with the flannel itself as well.
 
@@ -655,7 +655,7 @@ And loaded kernel modules:
 node-1$ sudo lsmod
 ```
 
-### Scenario 1.4: DNS
+### Scenario 1.4: DNS (Deprecated: see [Gravity Network Troubleshooting](gravity_networking.md))
 
 Another set of pretty common issues a cluster can encounter are related to DNS resolution. Gravity uses CoreDNS for DNS resolution and service discovery within the cluster.
 
