@@ -6,6 +6,7 @@ spec:
   template:
     metadata:
       name: install
+      namespace: default
     spec:
       restartPolicy: OnFailure
       containers:
