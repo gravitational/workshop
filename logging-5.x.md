@@ -1,4 +1,4 @@
-# Gravity Logging
+# Gravity Logging (for Gravity 5.5 and earlier)
 
 ## Prerequisites
 
