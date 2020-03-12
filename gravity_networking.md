@@ -39,6 +39,8 @@ Topology awareness means that the bridge knows which devices are on which port o
 
 Bridges don’t create separate networks, everything connected to the bridge still forms a single network, and single broadcast domain. A message to every computer on the network, a broadcast, will be forwarded by the bridge. But what a bridge does is create a separate collision domain, devices on either side of the bridge can transmit without causing collisions.
 
+Bridges aren't IP address aware, they track systems by mapping their MAC addresses to individual ports on the bridge.
+
 ### Switch
 
 These days a switch isn’t really a separate concept from a bridge. Switches are generally multiport devices that are intelligent, learn the topology of the network, and create separate collision domains on every port. If every device is directly connected to a switch, collisions no longer become a possibility.
@@ -194,9 +196,9 @@ With this diagram, we can see that each server has an eth0 interface, and an add
 When building an overlay network, we need a network range for the overlay network. In this example we will use 10.90.0.0/16 for the overlay network. The overlay network used by gravity can be changed at install time using the --pod-network-cidr install flag.
 
 Within the 10.90.0.0/16 network, we will then allocate a smaller /24 network to each host:
-Node 1 - 10.90.1.0/24
-Node 2 - 10.90.2.0/24
-Node 3 - 10.90.3.0/24
+- Node 1 - 10.90.1.0/24
+- Node 2 - 10.90.2.0/24
+- Node 3 - 10.90.3.0/24
 
 Any pod scheduled to a particular node, will get assigned an IP address belonging to the node. 
 
