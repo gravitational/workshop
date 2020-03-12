@@ -44,6 +44,7 @@ lrwxrwxrwx 1 root root 66 Jan 15 00:24 bandwagon-6c4b...-lqbll_kube-system_bandw
 
 Logrange consists of the following main components: collector, aggregator and forwarder. These components can be seen in the following diagram.
 
+![Logrange Architecture](img/logrange.png)
 
 ### Collector
 
@@ -117,7 +118,7 @@ $ kubectl -nkube-system get deploy,pods -lapp=log-collector
 The adapter adds the following functionality:
 
 * Serves an HTTP API that allows to query all collected logs. The API is exposed via a Kubernetes service and is used by Gravity Control Panel to provide search functionality. Internally, adapter uses Logrange’s [LQL](https://www.logrange.io/docs/lql.html) to query the data.
-* It is also responsible for updating log forwarder configurations when they are created or deleted by users.
+* It is also responsible for updating log forwarder configurations when they are created or modified by users.
 
 ## Custom Log Forwarders
 
@@ -161,7 +162,7 @@ Then, Logrange adapter picks up the change and updates the forwarder configurati
 $ kubectl -nkube-system get configmaps/lr-forwarder -oyaml
 ```
 
-After that, the forwarder starts sending the logs into the configured destination using the syslog protocol.
+After that, the forwarder starts sending the logs to the configured destination using the syslog protocol.
 
 We can test this by capturing all traffic on this port using netcat:
 

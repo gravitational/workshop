@@ -9,7 +9,8 @@ Open source series of workshops delivered by Gravitational services team.
 * [Kubernetes custom resources](crd/crd.md)
 * [Gravity 101](gravity101.md)
 * [Gravity fire drill exercises](firedrills.md)
-* [Gravity logging](logging-6.x.md)
+* [Gravity logging (Gravity 5.5 and earlier)](logging-5.x.md)
+* [Gravity logging (Gravity 6.0 and later)](logging-6.x.md)
 * [Gravity monitoring & alerts](monitoring.md)
 * [Gravity networking and network troubleshooting](gravity_networking.md)
 
