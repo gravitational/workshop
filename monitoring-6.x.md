@@ -1,0 +1,982 @@
+# Gravity Monitoring & Alerts (for Gravity 6.0 and later)
+
+## Prerequisites
+
+Docker 101, Kubernetes 101, Gravity 101.
+
+## Introduction
+
+_Note: This part of the training pertains to Gravity 6.0 and later. In Gravity 6.0 Gravitational replaced InfluxDB/Kapacitor monitoring stack with Prometheus/Alertmanager._
+
+Gravity Clusters come with a fully configured and customizable monitoring and alerting systems by default. The system consists of various components, which are automatically included into a Cluster Image that is built with a single command `tele build`.
+
+## Overview
+
+Before getting into Gravity’s monitoring and alerts capability in more detail, let’s first discuss the various components that are involved. 
+
+There are 4 main components in the monitoring system: Prometheus, Grafana, Alertmanager and Satellite.  
+
+### Prometheus
+
+Is an open source Kubernetes native monitoring system and time-series database that collects hardware and OS metrics, as well as metrics about various k8s resources (deployments, nodes, and pods). Prometheus exposes the cluster-internal service `prometheus-k8s.monitoring.svc.cluster.local:9090`.
+
+### Grafana
+
+Is an open source metrics suite which provides the dashboard in the Gravity monitoring and alerts system. The dashboard provides a visual to the information stored in Prometheus, which is exposed as the service `grafana.monitoring.svc.cluster.local:3000`. Credentials generated are placed into a secret `grafana` in the monitoring namespace 
+
+Gravity is shipped with 2 pre-configured dashboards providing a visual of machine and pod-level overview of the installed cluster. Within the Gravity control panel, you can access the dashboard by navigating to the Monitoring page. 
+
+By default, Grafana is running in anonymous read-only mode. Anyone who logs into Gravity can view but not modify the dashboards. 
+
+### Alertmanager
+
+Is a Prometheus component that handles alerts sent by client  applications such as a Prometheus server. Alertmanager handles deduplicating, grouping and routing alerts to the correct receiver integration such as an email recipient. Alertmanager exposes the cluster-internal service `alertmanager-main.monitoring.svc.cluster.local:9093`.
+
+### Satellite
+
+[Satellite](https://github.com/gravitational/satellite) is an open-source tool prepared by Gravitational that collects health information related to the Kubernetes cluster. Satellite runs on each Gravity Cluster node and has various checks assessing the health of a Cluster. Any issues detected by Satellite are shown in the output of the gravity status command.
+
+## Metrics Overview
+
+All monitoring components are running in the “monitoring” namespace in Gravity. Let’s take a look at them:
+
+```
+$ kubectl -nmonitoring get pods
+NAME                         READY   STATUS    RESTARTS   AGE
+alertmanager-main-0                    3/3     Running   0          27m
+alertmanager-main-1                    3/3     Running   0          26m
+alertmanager-main-2                    3/3     Running   0          26m
+grafana-6b645587d-chxxg                2/2     Running   0          27m
+kube-state-metrics-69594c468-wcr4g     3/3     Running   0          27m
+nethealth-4cjwh                        1/1     Running   0          26m
+node-exporter-hz972                    2/2     Running   0          27m
+prometheus-adapter-6586cf7b4f-hmwkf    1/1     Running   0          27m
+prometheus-k8s-0                       3/3     Running   1          26m
+prometheus-k8s-1                       0/3     Pending   0          26m
+prometheus-operator-7bd7d57788-mf8xn   1/1     Running   0          27m
+watcher-7b99cc55c-8qgms                1/1     Running   0          27m
+```
+
+Most of the cluster metrics are collected by Prometheus which uses the following in-cluster services:
+
+*   [node-exporter](https://github.com/prometheus/node_exporter) (collects hardware and OS metrics)
+*   [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) (collects Kubernetes resource metrics - deployments, nodes, pods)
+
+As mentioned, node-exporter collects hardware and OS metrics. There are various collectors that are dependent on each operating system. A list of the collectors can be found [here](https://github.com/prometheus/node_exporter#collectors). By default node_exporter will expose all metrics from enabled collectors. For advanced use the node_exporter can be passed an optional list of collectors to filter metrics. In Prometheus config you can use the following syntax:
+
+```
+ params:
+    collect[]:
+      - foo
+      - bar
+```
+
+Further, kube-state-metrics collects metrics about various Kubernetes resources such as deployments, nodes and pods. It is a service that listens to the Kubernetes API server and generates metrics about the state of the objects. 
+
+kube-state-metrics exposes raw data that is unmodified from the Kubernetes API, which allows users to have all the data they require and perform heuristics as they see fit. In return, kubectl may not show the same values, as kubectl applies certain heuristics to display cleaner messages.
+
+Metrics from kube-state-metrics service are exported on the HTTP endpoint `/metrics` on the listening port (default 8080) and are designed to be consumed by Prometheus.
+
+![diagram](https://miro.medium.com/max/832/1*7thrW4Wa5y6b03PxtPlQzA.jpeg) 
+
+(Source: https://medium.com/faun/production-grade-kubernetes-monitoring-using-prometheus-78144b835b60)
+
+All metrics collected by node-exporter and kube-state-metrics are placed into the k8s database in Prometheus. See below for a list of metrics collected by Prometheus. Each metric is stored as a separate “series” in Prometheus. 
+
+Prometheus allows users to differentiate on the things that are being measured. Label names should not be used in the metric name as that leads to some redundancy. 
+
+*   `api_http_requests_total` - differentiate request types: `operation="create|update|delete"`
+
+When troubleshooting problems with metrics, it is sometimes useful to look into the specified container logs where it can be seen if it experiences communication issues with Prometheus service or has other issues:
+
+```
+$ kubectl -nmonitoring logs prometheus-adapter-6586cf7b4f-hmwkf
+```
+
+```
+$ kubectl -nmonitoring logs kube-state-metrics-69594c468-wcr4g kube-state-metrics
+```
+
+```
+$ kubectl -nmonitoring logs node-exporter-hz972 node-exporter
+```
+
+In addition, any other apps that collect metrics should also submit them into the same DB in order for proper retention policies to be enforced. 
+
+## Exploring Prometheus
+
+Like mentioned above, Prometheus is exposed via a cluster-local Kubernetes service `prometheus-k8s.monitoring.svc.cluster.local:9090` and serves its HTTP API on port `9090` so we can use it to explore the database from the CLI.
+
+Let's enter the Gravity master container to make sure the services are resolvable and to get access to additional CLI tools:
+
+```bash
+$ sudo gravity shell
+```
+
+Let's ping the database to make sure it's up and running:
+
+[comment]: # (TODO: confirm Prometheus commands)
+
+```bash
+$ curl -sl -I http://prometheus-k8s.monitoring.svc.cluster.local:9090/ping
+// Should return 204 response.
+```
+
+Prometheus API endpoint requires authentication so to make actual queries to the database we need to determine the credentials first. The generated credentials are kept in the `prometheus` secret in the monitoring namespace:
+
+```bash
+$ kubectl -nmonitoring get secret prometheus-k8s -oyaml
+```
+
+Note that the credentials in the secret are base64-encoded so you'd need to decode them:
+
+```bash
+$ echo <encoded-password> | base64 -d
+$ export PASS=xxx
+```
+
+Once the credentials have been decoded (the username is `root` and the password is generated during installation), they can be supplied via a cURL command. For example, let's see what databases we currently have:
+
+```bash
+$ curl -s -u root:$PASS http:/prometheus-k8s.monitoring.svc.cluster.local:9090/query --data-urlencode 'q=show databases' | jq
+```
+
+Now we can also see which measurements are currently being collected:
+
+```bash
+$ curl -s -u root:$PASS http:/prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=show measurements' | jq
+```
+
+Finally, we can query specific metrics if we want to using Prometheus’ SQL-like query language (PromQL):
+
+```bash
+$ curl -s -u root:$PASS http://prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=select * from uptime limit 10' | jq
+```
+
+Refer to the Prometheus [API documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/) if you want to learn more about querying the database.
+
+## Metric Retention Policy 
+
+### Time based retention
+
+Users should start Prometheus with the following flag with their desired time.
+
+`--storage.tsdb.retention.time`: Determines when to remove old data. Defaults to 15 days.
+
+### Size based retention
+
+Users should start the prometheus with the following flag with their desired size.
+
+`--storage.tsdb.retention.size`:  Determines the maximum number of bytes that storage blocks can use. The oldest data will be removed first and this defaults to 0 or disabled. 
+
+Following Units are supported: KB, MB, GB, PB. for Ex: "512MB"
+
+[comment]: # (TODO: review below commands)
+
+We can use the same Prometheus API to see the retention policies configured in the database:
+
+```bash
+$ curl -s -u root:$PASS http://prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=show retention policies' | jq
+```
+
+The configuration of retention policies and rollups are handled by a “watcher” service that runs in a container as a part of the Prometheus pod so all these configurations can be seen in its logs:
+
+```
+$ kubectl -nmonitoring logs prometheus-adapter-6586cf7b4f-hmwkf watcher
+```
+
+## Custom Rollups
+
+In addition to the rollups pre-configured by Gravity, applications can downsample their own metrics (or create different rollups for standard metrics) by configuring their own rollups through ConfigMaps.
+
+Custom rollup ConfigMaps should be created in the `monitoring` namespace and assigned a `monitoring` label with value of `rollup`. 
+
+An example ConfigMap is shown below with a Custom Metric Rollups:
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myrollups
+  namespace: monitoring
+  labels:
+    monitoring: rollup
+data:
+  rollups: |
+    [
+      {
+        "retention": "medium",
+        "measurement": "cpu/usage_rate",
+        "name": "cpu/usage_rate/medium",
+        "functions": [
+          {
+            "function": "max",
+            "field": "value",
+            "alias": "value_max"
+          },
+          {
+            "function": "mean",
+            "field": "value",
+            "alias": "value_mean"
+          }
+        ]
+      }
+    ]
+```
+
+The watcher process will detect the new ConfigMap and configure an appropriate continuous query for the new rollup:
+
+[comment]: # (TODO: review below commands + output) 
+
+```
+$ kubectl -nmonitoring logs prometheus-adapter-6586cf7b4f-hmwkf watcher
+...
+time="2020-01-24T05:40:13Z" level=info msg="Detected event ADDED for configmap \"myrollups\"" label="monitoring in (rollup)" watch=configmap
+time="2020-01-24T05:40:13Z" level=info msg="New rollup." query="create continuous query \"cpu/usage_rate/medium\" on k8s begin select max(\"value\") as value_max, mean(\"value\") as value_mean into k8s.\"medium\".\"cpu/usage_rate/medium\" from k8s.\"default\".\"cpu/usage_rate\" group by *, time(5m) end"
+```
+
+## Custom Dashboards
+
+Along with the dashboards mentioned above, your applications can use their own Grafana dashboards by using ConfigMaps.
+
+Similar to creating custom rollups, in order to use a custom dashboard, the ConfigMap should be created in the `monitoring` namespace, assigned a `monitoring` label with a value `dashboard`. 
+
+Under the specified namespace, the ConfigMap will be recognized and loaded when installing the application. It is possible to add new ConfigMaps at a later time as the watcher will then pick it up and create it in Grafana. Similarly, if you delete the ConfigMap, the watcher will delete it from Grafana.
+
+Dashboard ConfigMaps may contain multiple keys with dashboards as key names are not relevant.
+
+An example ConfigMap is shown below:
+
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mydashboard
+  namespace: monitoring
+  labels:
+    monitoring: dashboard
+data:
+  mydashboard: |
+    { ... dashboard JSON ... }
+```
+
+_Note: by default Grafana is run in read-only mode, a separate Grafana instance is required to create custom dashboards._ 
+
+## Default Metrics
+
+The following are the default metrics captured by the Gravity Monitoring & Alerts system:
+
+### node-exporter Metrics
+
+Below are a list of metrics captured by node-exporter which are exported to the backend by based on OS: 
+
+<table>
+  <tr>
+   <td><strong>Name</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+   <td><strong>OS</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>arp
+   </td>
+   <td>Exposes ARP statistics from /proc/net/arp.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>bcache
+   </td>
+   <td>Exposes bcache statistics from /sys/fs/bcache/.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>bonding
+   </td>
+   <td>Exposes the number of configured and active slaves of Linux bonding interfaces.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>boottime
+   </td>
+   <td>Exposes system boot time derived from the kern.boottime sysctl.
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, NetBSD, OpenBSD, Solaris
+   </td>
+  </tr>
+  <tr>
+   <td>conntrack
+   </td>
+   <td>Shows conntrack statistics (does nothing if no /proc/sys/net/netfilter/ present).
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>cpu
+   </td>
+   <td>Exposes CPU statistics
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, Linux, Solaris
+   </td>
+  </tr>
+  <tr>
+   <td>cpufreq
+   </td>
+   <td>Exposes CPU frequency statistics
+   </td>
+   <td>Linux, Solaris
+   </td>
+  </tr>
+  <tr>
+   <td>diskstats
+   </td>
+   <td>Exposes disk I/O statistics.
+   </td>
+   <td>Darwin, Linux, OpenBSD
+   </td>
+  </tr>
+  <tr>
+   <td>edac
+   </td>
+   <td>Exposes error detection and correction statistics.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>entropy
+   </td>
+   <td>Exposes available entropy.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>exec
+   </td>
+   <td>Exposes execution statistics.
+   </td>
+   <td>Dragonfly, FreeBSD
+   </td>
+  </tr>
+  <tr>
+   <td>filefd
+   </td>
+   <td>Exposes file descriptor statistics from /proc/sys/fs/file-nr.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>filesystem
+   </td>
+   <td>Exposes filesystem statistics, such as disk space used.
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, Linux, OpenBSD
+   </td>
+  </tr>
+  <tr>
+   <td>hwmon
+   </td>
+   <td>Expose hardware monitoring and sensor data from /sys/class/hwmon/.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>infiniband
+   </td>
+   <td>Exposes network statistics specific to InfiniBand and Intel OmniPath configurations.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>ipvs
+   </td>
+   <td>Exposes IPVS status from /proc/net/ip_vs and stats from /proc/net/ip_vs_stats.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>loadavg
+   </td>
+   <td>Exposes load average.
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, Linux, NetBSD, OpenBSD, Solaris
+   </td>
+  </tr>
+  <tr>
+   <td>mdadm
+   </td>
+   <td>Exposes statistics about devices in /proc/mdstat (does nothing if no /proc/mdstat present).
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>meminfo
+   </td>
+   <td>Exposes memory statistics.
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, Linux, OpenBSD
+   </td>
+  </tr>
+  <tr>
+   <td>netclass
+   </td>
+   <td>Exposes network interface info from /sys/class/net/
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>netdev
+   </td>
+   <td>Exposes network interface statistics such as bytes transferred.
+   </td>
+   <td>Darwin, Dragonfly, FreeBSD, Linux, OpenBSD
+   </td>
+  </tr>
+  <tr>
+   <td>netstat
+   </td>
+   <td>Exposes network statistics from /proc/net/netstat. This is the same information as netstat -s.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>nfs
+   </td>
+   <td>Exposes NFS client statistics from /proc/net/rpc/nfs. This is the same information as nfsstat -c.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>nfsd
+   </td>
+   <td>Exposes NFS kernel server statistics from /proc/net/rpc/nfsd. This is the same information as nfsstat -s.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>pressure
+   </td>
+   <td>Exposes pressure stall statistics from /proc/pressure/.
+   </td>
+   <td>Linux (kernel 4.20+ and/or <a href="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/accounting/psi.txt">CONFIG_PSI</a>)
+   </td>
+  </tr>
+  <tr>
+   <td>rapl
+   </td>
+   <td>Exposes various statistics from /sys/class/powercap.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>schedstat
+   </td>
+   <td>Exposes task scheduler statistics from /proc/schedstat.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>sockstat
+   </td>
+   <td>Exposes various statistics from /proc/net/sockstat.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>softnet
+   </td>
+   <td>Exposes statistics from /proc/net/softnet_stat.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>stat
+   </td>
+   <td>Exposes various statistics from /proc/stat. This includes boot time, forks and interrupts.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>textfile
+   </td>
+   <td>Exposes statistics read from local disk. The --collector.textfile.directory flag must be set.
+   </td>
+   <td>any
+   </td>
+  </tr>
+  <tr>
+   <td>thermal_zone
+   </td>
+   <td>Exposes thermal zone & cooling device statistics from /sys/class/thermal.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>time
+   </td>
+   <td>Exposes the current system time.
+   </td>
+   <td>any
+   </td>
+  </tr>
+  <tr>
+   <td>timex
+   </td>
+   <td>Exposes selected adjtimex(2) system call stats.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>uname
+   </td>
+   <td>Exposes system information as provided by the uname system call.
+   </td>
+   <td>Darwin, FreeBSD, Linux, OpenBSD
+   </td>
+  </tr>
+  <tr>
+   <td>vmstat
+   </td>
+   <td>Exposes statistics from /proc/vmstat.
+   </td>
+   <td>Linux
+   </td>
+  </tr>
+  <tr>
+   <td>xfs
+   </td>
+   <td>Exposes XFS runtime statistics.
+   </td>
+   <td>Linux (kernel 4.4+)
+   </td>
+  </tr>
+  <tr>
+   <td>zfs
+   </td>
+   <td>Exposes <a href="http://open-zfs.org/">ZFS</a> performance statistics.
+   </td>
+   <td><a href="http://zfsonlinux.org/">Linux</a>, Solaris
+   </td>
+  </tr>
+</table>
+
+### kube-state-metrics
+
+A list of metrics captured by kube-state metrics can be found [here](https://github.com/kubernetes/kube-state-metrics/tree/master/docs).
+
+There are various groups of metrics for each set, some of these include:
+
+*   ConfigMap Metrics
+*   Pod Metrics
+*   ReplicaSet Metrics
+*   Service Metrics
+
+Example list of [ConfigMap Metrics](https://github.com/kubernetes/kube-state-metrics/blob/master/docs/configmap-metrics.md)
+
+
+<table>
+  <tr>
+   <td><strong>Metric name</strong>
+   </td>
+   <td><strong>Metric type</strong>
+   </td>
+   <td><strong>Labels/tags</strong>
+   </td>
+   <td><strong>Status</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>kube_configmap_info
+   </td>
+   <td>Gauge
+   </td>
+   <td>configmap=&lt;configmap-name>
+<p>
+namespace=&lt;configmap-namespace>
+   </td>
+   <td>STABLE
+   </td>
+  </tr>
+  <tr>
+   <td>kube_configmap_created
+   </td>
+   <td>Gauge
+   </td>
+   <td>configmap=&lt;configmap-name>
+<p>
+namespace=&lt;configmap-namespace>
+   </td>
+   <td>STABLE
+   </td>
+  </tr>
+  <tr>
+   <td>kube_configmap_metadata_resource_version
+   </td>
+   <td>Gauge
+   </td>
+   <td>configmap=&lt;configmap-name>
+<p>
+namespace=&lt;configmap-namespace>
+   </td>
+   <td>EXPERIMENTAL
+   </td>
+  </tr>
+</table>
+
+### Satellite
+
+[Satellite](https://github.com/gravitational/satellite) is an open-source tool prepared by Gravitational that collects health information related to the Kubernetes cluster. Satellite runs on each Gravity Cluster node and has various checks assessing the health of a Cluster.
+
+Satellite collects several metrics related to cluster health and exposes them over the Prometheus endpoint. Among the metrics collected by Satellite are:
+
+*   Etcd related metrics:
+    *   Current leader address
+    *   Etcd cluster health
+*   Docker related metrics:
+    *   Overall health of the Docker daemon
+*   Sysctl related metrics:
+    *   Status of IPv4 forwarding
+    *   Status of netfilter
+*   Systemd related metrics:
+    *   State of various systemd units such as etcd, flannel, kube-*, etc.
+
+
+### Telegraf
+
+The nodes also run [Telegraf](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/system) - an agent for collecting, processing, aggregating, and writing metrics. Some system input plugins related to cpu and memory are captured as default metrics as well.
+
+<table>
+  <tr>
+   <td><strong>Metric Name</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>load1 (float)
+   </td>
+   <td>Warning threshold for load over 1 min
+   </td>
+  </tr>
+  <tr>
+   <td>load15 (float)
+   </td>
+   <td>Warning threshold for load over 15 mins
+   </td>
+  </tr>
+  <tr>
+   <td>load5 (float)
+   </td>
+   <td>Warning threshold for load over 5 mins
+   </td>
+  </tr>
+  <tr>
+   <td>n_users (integer)
+   </td>
+   <td>Number of users
+   </td>
+  </tr>
+  <tr>
+   <td>n_cpus (integer)
+   </td>
+   <td>Number of CPU cores
+   </td>
+  </tr>
+  <tr>
+   <td>uptime (integer, seconds)
+   </td>
+   <td>Number of milliseconds since the system was started
+   </td>
+  </tr>
+</table>
+
+In addition to the default metrics, Telegraf also queries the Satellite Prometheus endpoint described above and ships all metrics to the same “k8s” database in Prometheus.
+
+Telegraf configuration can be found [here](https://github.com/gravitational/monitoring-app/tree/version/5.5.x/images/telegraf/rootfs/etc/telegraf). The respective configuration files show which input plugins each Telegraf instance has enabled.
+
+## More about Alertmanager
+
+As mentioned Alertmanager is a Prometheus component that handles alerts sent by client applications such as the Prometheus server. Alertmanager handles deduplicating, grouping and routing alerts to the correct receiver integration such as an email recipient. 
+
+The following are alerts that Gravity Monitoring & Alerts system ships with by default:
+
+<table>
+  <tr>
+   <td><strong>Component</strong>
+   </td>
+   <td><strong>Alert</strong>
+   </td>
+   <td><strong>Description</strong>
+   </td>
+  </tr>
+  <tr>
+   <td>CPU
+   </td>
+   <td>High CPU usage
+   </td>
+   <td>Warning at > 75% used
+<p>
+Critical error at > 90% used
+   </td>
+  </tr>
+  <tr>
+   <td>Memory
+   </td>
+   <td>High Memory usage
+   </td>
+   <td>Warning at > 80% used
+<p>
+Critical error at > 90% used
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="2" >Systemd
+   </td>
+   <td>Individual 
+   </td>
+   <td>Error when unit not loaded/active
+   </td>
+  </tr>
+  <tr>
+   <td>Overall systemd health
+   </td>
+   <td>Error when systemd detects a failed service
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="2" >Filesystem
+   </td>
+   <td>High disk space usage
+   </td>
+   <td>Warning at > 80% used
+<p>
+Critical error at > 90% used
+   </td>
+  </tr>
+  <tr>
+   <td>High inode usage
+   </td>
+   <td>Warning at > 90% used
+<p>
+Critical error at > 95% used
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="2" >System
+   </td>
+   <td>Uptime
+   </td>
+   <td>Warning node uptime &lt; 5 mins
+   </td>
+  </tr>
+  <tr>
+   <td>Kernel params
+   </td>
+   <td>Error if param not set
+   </td>
+  </tr>
+  <tr>
+   <td rowspan="2" >Etcd
+   </td>
+   <td>Etcd instance health
+   </td>
+   <td>Error when etcd master down > 5 mins
+   </td>
+  </tr>
+  <tr>
+   <td>Etcd latency check
+   </td>
+   <td>Warning when follower &lt;-> leader latency > 500 ms
+<p>
+Error when > 1 sec over period of 1 min
+   </td>
+  </tr>
+  <tr>
+   <td>Docker
+   </td>
+   <td>Docker daemon health
+   </td>
+   <td>Error when docker daemon is down
+   </td>
+  </tr>
+  <tr>
+   <td>Kubernetes
+   </td>
+   <td>Kubernetes node readiness
+   </td>
+   <td>Error when the node is not ready
+   </td>
+  </tr>
+</table>
+
+### Alertmanager Email Configuration
+
+In order to configure email alerts via Alertmanager you will need to create Gravity resources of type `smtp `and `alerttarget`.
+
+An example of the configuration is shown below:
+
+```
+kind: smtp
+version: v2
+metadata:
+  name: smtp
+spec:
+  host: smtp.host
+  port: <smtp port> # 465 by default
+  username: <username>
+  password: <password>
+---
+kind: alerttarget
+version: v2
+metadata:
+  name: email-alerts
+spec:
+  email: triage@example.com # Email address of the alert recipient
+```
+
+Creating these resources will accordingly update and reload Alertmanager configuration:
+
+```
+$ gravity resource create -f smtp.yaml
+```
+
+In order to view the current SMTP settings or alert target:
+
+```
+$ gravity resource get smtp
+$ gravity resource get alerttarget
+```
+
+Only a single alert target can be configured. To remove the current alert target, you can execute the following alertmanager command inside the designated pod:
+
+```
+$ alertmanager delete alerttarget email-alerts 
+```
+
+### Testing Alertmanager Email Configuration
+
+To test a Alertmanager SMTP configuration you can execute the following:
+
+```
+$ kubectl exec -n monitoring $POD_ID -c alertmanager -- /bin/bash -c "alertmanager service-tests smtp"
+```
+
+If the settings are set up appropriately, the recipient should receive an email with the subject “test subject”.
+
+### Alertmanager Custom Alerts
+
+Creating new alerts is as easy as using another Gravity resource of type `alert`. The alerts are written in TICKscript and are automatically detected, loaded, and enabled for Gravity Monitoring and Alerts system.
+
+For demonstration purposes let’s define an alert that always fires:
+
+```
+kind: alert
+version: v2
+metadata:
+  name: my-formula
+spec:
+  formula: |
+    var period = 5m
+    var every = 1m
+    var warnRate = 2
+    var warnReset = 1
+    var usage_rate = stream
+        |from()
+            .measurement('cpu/usage_rate')
+            .groupBy('nodename')
+            .where(lambda: "type" == 'node')
+        |window()
+            .period(period)
+            .every(every)
+    var cpu_total = stream
+        |from()
+            .measurement('cpu/node_capacity')
+            .groupBy('nodename')
+            .where(lambda: "type" == 'node')
+        |window()
+            .period(period)
+            .every(every)
+    var percent_used = usage_rate
+        |join(cpu_total)
+            .as('usage_rate', 'total')
+            .tolerance(30s)
+            .streamName('percent_used')
+        |eval(lambda: (float("usage_rate.value") * 100.0) / float("total.value"))
+            .as('percent_usage')
+        |mean('percent_usage')
+            .as('avg_percent_used')
+    var trigger = percent_used
+        |alert()
+            .message('{{ .Level}} / Node {{ index .Tags "nodename" }} has high cpu usage: {{ index .Fields "avg_percent_used" }}%')
+            .warn(lambda: "avg_percent_used" > warnRate)
+            .warnReset(lambda: "avg_percent_used" < warnReset)
+            .stateChangesOnly()
+            .details('''
+    <b>{{ .Message }}</b>
+    <p>Level: {{ .Level }}</p>
+    <p>Nodename: {{ index .Tags "nodename" }}</p>
+    <p>Usage: {{ index .Fields "avg_percent_used"  | printf "%0.2f" }}%</p>
+    ''')
+            .email()
+            .log('/var/lib/alertmanager/logs/high_cpu.log')
+            .mode(0644)
+```
+
+And create it :
+
+```
+$ gravity resource create -f formula.yaml
+```
+
+Custom alerts are being monitored by another “watcher” type of service that runs inside the alertmanager pod:
+
+```
+$ kubectl -nmonitoring logs alertmanager-main-0 watcher
+time="2020-01-24T06:18:10Z" level=info msg="Detected event ADDED for configmap \"my-formula\"" label="monitoring in (alert)" watch=configmap
+```
+
+We can confirm the alert is running checking the logs after a few seconds:
+
+```
+$ kubectl -nmonitoring exec -ti alertmanager-main-0 -c alertmanager cat -- /var/lib/alertmanager/logs/high_cpu.log
+{"id":"percent_used:nodename=10.0.2.15","message":"WARNING / Node 10.0.2.15 has high cpu usage: 15%","details":"\n\u003cb\u003eWARNING / Node 10.0.2.15 has high cpu usage: 15%\u003c/b\u003e\n\u003cp\u003eLevel: WARNING\u003c/p\u003e\n\u003cp\u003eNodename: 10.0.2.15\u003c/p\u003e\n\u003cp\u003eUsage: 15.00%\u003c/p\u003e\n","time":"2020-01-24T06:30:00Z","duration":0,"level":"WARNING","data":{"series":[{"name":"percent_used","tags":{"nodename":"10.0.2.15"},"columns":["time","avg_percent_used"],"values":[["2020-01-24T06:30:00Z",15]]}]},"previousLevel":"OK","recoverable":true}
+```
+
+To view all currently configured custom alerts you can run:
+
+```
+$ gravity resource get alert my-formula
+```
+
+In order to remove a specific alert you can execute the following altermanager command inside the designated pod:
+
+```
+$ alertmanager delete alert my-formula
+```
+
+This concludes our monitoring training.
