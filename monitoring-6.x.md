@@ -107,6 +107,17 @@ In addition, any other apps that collect metrics should also submit them into th
 
 Like mentioned above, Prometheus is exposed via a cluster-local Kubernetes service `prometheus-k8s.monitoring.svc.cluster.local:9090` and serves its HTTP API on port `9090` so we can use it to explore the database from the CLI.
 
+Also, as seen above we have the following Prometheus pods:
+
+```
+prometheus-adapter-6586cf7b4f-hmwkf   
+prometheus-k8s-0                       
+prometheus-operator-7bd7d57788-mf8xn   
+```
+Prometheus operator for kuebrnetes allows easy monitoring defintions for kubernetes services and deployment and managment of Prometheus instances. 
+
+Prometheus adapter is an API extension for kubernetes that users prometheus queries to populate kubernetes resources and custom metrics APIs.
+
 Let's enter the Gravity master container to make sure the services are resolvable and to get access to additional CLI tools:
 
 ```bash
@@ -115,42 +126,26 @@ $ sudo gravity shell
 
 Let's ping the database to make sure it's up and running:
 
-[comment]: # (TODO: confirm Prometheus commands)
-
 ```bash
-$ curl -sl -I http://prometheus-k8s.monitoring.svc.cluster.local:9090/ping
-// Should return 204 response.
+$ curl -sl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/status/config
+// Should return "status":"success" within currently loaded configuration file.
 ```
 
-Prometheus API endpoint requires authentication so to make actual queries to the database we need to determine the credentials first. The generated credentials are kept in the `prometheus` secret in the monitoring namespace:
+A list of alerting and recording rules that are currently loaded is available by executing:
 
 ```bash
-$ kubectl -nmonitoring get secret prometheus-k8s -oyaml
+$ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/rules | jq
+```
+Also we can see all metric points, by executing the following command:
+
+```bash
+$ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/query?query=up | jq
 ```
 
-Note that the credentials in the secret are base64-encoded so you'd need to decode them:
+Finally, we can query Prometheus using it's SQL-like query language (PromQL) to for example evaluate metrics identified under the expression `up` at the specified time:
 
 ```bash
-$ echo <encoded-password> | base64 -d
-$ export PASS=xxx
-```
-
-Once the credentials have been decoded (the username is `root` and the password is generated during installation), they can be supplied via a cURL command. For example, let's see what databases we currently have:
-
-```bash
-$ curl -s -u root:$PASS http:/prometheus-k8s.monitoring.svc.cluster.local:9090/query --data-urlencode 'q=show databases' | jq
-```
-
-Now we can also see which measurements are currently being collected:
-
-```bash
-$ curl -s -u root:$PASS http:/prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=show measurements' | jq
-```
-
-Finally, we can query specific metrics if we want to using Prometheus’ SQL-like query language (PromQL):
-
-```bash
-$ curl -s -u root:$PASS http://prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=select * from uptime limit 10' | jq
+$ curl 'http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/query?query=up&time=2020-03-13T20:10:51.781Z' | jq
 ```
 
 Refer to the Prometheus [API documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/) if you want to learn more about querying the database.
@@ -171,68 +166,16 @@ Users should start the prometheus with the following flag with their desired siz
 
 Following Units are supported: KB, MB, GB, PB. for Ex: "512MB"
 
-[comment]: # (TODO: review below commands)
-
-We can use the same Prometheus API to see the retention policies configured in the database:
+We can use the same Prometheus API to see the retention policies configured for `--storage.tsdb.retention.time`:
 
 ```bash
-$ curl -s -u root:$PASS http://prometheus-k8s.monitoring.svc.cluster.local:9090/query?db=k8s --data-urlencode 'q=show retention policies' | jq
+$ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/status/flags | jq
 ```
 
-The configuration of retention policies and rollups are handled by a “watcher” service that runs in a container as a part of the Prometheus pod so all these configurations can be seen in its logs:
+The configuration of retention policies and rollups are handled by a “watcher” pod so all these configurations can be seen in its logs:
 
 ```
-$ kubectl -nmonitoring logs prometheus-adapter-6586cf7b4f-hmwkf watcher
-```
-
-## Custom Rollups
-
-In addition to the rollups pre-configured by Gravity, applications can downsample their own metrics (or create different rollups for standard metrics) by configuring their own rollups through ConfigMaps.
-
-Custom rollup ConfigMaps should be created in the `monitoring` namespace and assigned a `monitoring` label with value of `rollup`. 
-
-An example ConfigMap is shown below with a Custom Metric Rollups:
-
-```
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: myrollups
-  namespace: monitoring
-  labels:
-    monitoring: rollup
-data:
-  rollups: |
-    [
-      {
-        "retention": "medium",
-        "measurement": "cpu/usage_rate",
-        "name": "cpu/usage_rate/medium",
-        "functions": [
-          {
-            "function": "max",
-            "field": "value",
-            "alias": "value_max"
-          },
-          {
-            "function": "mean",
-            "field": "value",
-            "alias": "value_mean"
-          }
-        ]
-      }
-    ]
-```
-
-The watcher process will detect the new ConfigMap and configure an appropriate continuous query for the new rollup:
-
-[comment]: # (TODO: review below commands + output) 
-
-```
-$ kubectl -nmonitoring logs prometheus-adapter-6586cf7b4f-hmwkf watcher
-...
-time="2020-01-24T05:40:13Z" level=info msg="Detected event ADDED for configmap \"myrollups\"" label="monitoring in (rollup)" watch=configmap
-time="2020-01-24T05:40:13Z" level=info msg="New rollup." query="create continuous query \"cpu/usage_rate/medium\" on k8s begin select max(\"value\") as value_max, mean(\"value\") as value_mean into k8s.\"medium\".\"cpu/usage_rate/medium\" from k8s.\"default\".\"cpu/usage_rate\" group by *, time(5m) end"
+$ kubectl -nmonitoring logs watcher-7b99cc55c-8qgms
 ```
 
 ## Custom Dashboards
@@ -872,10 +815,10 @@ $ gravity resource get smtp
 $ gravity resource get alerttarget
 ```
 
-Only a single alert target can be configured. To remove the current alert target, you can execute the following alertmanager command inside the designated pod:
+Only a single alert target can be configured. To remove the current alert target, you can execute the following command:
 
 ```
-$ alertmanager delete alerttarget email-alerts 
+$ gravity resource rm alerttarget email-alerts
 ```
 
 ### Testing Alertmanager Email Configuration
@@ -950,14 +893,14 @@ spec:
 And create it :
 
 ```
-$ gravity resource create -f formula.yaml
+$ gravity resource create -f alert.yaml
 ```
 
-Custom alerts are being monitored by another “watcher” type of service that runs inside the alertmanager pod:
+Custom alerts are being monitored by another “watcher” type of service that runs in its own pod:
 
 ```
-$ kubectl -nmonitoring logs alertmanager-main-0 watcher
-time="2020-01-24T06:18:10Z" level=info msg="Detected event ADDED for configmap \"my-formula\"" label="monitoring in (alert)" watch=configmap
+$ kubectl -nmonitoring logs watcher-7b99cc55c-8qgms
+time="2020-03-13T18:20:33Z" level=info msg="Detected event ADDED for configmap my-formula." label="monitoring in (alert)" watch=configmap
 ```
 
 We can confirm the alert is running checking the logs after a few seconds:
@@ -965,6 +908,29 @@ We can confirm the alert is running checking the logs after a few seconds:
 ```
 $ kubectl -nmonitoring exec -ti alertmanager-main-0 -c alertmanager cat -- /var/lib/alertmanager/logs/high_cpu.log
 {"id":"percent_used:nodename=10.0.2.15","message":"WARNING / Node 10.0.2.15 has high cpu usage: 15%","details":"\n\u003cb\u003eWARNING / Node 10.0.2.15 has high cpu usage: 15%\u003c/b\u003e\n\u003cp\u003eLevel: WARNING\u003c/p\u003e\n\u003cp\u003eNodename: 10.0.2.15\u003c/p\u003e\n\u003cp\u003eUsage: 15.00%\u003c/p\u003e\n","time":"2020-01-24T06:30:00Z","duration":0,"level":"WARNING","data":{"series":[{"name":"percent_used","tags":{"nodename":"10.0.2.15"},"columns":["time","avg_percent_used"],"values":[["2020-01-24T06:30:00Z",15]]}]},"previousLevel":"OK","recoverable":true}
+```
+
+We can confirm the alert is running by checking active alerts to see if the cluster has overcommitted CPU resource requests, as we set the cpu usage threshold to 15%.
+
+```bash
+$ curl prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/alerts | jq
+```
+
+We see the following output:
+
+```bash
+      {
+        "labels": {
+          "alertname": "KubeCPUOvercommit",
+          "severity": "warning"
+        },
+        "annotations": {
+          "message": "Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure."
+        },
+        "state": "firing",
+        "activeAt": "2020-03-12T23:26:17.55260138Z",
+        "value": 1.1320000000000001
+      },
 ```
 
 To view all currently configured custom alerts you can run:
@@ -976,7 +942,7 @@ $ gravity resource get alert my-formula
 In order to remove a specific alert you can execute the following altermanager command inside the designated pod:
 
 ```
-$ alertmanager delete alert my-formula
+$ gravity resource rm alert my-formula
 ```
 
 This concludes our monitoring training.
