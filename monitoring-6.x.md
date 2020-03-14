@@ -62,18 +62,9 @@ Most of the cluster metrics are collected by Prometheus which uses the following
 *   [node-exporter](https://github.com/prometheus/node_exporter) (collects hardware and OS metrics)
 *   [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) (collects Kubernetes resource metrics - deployments, nodes, pods)
 
-As mentioned, node-exporter collects hardware and OS metrics. There are various collectors that are dependent on each operating system. A list of the collectors can be found [here](https://github.com/prometheus/node_exporter#collectors). By default node_exporter will expose all metrics from enabled collectors. For advanced use the node_exporter can be passed an optional list of collectors to filter metrics. In Prometheus config you can use the following syntax:
+kube-state-metrics collects metrics about various Kubernetes resources such as deployments, nodes and pods. It is a service that listens to the Kubernetes API server and generates metrics about the state of the objects. 
 
-```
- params:
-    collect[]:
-      - foo
-      - bar
-```
-
-Further, kube-state-metrics collects metrics about various Kubernetes resources such as deployments, nodes and pods. It is a service that listens to the Kubernetes API server and generates metrics about the state of the objects. 
-
-kube-state-metrics exposes raw data that is unmodified from the Kubernetes API, which allows users to have all the data they require and perform heuristics as they see fit. In return, kubectl may not show the same values, as kubectl applies certain heuristics to display cleaner messages.
+Further, kube-state-metrics exposes raw data that is unmodified from the Kubernetes API, which allows users to have all the data they require and perform heuristics as they see fit. In return, kubectl may not show the same values, as kubectl applies certain heuristics to display cleaner messages.
 
 Metrics from kube-state-metrics service are exported on the HTTP endpoint `/metrics` on the listening port (default 8080) and are designed to be consumed by Prometheus.
 
@@ -81,7 +72,7 @@ Metrics from kube-state-metrics service are exported on the HTTP endpoint `/metr
 
 (Source: https://medium.com/faun/production-grade-kubernetes-monitoring-using-prometheus-78144b835b60)
 
-All metrics collected by node-exporter and kube-state-metrics are placed into the k8s database in Prometheus. See below for a list of metrics collected by Prometheus. Each metric is stored as a separate “series” in Prometheus. 
+All metrics collected by node-exporter and kube-state-metrics are stored as time series in Prometheus. See below for a list of metrics collected by Prometheus. Each metric is stored as a separate “series” in Prometheus. 
 
 Prometheus allows users to differentiate on the things that are being measured. Label names should not be used in the metric name as that leads to some redundancy. 
 
@@ -114,7 +105,7 @@ prometheus-adapter-6586cf7b4f-hmwkf
 prometheus-k8s-0                       
 prometheus-operator-7bd7d57788-mf8xn   
 ```
-Prometheus operator for kuebrnetes allows easy monitoring defintions for kubernetes services and deployment and managment of Prometheus instances. 
+Prometheus operator for Kubernetes allows easy monitoring definitions for kubernetes services and deployment and management of Prometheus instances. 
 
 Prometheus adapter is an API extension for kubernetes that users prometheus queries to populate kubernetes resources and custom metrics APIs.
 
@@ -170,12 +161,6 @@ We can use the same Prometheus API to see the retention policies configured for 
 
 ```bash
 $ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/status/flags | jq
-```
-
-The configuration of retention policies and rollups are handled by a “watcher” pod so all these configurations can be seen in its logs:
-
-```
-$ kubectl -nmonitoring logs watcher-7b99cc55c-8qgms
 ```
 
 ## Custom Dashboards
@@ -658,7 +643,7 @@ The nodes also run [Telegraf](https://github.com/influxdata/telegraf/tree/master
   </tr>
 </table>
 
-In addition to the default metrics, Telegraf also queries the Satellite Prometheus endpoint described above and ships all metrics to the same “k8s” database in Prometheus.
+In addition to the default metrics, Telegraf also queries the Satellite Prometheus endpoint described above.
 
 Telegraf configuration can be found [here](https://github.com/gravitational/monitoring-app/tree/version/5.5.x/images/telegraf/rootfs/etc/telegraf). The respective configuration files show which input plugins each Telegraf instance has enabled.
 
@@ -821,16 +806,6 @@ Only a single alert target can be configured. To remove the current alert target
 $ gravity resource rm alerttarget email-alerts
 ```
 
-### Testing Alertmanager Email Configuration
-
-To test a Alertmanager SMTP configuration you can execute the following:
-
-```
-$ kubectl exec -n monitoring $POD_ID -c alertmanager -- /bin/bash -c "alertmanager service-tests smtp"
-```
-
-If the settings are set up appropriately, the recipient should receive an email with the subject “test subject”.
-
 ### Alertmanager Custom Alerts
 
 Creating new alerts is as easy as using another Gravity resource of type `alert`. The alerts are written in TICKscript and are automatically detected, loaded, and enabled for Gravity Monitoring and Alerts system.
@@ -841,53 +816,17 @@ For demonstration purposes let’s define an alert that always fires:
 kind: alert
 version: v2
 metadata:
-  name: my-formula
+  name: cpu1
 spec:
+  alert_name: CPU1
+  group_name: test-group
   formula: |
-    var period = 5m
-    var every = 1m
-    var warnRate = 2
-    var warnReset = 1
-    var usage_rate = stream
-        |from()
-            .measurement('cpu/usage_rate')
-            .groupBy('nodename')
-            .where(lambda: "type" == 'node')
-        |window()
-            .period(period)
-            .every(every)
-    var cpu_total = stream
-        |from()
-            .measurement('cpu/node_capacity')
-            .groupBy('nodename')
-            .where(lambda: "type" == 'node')
-        |window()
-            .period(period)
-            .every(every)
-    var percent_used = usage_rate
-        |join(cpu_total)
-            .as('usage_rate', 'total')
-            .tolerance(30s)
-            .streamName('percent_used')
-        |eval(lambda: (float("usage_rate.value") * 100.0) / float("total.value"))
-            .as('percent_usage')
-        |mean('percent_usage')
-            .as('avg_percent_used')
-    var trigger = percent_used
-        |alert()
-            .message('{{ .Level}} / Node {{ index .Tags "nodename" }} has high cpu usage: {{ index .Fields "avg_percent_used" }}%')
-            .warn(lambda: "avg_percent_used" > warnRate)
-            .warnReset(lambda: "avg_percent_used" < warnReset)
-            .stateChangesOnly()
-            .details('''
-    <b>{{ .Message }}</b>
-    <p>Level: {{ .Level }}</p>
-    <p>Nodename: {{ index .Tags "nodename" }}</p>
-    <p>Usage: {{ index .Fields "avg_percent_used"  | printf "%0.2f" }}%</p>
-    ''')
-            .email()
-            .log('/var/lib/alertmanager/logs/high_cpu.log')
-            .mode(0644)
+    node:cluster_cpu_utilization:ratio * 100 > 1
+  labels:
+    severity: info
+  annotations:
+    description: |
+      This is a test alert
 ```
 
 And create it :
@@ -900,20 +839,17 @@ Custom alerts are being monitored by another “watcher” type of service that 
 
 ```
 $ kubectl -nmonitoring logs watcher-7b99cc55c-8qgms
-time="2020-03-13T18:20:33Z" level=info msg="Detected event ADDED for configmap my-formula." label="monitoring in (alert)" watch=configmap
-```
-
-We can confirm the alert is running checking the logs after a few seconds:
-
-```
-$ kubectl -nmonitoring exec -ti alertmanager-main-0 -c alertmanager cat -- /var/lib/alertmanager/logs/high_cpu.log
-{"id":"percent_used:nodename=10.0.2.15","message":"WARNING / Node 10.0.2.15 has high cpu usage: 15%","details":"\n\u003cb\u003eWARNING / Node 10.0.2.15 has high cpu usage: 15%\u003c/b\u003e\n\u003cp\u003eLevel: WARNING\u003c/p\u003e\n\u003cp\u003eNodename: 10.0.2.15\u003c/p\u003e\n\u003cp\u003eUsage: 15.00%\u003c/p\u003e\n","time":"2020-01-24T06:30:00Z","duration":0,"level":"WARNING","data":{"series":[{"name":"percent_used","tags":{"nodename":"10.0.2.15"},"columns":["time","avg_percent_used"],"values":[["2020-01-24T06:30:00Z",15]]}]},"previousLevel":"OK","recoverable":true}
+time="2020-03-14T01:12:02Z" level=info msg="Detected event ADDED for configmap cpu1." label="monitoring in (alert)" watch=configmap
 ```
 
 We can confirm the alert is running by checking active alerts to see if the cluster has overcommitted CPU resource requests, as we set the cpu usage threshold to 15%.
 
 ```bash
-$ curl prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/alerts | jq
+$ sudo gravity shell
+```
+
+```bash
+$ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/alerts | jq
 ```
 
 We see the following output:
@@ -921,28 +857,29 @@ We see the following output:
 ```bash
       {
         "labels": {
-          "alertname": "KubeCPUOvercommit",
-          "severity": "warning"
+          "alertname": "CPU1",
+          "node": "abdu-dev-test0",
+          "severity": "info"
         },
         "annotations": {
-          "message": "Cluster has overcommitted CPU resource requests for Pods and cannot tolerate node failure."
+          "description": "This is a test alert\n"
         },
         "state": "firing",
-        "activeAt": "2020-03-12T23:26:17.55260138Z",
-        "value": 1.1320000000000001
-      },
+        "activeAt": "2020-03-14T01:12:20.102178408Z",
+        "value": 43.51506264996971
+      }
 ```
 
 To view all currently configured custom alerts you can run:
 
 ```
-$ gravity resource get alert my-formula
+$ gravity resource get alert cpu1
 ```
 
 In order to remove a specific alert you can execute the following altermanager command inside the designated pod:
 
 ```
-$ gravity resource rm alert my-formula
+$ gravity resource rm alert cpu1
 ```
 
 This concludes our monitoring training.
