@@ -12,9 +12,9 @@ Gravity Clusters come with a fully configured and customizable monitoring and al
 
 ## Overview
 
-Before getting into Gravity’s monitoring and alerts capability in more detail, let’s first discuss the various components that are involved. 
+Before getting into Gravity’s monitoring and alerts capability in more detail, let’s first discuss the various components that are involved.
 
-There are 4 main components in the monitoring system: Prometheus, Grafana, Alertmanager and Satellite.  
+There are 4 main components in the monitoring system: Prometheus, Grafana, Alertmanager and Satellite.
 
 ### Prometheus
 
@@ -22,11 +22,11 @@ Is an open source Kubernetes native monitoring system and time-series database t
 
 ### Grafana
 
-Is an open source metrics suite which provides the dashboard in the Gravity monitoring and alerts system. The dashboard provides a visual to the information stored in Prometheus, which is exposed as the service `grafana.monitoring.svc.cluster.local:3000`. Credentials generated are placed into a secret `grafana` in the monitoring namespace 
+Is an open source metrics suite which provides the dashboard in the Gravity monitoring and alerts system. The dashboard provides a visual to the information stored in Prometheus, which is exposed as the service `grafana.monitoring.svc.cluster.local:3000`. Credentials generated are placed into a secret `grafana` in the monitoring namespace
 
-Gravity is shipped with 2 pre-configured dashboards providing a visual of machine and pod-level overview of the installed cluster. Within the Gravity control panel, you can access the dashboard by navigating to the Monitoring page. 
+Gravity is shipped with 2 pre-configured dashboards providing a visual of machine and pod-level overview of the installed cluster. Within the Gravity control panel, you can access the dashboard by navigating to the Monitoring page.
 
-By default, Grafana is running in anonymous read-only mode. Anyone who logs into Gravity can view but not modify the dashboards. 
+By default, Grafana is running in anonymous read-only mode. Anyone who logs into Gravity can view but not modify the dashboards.
 
 ### Alertmanager
 
@@ -62,19 +62,19 @@ Most of the cluster metrics are collected by Prometheus which uses the following
 *   [node-exporter](https://github.com/prometheus/node_exporter) (collects hardware and OS metrics)
 *   [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics) (collects Kubernetes resource metrics - deployments, nodes, pods)
 
-kube-state-metrics collects metrics about various Kubernetes resources such as deployments, nodes and pods. It is a service that listens to the Kubernetes API server and generates metrics about the state of the objects. 
+kube-state-metrics collects metrics about various Kubernetes resources such as deployments, nodes and pods. It is a service that listens to the Kubernetes API server and generates metrics about the state of the objects.
 
 Further, kube-state-metrics exposes raw data that is unmodified from the Kubernetes API, which allows users to have all the data they require and perform heuristics as they see fit. In return, kubectl may not show the same values, as kubectl applies certain heuristics to display cleaner messages.
 
 Metrics from kube-state-metrics service are exported on the HTTP endpoint `/metrics` on the listening port (default 8080) and are designed to be consumed by Prometheus.
 
-![diagram](https://miro.medium.com/max/832/1*7thrW4Wa5y6b03PxtPlQzA.jpeg) 
+![diagram](https://miro.medium.com/max/832/1*7thrW4Wa5y6b03PxtPlQzA.jpeg)
 
 (Source: https://medium.com/faun/production-grade-kubernetes-monitoring-using-prometheus-78144b835b60)
 
-All metrics collected by node-exporter and kube-state-metrics are stored as time series in Prometheus. See below for a list of metrics collected by Prometheus. Each metric is stored as a separate “series” in Prometheus. 
+All metrics collected by node-exporter and kube-state-metrics are stored as time series in Prometheus. See below for a list of metrics collected by Prometheus. Each metric is stored as a separate “series” in Prometheus.
 
-Prometheus allows users to differentiate on the things that are being measured. Label names should not be used in the metric name as that leads to some redundancy. 
+Prometheus allows users to differentiate on the things that are being measured. Label names should not be used in the metric name as that leads to some redundancy.
 
 *   `api_http_requests_total` - differentiate request types: `operation="create|update|delete"`
 
@@ -92,7 +92,7 @@ $ kubectl -nmonitoring logs kube-state-metrics-69594c468-wcr4g kube-state-metric
 $ kubectl -nmonitoring logs node-exporter-hz972 node-exporter
 ```
 
-In addition, any other apps that collect metrics should also submit them into the same DB in order for proper retention policies to be enforced. 
+In addition, any other apps that collect metrics should also submit them into the same DB in order for proper retention policies to be enforced.
 
 ## Exploring Prometheus
 
@@ -101,11 +101,11 @@ Like mentioned above, Prometheus is exposed via a cluster-local Kubernetes servi
 Also, as seen above we have the following Prometheus pods:
 
 ```
-prometheus-adapter-6586cf7b4f-hmwkf   
-prometheus-k8s-0                       
-prometheus-operator-7bd7d57788-mf8xn   
+prometheus-adapter-6586cf7b4f-hmwkf
+prometheus-k8s-0
+prometheus-operator-7bd7d57788-mf8xn
 ```
-Prometheus operator for Kubernetes allows easy monitoring definitions for kubernetes services and deployment and management of Prometheus instances. 
+Prometheus operator for Kubernetes allows easy monitoring definitions for kubernetes services and deployment and management of Prometheus instances.
 
 Prometheus adapter is an API extension for kubernetes that users prometheus queries to populate kubernetes resources and custom metrics APIs.
 
@@ -141,17 +141,17 @@ $ curl 'http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/query?que
 
 Refer to the Prometheus [API documentation](https://prometheus.io/docs/prometheus/latest/querying/basics/) if you want to learn more about querying the database.
 
-## Metric Retention Policy 
+## Metric Retention Policy
 
 ### Time based retention
 
-By default Gravitational configures Prometheus with a time based rention policy of 30 days.
+By default Gravitational configures Prometheus with a time based retention policy of 30 days.
 
 ## Custom Dashboards
 
 Along with the dashboards mentioned above, your applications can use their own Grafana dashboards by using ConfigMaps.
 
-Similar to creating custom rollups, in order to use a custom dashboard, the ConfigMap should be created in the `monitoring` namespace, assigned a `monitoring` label with a value `dashboard`. 
+In order to create a custom dashboard, the ConfigMap should be created in the `monitoring` namespace, assigned a `monitoring` label with a value `dashboard`.
 
 Under the specified namespace, the ConfigMap will be recognized and loaded when installing the application. It is possible to add new ConfigMaps at a later time as the watcher will then pick it up and create it in Grafana. Similarly, if you delete the ConfigMap, the watcher will delete it from Grafana.
 
@@ -172,7 +172,7 @@ data:
     { ... dashboard JSON ... }
 ```
 
-_Note: by default Grafana is run in read-only mode, a separate Grafana instance is required to create custom dashboards._ 
+_Note: by default Grafana is run in read-only mode, a separate Grafana instance is required to create custom dashboards._
 
 ## Default Metrics
 
@@ -180,7 +180,7 @@ The following are the default metrics captured by the Gravity Monitoring & Alert
 
 ### node-exporter Metrics
 
-Below are a list of metrics captured by node-exporter which are exported to the backend by based on OS: 
+Below are a list of metrics captured by node-exporter which are exported to the backend by based on OS:
 
 <table>
   <tr>
@@ -579,7 +579,7 @@ Satellite collects several metrics related to cluster health and exposes them ov
 
 ## More about Alertmanager
 
-As mentioned Alertmanager is a Prometheus component that handles alerts sent by client applications such as the Prometheus server. Alertmanager handles deduplicating, grouping and routing alerts to the correct receiver integration such as an email recipient. 
+As mentioned Alertmanager is a Prometheus component that handles alerts sent by client applications such as the Prometheus server. Alertmanager handles deduplicating, grouping and routing alerts to the correct receiver integration such as an email recipient.
 
 The following are alerts that Gravity Monitoring & Alerts system ships with by default:
 
@@ -615,7 +615,7 @@ Critical error at > 90% used
   <tr>
    <td rowspan="2" >Systemd
    </td>
-   <td>Individual 
+   <td>Individual
    </td>
    <td>Error when unit not loaded/active
    </td>
@@ -738,7 +738,7 @@ $ gravity resource rm alerttarget email-alerts
 
 ### Alertmanager Custom Alerts
 
-Creating new alerts is as easy as using another Gravity resource of type `alert`. The alerts are written in TICKscript and are automatically detected, loaded, and enabled for Gravity Monitoring and Alerts system.
+Creating new alerts is as easy as using another Gravity resource of type `alert`. Alerting rules are configured in Prometheus in the same way as recording rules and are automatically detected, loaded, and enabled for Gravity Monitoring and Alerts system.
 
 For demonstration purposes let’s define an alert that always fires:
 
@@ -772,7 +772,7 @@ $ kubectl -nmonitoring logs watcher-7b99cc55c-8qgms
 time="2020-03-14T01:12:02Z" level=info msg="Detected event ADDED for configmap cpu1." label="monitoring in (alert)" watch=configmap
 ```
 
-We can confirm the alert is running by checking active alerts to see if the cluster has overcommitted CPU resource requests, as we set the cpu usage threshold to 15%.
+We can confirm the alert is running by checking active alerts to see if the cluster has overcommitted CPU resource requests, as we set the cpu usage threshold to 1%.
 
 ```bash
 $ sudo gravity shell
