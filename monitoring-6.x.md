@@ -145,23 +145,7 @@ Refer to the Prometheus [API documentation](https://prometheus.io/docs/prometheu
 
 ### Time based retention
 
-Users should start Prometheus with the following flag with their desired time.
-
-`--storage.tsdb.retention.time`: Determines when to remove old data. Defaults to 15 days.
-
-### Size based retention
-
-Users should start the prometheus with the following flag with their desired size.
-
-`--storage.tsdb.retention.size`:  Determines the maximum number of bytes that storage blocks can use. The oldest data will be removed first and this defaults to 0 or disabled. 
-
-Following Units are supported: KB, MB, GB, PB. for Ex: "512MB"
-
-We can use the same Prometheus API to see the retention policies configured for `--storage.tsdb.retention.time`:
-
-```bash
-$ curl http://prometheus-k8s.monitoring.svc.cluster.local:9090/api/v1/status/flags | jq
-```
+By default Gravitational configures Prometheus with a time based rention policy of 30 days.
 
 ## Custom Dashboards
 
