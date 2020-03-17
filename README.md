@@ -11,7 +11,8 @@ Open source series of workshops delivered by Gravitational services team.
 * [Gravity fire drill exercises](firedrills.md)
 * [Gravity logging (Gravity 5.5 and earlier)](logging-5.x.md)
 * [Gravity logging (Gravity 6.0 and later)](logging-6.x.md)
-* [Gravity monitoring & alerts](monitoring.md)
+* [Gravity monitoring & alerts (Gravity 5.5 and earlier)](monitoring-5.x.md)
+* [Gravity monitoring & alerts (Gravity 6.0 and later)](monitoring-6.x.md)
 * [Gravity networking and network troubleshooting](gravity_networking.md)
 
 ## Installation

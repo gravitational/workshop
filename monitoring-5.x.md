@@ -1,4 +1,4 @@
-# Gravity Monitoring & Alerts
+# Gravity Monitoring & Alerts (for Gravity 5.5 and earlier)
 
 ## Prerequisites
 
