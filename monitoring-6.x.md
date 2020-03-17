@@ -577,60 +577,6 @@ Satellite collects several metrics related to cluster health and exposes them ov
 *   Systemd related metrics:
     *   State of various systemd units such as etcd, flannel, kube-*, etc.
 
-
-### Telegraf
-
-The nodes also run [Telegraf](https://github.com/influxdata/telegraf/tree/master/plugins/inputs/system) - an agent for collecting, processing, aggregating, and writing metrics. Some system input plugins related to cpu and memory are captured as default metrics as well.
-
-<table>
-  <tr>
-   <td><strong>Metric Name</strong>
-   </td>
-   <td><strong>Description</strong>
-   </td>
-  </tr>
-  <tr>
-   <td>load1 (float)
-   </td>
-   <td>Warning threshold for load over 1 min
-   </td>
-  </tr>
-  <tr>
-   <td>load15 (float)
-   </td>
-   <td>Warning threshold for load over 15 mins
-   </td>
-  </tr>
-  <tr>
-   <td>load5 (float)
-   </td>
-   <td>Warning threshold for load over 5 mins
-   </td>
-  </tr>
-  <tr>
-   <td>n_users (integer)
-   </td>
-   <td>Number of users
-   </td>
-  </tr>
-  <tr>
-   <td>n_cpus (integer)
-   </td>
-   <td>Number of CPU cores
-   </td>
-  </tr>
-  <tr>
-   <td>uptime (integer, seconds)
-   </td>
-   <td>Number of milliseconds since the system was started
-   </td>
-  </tr>
-</table>
-
-In addition to the default metrics, Telegraf also queries the Satellite Prometheus endpoint described above.
-
-Telegraf configuration can be found [here](https://github.com/gravitational/monitoring-app/tree/version/5.5.x/images/telegraf/rootfs/etc/telegraf). The respective configuration files show which input plugins each Telegraf instance has enabled.
-
 ## More about Alertmanager
 
 As mentioned Alertmanager is a Prometheus component that handles alerts sent by client applications such as the Prometheus server. Alertmanager handles deduplicating, grouping and routing alerts to the correct receiver integration such as an email recipient. 
