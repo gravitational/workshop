@@ -175,9 +175,9 @@ With kubernetes and containerized applications, the idea is to disconnect the di
 Networks running kubernetes clusters are configured in a wide variety of ways, and have very different capabilities. As a result, kubernetes itself doesn’t actually include networking, instead kubernetes provides a plugin system that allows for many different ways to integrate networks. Instead kubernetes defines a set of requirements that the network must provide.
 
 These requirements are:
-Each Pod is assigned its own unique IP address
-Each Pod must be able to reach all other Pods without NAT
-Agents or software on a node must be able to communicate with all pods on the node without NAT
+- Each Pod is assigned its own unique IP address
+- Each Pod must be able to reach all other Pods without NAT
+- Agents or software on a node must be able to communicate with all pods on the node without NAT
 
 When we think about a pod conceptually, we can treat each pod like a virtual machine or host within our network. Each pod is assigned a name and IP address, so issues such as coordinating ports within a host are eliminated. If kubernetes assigns two pods with web servers listening on port 80, there isn’t a conflict.
 
@@ -873,7 +873,7 @@ kube-dns.kube-system.svc.cluster.local.	5 IN A	10.100.214.177
 ;; WHEN: Mon Jan 27 06:59:33 UTC 2020
 ;; MSG SIZE  rcvd: 121
 
-kevin-test1:/$ dig @`kubectl -n kube-system get svc/kube-dns -o json | jq -r '.spec.clusterIP'` kube-dns.kube-system.cluster.local
+kevin-test1:/$ dig @`kubectl -n kube-system get svc/kube-dns -o json | jq -r '.spec.clusterIP'` kube-dns.kube-system.svc.cluster.local
 
 ; <<>> DiG 9.10.3-P4-Debian <<>> @10.100.214.177 kube-dns.kube-system.cluster.local
 ; (1 server found)
