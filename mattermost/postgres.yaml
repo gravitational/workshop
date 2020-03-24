@@ -9,7 +9,7 @@ metadata:
 spec:
   containers:
   - name: mattermost-postgres
-    image: postgres:latest
+    image: postgres:12.2
     ports:
       - containerPort: 5432
     env:
