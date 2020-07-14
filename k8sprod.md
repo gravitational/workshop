@@ -104,7 +104,7 @@ prod                                          v2                  ef93cea87a7c  
 prod                                          latest              b2c197180350        45 minutes ago       201 MB
 ```
 
-**NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" you binaries to have them include all needed libraries.
+**NOTE:** Please be aware that you should either plan on providing the needed "shared libraries" in the runtime image or "statically build" your binaries to have them include all needed libraries.
 
 Docker supports the buildbox pattern natively starting from version `17.05`, by providing a feature called [multi-stage builds](https://docs.docker.com/develop/develop-images/multistage-build/). With multi-stage builds you can define multiple "stages" in a single Dockerfile, each of which starts with a new `FROM` clause, and selectively copy artifacts between the stages. This way you only write a single Dockerfile and end up with a single resulting (small) image.
 
@@ -368,9 +368,9 @@ spec:
     emptyDir: {}
 ```
 
-By default the volume is backed by whatever disk is backing the node, however note that it is cleared permanently if the pod leaves the node for whatever reason (it's persists across container restarts within a pod though).
+By default the volume is backed by whatever disk is backing the node, however note that it is cleared permanently if the pod leaves the node for whatever reason (it persists across container restarts within a pod though).
 
-For small files it may be beneficial to set `emptyDir.medium` field to `Memory` which will make Kubernetes to use a RAM-backed filesystem, `tmpfs` instead.
+For small files it may be beneficial to set `emptyDir.medium` field to `Memory` which will make Kubernetes use a RAM-backed filesystem, `tmpfs` instead.
 
 ### Anti-Pattern: Using `latest` Tag
 
