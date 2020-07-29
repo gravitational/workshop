@@ -95,7 +95,7 @@ check-env:
 #
 # check-ssh-key makes sure SSH_KEY_PATH environment variable is set.
 #
-.PHONY: chech-ssh-key
+.PHONY: check-ssh-key
 check-ssh-key:
 	@if [ -z "$(SSH_KEY_PATH)" ]; then \
 	  echo "SSH_KEY_PATH is not set"; exit 1; \
