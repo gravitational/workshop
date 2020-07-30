@@ -86,29 +86,32 @@ The list is divided based on when the specific command will be more likely used,
     and thus analyze the root cause and to resume once fixed.
   + content of `gravity-system.log` and (if present) `gravity-install.log` files.
     These files are usually found in the installation directory
-    or in newer versions they will be located in /var/log/gravity.
+    or in newer versions they will be located in /var/log
     These files store the output that Gravity generates through installation and
     it's mostly useful during troubleshooting.
   + `sudo ./gravity status` - from the installer directory
     The `status` command output shows the current state of Gravity clusters with
-    any hints about possible causes and hints of a degraded state.
+    a high level overview of a cluster's health, hints if the cluster
+    is in a degraded state, and the status of individual components.
   
 ### DURING RUNTIME
   + `sudo gravity status`
     The `status` command output shows the current state of Gravity clusters with
-    any hints about possible causes and hints of a degraded state.
+    a high level overview of a cluster's health, hints if the cluster
+    is in a degraded state, and the status of individual components.
   + `sudo gravity exec planet status`
     The `planet status` command output shows the current state of Gravity
     components and it's helpful to pin down which specific component is failing
-    on which node. It's a bit more verbose that `gravity status` but usually
+    on which node. It's a bit more verbose than `gravity status` but usually
     more informative.
   + `sudo gravity plan`
-    Once completed, this command analyze last operation ran on the Gravity cluster.
+    Once completed, this command analyzes the last operation ran
+    on the Gravity cluster.
 
   + OUTSIDE PLANET:
     - `sudo systemctl list-unit-files '*grav*'`
       This command will help you identify Gravity systemd units. Usually there
-      should only one `planet` and one `teleport` unit.
+      should only be one `planet` and one `teleport` unit.
     - `sudo journalctl -f -u '*gravity*planet*'`
       This unit is the master container, bubble of consistency, that stores the
       entire Gravity environment. By using this command you can investigate all
@@ -146,15 +149,24 @@ The list is divided based on when the specific command will be more likely used,
       exchange messages in between the different nodes in Gravity clusters.
 
 ### Collect logfiles for reporting purpose
-  + `sudo gravity report reportfile.tgz`
+  + `sudo gravity report --file report_TICKET_12345.tgz`
+    This command will collect all the needed info that can be later inspected 
+    to debug a Gravity cluster. This includes Kubernetes resources status,
+    Gravity and Planet status, some logs from Planet and much more.
+    By default the report will be saved in `report.tar.gz` if not specified.
+  + `sudo gravity report --since 24h`
+    The new `--since` flag will help to narrow down the scope of the `report`
+    file by only saving data from the time duration specified (it's in Go time
+    duration format). This option helps keeping the report file smaller and thus
+    easier to attach to tickets.
   + content of `gravity-system.log` and (if present) `gravity-install.log` files.
     These files are usually found in the installation directory
-    or in newer versions they will be located in /var/log/gravity
+    or in newer versions they will be located in /var/log
 
 ### Nifty features coming in future versions
-Versions of Gravity from 6.1.x onward also includes a nice feature showing the
-status changes over time which may be helpful to identify root causes or brief
-fluctuations of the cluster state:
+Versions of Gravity from latest 5.5.x and 6.1.x onward also includes a nice
+feature showing the status changes over time which may be helpful to identify
+root causes or brief fluctuations of the cluster state:
 
 ```
 ubuntu@telekube0:~/i$ sudo gravity status history
@@ -180,6 +192,22 @@ ubuntu@telekube0:~/i$ sudo gravity status history
 2020-07-30T16:34:05Z [Probe Succeeded]  node=172_28_128_3.pensivevillani4966    checker=etcd-healthz
 2020-07-30T16:34:05Z [Node Healthy]     node=172_28_128_3.pensivevillani4966
 ```
+
+It's also worth mentioning that from version 5.5.50 on, a few minor improvements
+were also added to the `gravity status` output. To mention a few:
+
+* `gravity status` now displays unhealthy critical system pods and some
+  visibility into the controller status loop if the cluster is in a degraded
+  state
+* a new set of pre-upgrade checks were added to verify if previous upgrade
+  operation succeeded or a failed plan was rolled back
+
+* another set of pre-upgrade checks was added to verify if any Teleport node is
+  unavailable
+
+* `gravity plan resume` now launches its execution in background by default, but a new `--block` option was added to resume in foreground and a different command `gravity plan watch` was also introduced to track the plan progress
+
+* it's possible to view/collect Gravity command line logs via `journalctl -t gravity-cli`
 
 ## Exploring a Gravity Manual Upgrade
 
