@@ -109,39 +109,39 @@ The list is divided based on when the specific command will be more likely used,
     - `sudo systemctl list-unit-files '*grav*'`
       This command will help you identify Gravity systemd units. Usually there
       should only one `planet` and one `teleport` unit.
-    `sudo journalctl -f -u '*gravity*planet*'`
+    - `sudo journalctl -f -u '*gravity*planet*'`
       This unit is the master container, bubble of consistency, that stores the
       entire Gravity environment. By using this command you can investigate all
       logs forwarded by Gravity to the system log facility.
-    `sudo journalctl -f -u '*gravity*teleport*'`
+    - `sudo journalctl -f -u '*gravity*teleport*'`
       This unit is the Teleport unit that is used to make connections possible
       from one to the other. By using this command you can investigate all
       logs forwarded by Teleport to the system log facility.
   + INSIDE PLANET:
-    `sudo systemctl list-unit-files 'kube*'`
+    - `sudo systemctl list-unit-files 'kube*'`
       This command will help you identify Kubernetes systemd units.
-    `sudo journalctl -f -u 'kube*'`
+    - `sudo journalctl -f -u 'kube*'`
       This command will show all logs from all Kubernetes related units.
-    `sudo journalctl -f -u 'serf'`
+    - `sudo journalctl -f -u 'serf'`
       This command will show all logs from Serf, which is the software used to
       exchange state messages withing Gravity clusters.
-    `sudo journalctl -f -u 'coredns'`
+    - `sudo journalctl -f -u 'coredns'`
       This command will show all logs from CoreDNS, which is the software used to
       have DNS resolution working inside the Kubernetes cluster.
-    `sudo journalctl -f -u 'flanneld'`
+    - `sudo journalctl -f -u 'flanneld'`
       This command will show all logs from Flanneld, which is the software used to
       create an overlay network that is used as the backend for all Gravity cluster's
       communication.
-    `sudo journalctl -f -u 'etcd'`
+    - `sudo journalctl -f -u 'etcd'`
       This command will show all logs from etcd, which is the software used to
       store the Gravity cluster status and some internal information.
-    `sudo journalctl -f -u 'docker'`
+    - `sudo journalctl -f -u 'docker'`
       This command will show all logs from Docker, which is the software used to
       run the actual containers used by Kubernetes to run its own Pods.
-    `sudo journalctl -f -u 'registry'`
+    - `sudo journalctl -f -u 'registry'`
       This command will show all logs from the container registry, which is used to
       distribute containers' data among all nodes.
-    `sudo journalctl -f -u 'planet-agent'`
+    - `sudo journalctl -f -u 'planet-agent'`
       This command will show all logs from the planet-agent daemon, which is used to
       exchange messages in between the different nodes in Gravity clusters.
 
