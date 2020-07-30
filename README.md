@@ -14,6 +14,7 @@ Open source series of workshops delivered by Gravitational services team.
 * [Gravity monitoring & alerts (Gravity 5.5 and earlier)](monitoring-5.x.md)
 * [Gravity monitoring & alerts (Gravity 6.0 and later)](monitoring-6.x.md)
 * [Gravity networking and network troubleshooting](gravity_networking.md)
+* [Gravity upgrade training](gravity_upgrade.md)
 
 ## Installation
 
