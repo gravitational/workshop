@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab2.sh /home/ubuntu/gravity-5.5.49"
+    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab4.sh /home/ubuntu/gravity-5.5.50"
     exit 1
 fi
 
@@ -21,5 +21,10 @@ OBJECTIVE
 
 The upgrade has been launched in the manual mode.
 
-Your goal is to inspect the upgrage plan and step through a few phases.
+Your goal is to inspect the upgrade plan and step through a few phases.
+
+Once you have executed a few upgrade phases, rollback the cluster to the original state.
+
+    cd $1
+    sudo ./gravity rollback
 "

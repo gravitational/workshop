@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab2.sh /home/ubuntu/gravity-5.5.49"
+    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab3.sh /home/ubuntu/gravity-5.5.50"
     exit 1
 fi
 
@@ -28,4 +28,5 @@ to fix the issue and successfully launch a upgrade in manual mode:
 Once the upgrade has successfully launched in manual mode, rollback the
 operation so the cluster returns to the active state:
 
-    sudo ./gravity rollback"
+    sudo ./gravity rollback
+"
