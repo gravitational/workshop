@@ -98,7 +98,10 @@ The list is divided based on when the specific command will be more likely used,
     the upgrade by the cluster nodes. In order to verify if it's running,
     checking the systemd unit (with `sudo systemctl status gravity-agent.service`)
     and its logs (via `journalctl -u gravity-agent.service`) may help identify
-    possible issues or keep track of messages sent by the agent itself
+    possible issues or keep track of messages sent by the agent itself.
+  + In case the Gravity Agent dies or needs to be redeployed (eg in case the 
+    server is rebooted during an upgrade) the command `sudo gravity agent deploy`
+    will take care of setting up the Agent on the needed nodes.
   
 ### DURING RUNTIME
   + `sudo gravity status`
@@ -165,6 +168,11 @@ The list is divided based on when the specific command will be more likely used,
     file by only saving data from the time duration specified (it's in Go time
     duration format). This option helps keeping the report file smaller and thus
     easier to attach to tickets.
+  + if for whatever reason the `gravity-site` Kubernetes Pod is unreachable or
+    not working, the `gravity report` command won't work and for these cases
+    there's low level command `gravity system report` that will collect
+    a smaller subset of the usual info gathered by the normal command but
+    should still be useful to start troubleshooting issues.
   + content of `gravity-system.log` and (if present) `gravity-install.log` files.
     These files are usually found in the installation directory
     or in newer versions they will be located in /var/log
