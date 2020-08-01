@@ -93,6 +93,12 @@ The list is divided based on when the specific command will be more likely used,
     The `status` command output shows the current state of Gravity clusters with
     a high level overview of a cluster's health, hints if the cluster
     is in a degraded state, and the status of individual components.
+  + An fundamental component during install and upgrades is the (gravity) agent.
+    Said agent creates an initial communication channel that will be used for
+    the upgrade by the cluster nodes. In order to verify if it's running,
+    checking the systemd unit (with `sudo systemctl status gravity-agent.service`)
+    and its logs (via `journalctl -u gravity-agent.service`) may help identify
+    possible issues or keep track of messages sent by the agent itself
   
 ### DURING RUNTIME
   + `sudo gravity status`
@@ -205,7 +211,9 @@ were also added to the `gravity status` output. To mention a few:
 * another set of pre-upgrade checks was added to verify if any Teleport node is
   unavailable
 
-* `gravity plan resume` now launches its execution in background by default, but a new `--block` option was added to resume in foreground and a different command `gravity plan watch` was also introduced to track the plan progress
+* `gravity plan resume` now launches its execution in background by default,
+  but a new `--block` option was added to resume in foreground and a different
+  command `gravity plan --tail` was also introduced to track the plan progress
 
 * it's possible to view/collect Gravity command line logs via `journalctl -t gravity-cli`
 
