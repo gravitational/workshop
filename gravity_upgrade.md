@@ -586,37 +586,9 @@ The first step in the upgrade process, is we initialize and prepare each node to
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /init/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-08-02T00:19:06Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T00:19:06Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T00:19:06Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T00:19:06Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T00:19:06Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T00:19:06Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T00:19:06Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(0550a0bb-7c9f-4949-b5b2-e8c0ae27c458), cluster=festivebrown4906, state=update_in_progress, created=Sun Aug  2 00:18 UTC)
-operation(expand(6d32a686-284f-477a-906b-592ba059fb65), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:13 UTC)
-operation(expand(ba22955c-3e5f-4f47-899e-e0e95551a0b2), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:11 UTC)
-operation(install(2bf0f44d-f9eb-4374-bc1c-0e9937329025), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:01 UTC)" cli/operation.go:241
-2020-08-02T00:19:06Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T00:19:06Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T00:19:06Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T00:19:06Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Sun Aug  2 00:19:06 UTC	Executing "/init/kevin-test1" locally
+
+...
+
 2020-08-02T00:19:06Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/init/kevin-test1, State=in_progress) cluster/engine.go:288
 2020-08-02T00:19:07Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
@@ -819,38 +791,9 @@ Now that we've made some progress in our upgrade, if we encounter a problem, we 
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan rollback --phase /init/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-08-02T03:30:43Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T03:30:43Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T03:30:43Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T03:30:43Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T03:30:43Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T03:30:43Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T03:30:43Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(0550a0bb-7c9f-4949-b5b2-e8c0ae27c458), cluster=festivebrown4906, state=update_in_progress, created=Sun Aug  2 00:18 UTC)
-operation(expand(6d32a686-284f-477a-906b-592ba059fb65), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:13 UTC)
-operation(expand(ba22955c-3e5f-4f47-899e-e0e95551a0b2), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:11 UTC)
-operation(install(2bf0f44d-f9eb-4374-bc1c-0e9937329025), cluster=festivebrown4906, state=completed, created=Sun Aug  2 00:01 UTC)" cli/operation.go:241
-2020-08-02T03:30:43Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-08-02T03:30:43Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-08-02T03:30:43Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-08-02T03:30:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Sun Aug  2 03:30:43 UTC	Rolling back "/init/kevin-test1" locally
-2020-08-02T03:30:43Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/init/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-08-02T03:30:44Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 → init                         Initialize update operation                                In Progress     -              -                                             Sun Aug  2 03:30 UTC
@@ -1140,38 +1083,9 @@ The checks phase is used to check that the cluster meets any new requirements de
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /checks 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:34:10Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:34:10Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:34:10Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:34:10Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:34:10Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:34:10Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:34:10Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T06:34:10Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:34:10Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:34:10Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:34:10Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:34:10 UTC	Executing "/checks" locally
-2020-07-31T06:34:10Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/checks, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T06:34:11Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -1460,38 +1374,9 @@ The pre-update hook is an application hook that runs that an upgrade is starting
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /pre-update 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T17:46:32Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:46:32Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:46:32Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:32Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:46:32Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:32Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:46:32Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:46:33Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:46:33Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:46:33Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:46:33Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:46:33Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T17:46:33Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:46:33Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:46:33Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:46:33Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:46:33Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 17:46:33 UTC	Executing "/pre-update" locally
-2020-07-29T17:46:33Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/pre-update, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T17:46:33Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -1813,42 +1698,9 @@ The bootstrap phase is used to do initial configuration on each node within the 
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /bootstrap/kevin-test1 --force 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T17:50:35Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:50:35Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:50:35Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:35Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:50:35Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:35Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:50:35Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:50:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:50:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:50:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:50:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:50:36Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T17:50:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T17:50:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T17:50:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T17:50:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T17:50:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 17:50:36 UTC	Executing "/bootstrap/kevin-test1" locally
-2020-07-29T17:50:36Z DEBU             Dial. addr:leader.telekube.local:6443 network:tcp httplib/client.go:225
-2020-07-29T17:50:36Z DEBU             Resolve leader.telekube.local took 197.408µs. utils/dns.go:47
-2020-07-29T17:50:36Z DEBU             Resolved leader.telekube.local to 10.162.0.7. utils/dns.go:54
-2020-07-29T17:50:36Z DEBU             Dial. host-port:10.162.0.7:6443 httplib/client.go:263
-2020-07-29T17:50:36Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/bootstrap/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T17:50:36Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -2265,38 +2117,9 @@ Wed Jul 29 18:01:57 UTC	Executing phase "/bootstrap" finished in 56 seconds
 CoreDNS configures the CoreDNS configuration within kubernetes to offer cluster DNS services.
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /coredns 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:03:30Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:03:30Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:03:30Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:03:30Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:03:30Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:03:30Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:03:30Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:03:30Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:03:30Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:03:30Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:03:30Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:03:30 UTC	Executing "/coredns" locally
-2020-07-29T18:03:30Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/coredns, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:03:31Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -2502,38 +2325,9 @@ When planet restarts, it will launch a new version of kubelet, which we want to 
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/kubelet-permissions 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:08:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:08:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:08:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:08:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:08:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:08:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:08:20Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:08:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:08:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:08:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:08:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:08:20 UTC	Executing "/masters/kevin-test1/kubelet-permissions" locally
-2020-07-29T18:08:20Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/kubelet-permissions, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:08:21Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -2704,38 +2498,9 @@ pool while it is being disrupted, and is finally re-added later.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/stepdown-kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:11:01Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:11:01Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:11:01Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:11:01Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:11:01Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:11:01Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:11:01Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:11:01Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:11:01Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:11:01Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:11:01Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:11:01 UTC	Executing "/masters/kevin-test1/stepdown-kevin-test1" locally
-2020-07-29T18:11:01Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/stepdown-kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:11:02Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -2902,38 +2667,9 @@ Drains the node of running pods, having kubernetes reschedule the application on
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/drain 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:13:14Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:13:14Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:13:14Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:13:14Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:13:14Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:13:14Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:13:14Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:13:14Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:13:14Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:13:14Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:13:14Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:13:14 UTC	Executing "/masters/kevin-test1/drain" locally
-2020-07-29T18:13:14Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/drain, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:13:15Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -3621,38 +3357,9 @@ The System Upgrade phase is where we physically restart the planet container on 
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/system-upgrade 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:16:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:16:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:16:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:16:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:16:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:16:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:16:28Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:16:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:16:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:16:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:16:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:16:28 UTC	Executing "/masters/kevin-test1/system-upgrade" locally
-2020-07-29T18:16:28Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/system-upgrade, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:16:29Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -4361,38 +4068,9 @@ A Kubernetes Node Taint is added to the node prior to Uncordoning. This allows o
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/taint 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:20:23Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:20:23Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:20:23Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:23Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:20:23Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:20:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:20:24Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:20:24Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:20:24Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:20:24Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:20:24Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:20:24Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:20:24Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:20:24Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:20:24Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:20:24Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:20:24 UTC	Executing "/masters/kevin-test1/taint" locally
-2020-07-29T18:20:24Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/taint, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:20:24Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -4571,38 +4249,9 @@ Removed the cordon setting on the node, allowing the kubernetes scheduler to see
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/uncordon 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:27:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:27:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:27:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:27:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:27:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:27:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:27:20Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:27:20Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:27:20Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:27:20Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:27:20Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:27:20 UTC	Executing "/masters/kevin-test1/uncordon" locally
-2020-07-29T18:27:20Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/uncordon, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:27:21Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -4780,38 +4429,9 @@ Removes the node taint placed earlier, to open the node up for additional schedu
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/untaint 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:29:35Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:29:35Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:29:35Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:35Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:29:35Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:35Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:29:35Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:29:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:29:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:29:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:29:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:29:36Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:29:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:29:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:29:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:29:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:29:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:29:36 UTC	Executing "/masters/kevin-test1/untaint" locally
-2020-07-29T18:29:36Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/kevin-test1/untaint, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:29:36Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -4983,38 +4603,9 @@ If the first master were to fail at this point, the cluster would not be able to
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/elect-kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-29T18:31:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:31:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:31:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:31:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:31:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:31:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:31:36Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(6a7f7ff4-c075-4561-8b1c-e5819e195d83), cluster=wonderfulspence252, state=update_in_progress, created=Wed Jul 29 17:02 UTC)
-operation(expand(5b5bb430-fdc3-4680-9122-199278ba43d3), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:54 UTC)
-operation(expand(e733a63f-791a-4c76-b1fb-7508a5003ebc), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:53 UTC)
-operation(install(0bcac257-36d4-4765-be89-d8f113615f3f), cluster=wonderfulspence252, state=completed, created=Wed Jul 29 16:48 UTC)" cli/operation.go:241
-2020-07-29T18:31:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-29T18:31:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-29T18:31:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-29T18:31:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Wed Jul 29 18:31:37 UTC	Executing "/masters/elect-kevin-test1" locally
-2020-07-29T18:31:37Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/masters/elect-kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-29T18:31:37Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Wed Jul 29 17:16 UTC
@@ -5231,38 +4822,9 @@ The backup phase is where we backup the underlying etcd database. We backup on e
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /etcd/backup/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:42:22Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:42:22Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:42:22Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:42:22Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:42:22Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:42:22Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:42:22Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T06:42:22Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:42:22Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:42:22Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:42:22Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:42:23 UTC	Executing "/etcd/backup/kevin-test1" locally
-2020-07-31T06:42:23Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/etcd/backup/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T06:42:23Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -5452,38 +5014,9 @@ Shutdown will stop etcd on each server within the cluster, for the duration of t
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /etcd/shutdown/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:45:23Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:45:23Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:45:23Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:45:23Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:45:23Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:45:23Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:45:23Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T06:45:23Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:45:23Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:45:23Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:45:23Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:45:24 UTC	Executing "/etcd/shutdown/kevin-test1" locally
-2020-07-31T06:45:24Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/etcd/shutdown/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T06:45:24Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -5906,72 +5439,9 @@ We use a temporary etcd service, so that kubernetes doesn't see the empty databa
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /etcd/upgrade/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:50:11Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:50:11Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:50:11Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:11Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:50:11Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:11Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:50:11Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:50:11Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:50:12Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:50:12Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:50:12Z DEBU [CLI]       Failed to query cluster operations. error:[
-ERROR REPORT:
-Original Error: *client.ClusterError client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
 
-Stack Trace:
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:576 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry.func1
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:37 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.RetryNotify
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:25 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.Retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:572 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:489 github.com/gravitational/gravity/lib/storage/keyval.retryApi.Get
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:438 github.com/gravitational/gravity/lib/storage/keyval.(*engine).getKeys
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:80 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetSites
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:41 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetLocalSite
-	/gopath/src/github.com/gravitational/gravity/lib/storage/utils.go:116 github.com/gravitational/gravity/lib/storage.GetOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:314 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).init
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:290 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).List
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:266 github.com/gravitational/gravity/tool/gravity/cli.getBackendOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:237 github.com/gravitational/gravity/tool/gravity/cli.getLastOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:252 github.com/gravitational/gravity/tool/gravity/cli.getActiveOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:66 github.com/gravitational/gravity/tool/gravity/cli.executePhase
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:418 github.com/gravitational/gravity/tool/gravity/cli.Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:252 github.com/gravitational/gravity/tool/gravity/cli.getExec.func1
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/logging.go:71 github.com/gravitational/gravity/tool/gravity/cli.(*CmdExecer).Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:92 github.com/gravitational/gravity/tool/gravity/cli.Run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:44 main.run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:35 main.main
-	/go/src/runtime/proc.go:200 runtime.main
-	/go/src/runtime/asm_amd64.s:1337 runtime.goexit
-User Message: failed to query cluster operations
-	client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-] cli/operation.go:292
-2020-07-31T06:50:12Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:50:12Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:50:12Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:50:12Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:50:12Z DEBU [CLI]       Fetched backend operations. operations:operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC) cli/operation.go:241
-2020-07-31T06:50:12Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:50:12Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:50:12Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:50:12Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:50:12Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:50:13 UTC	Executing "/etcd/upgrade/kevin-test1" locally
-2020-07-31T06:50:13Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/etcd/upgrade/kevin-test1, State=in_progress) cluster/engine.go:288
+...
+
 2020-07-31T06:50:13Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -6168,76 +5638,9 @@ The restore phase is where we restore from backup to the newly created cluster o
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /etcd/restore 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:56:43Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:56:43Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:56:43Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:43Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:56:43Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:56:43Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:56:43Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:56:43Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:56:44Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:56:44Z DEBU [CLI]       Failed to query cluster operations. error:[
-ERROR REPORT:
-Original Error: *client.ClusterError client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
 
-Stack Trace:
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:576 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry.func1
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:37 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.RetryNotify
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:25 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.Retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:572 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:489 github.com/gravitational/gravity/lib/storage/keyval.retryApi.Get
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:438 github.com/gravitational/gravity/lib/storage/keyval.(*engine).getKeys
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:80 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetSites
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:41 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetLocalSite
-	/gopath/src/github.com/gravitational/gravity/lib/storage/utils.go:116 github.com/gravitational/gravity/lib/storage.GetOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:314 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).init
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:290 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).List
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:266 github.com/gravitational/gravity/tool/gravity/cli.getBackendOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:237 github.com/gravitational/gravity/tool/gravity/cli.getLastOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:252 github.com/gravitational/gravity/tool/gravity/cli.getActiveOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:66 github.com/gravitational/gravity/tool/gravity/cli.executePhase
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:418 github.com/gravitational/gravity/tool/gravity/cli.Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:252 github.com/gravitational/gravity/tool/gravity/cli.getExec.func1
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/logging.go:71 github.com/gravitational/gravity/tool/gravity/cli.(*CmdExecer).Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:92 github.com/gravitational/gravity/tool/gravity/cli.Run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:44 main.run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:35 main.main
-	/go/src/runtime/proc.go:200 runtime.main
-	/go/src/runtime/asm_amd64.s:1337 runtime.goexit
-User Message: failed to query cluster operations
-	client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-] cli/operation.go:292
-2020-07-31T06:56:44Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:56:44Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:56:44Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:56:44Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:56:44Z DEBU [CLI]       Fetched backend operations. operations:operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC) cli/operation.go:241
-2020-07-31T06:56:44Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:56:44Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:56:44Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:56:44Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:56:44Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:56:45 UTC	Executing "/etcd/restore" locally
-2020-07-31T06:56:45Z INFO             "command output: cluster is healthy
-" phase:/etcd/restore fsm/logger.go:61
-2020-07-31T06:56:45Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/etcd/restore, State=in_progress) cluster/engine.go:288
-2020-07-31T06:56:45Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
+...
+
 2020-07-31T06:56:45Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -6437,72 +5840,9 @@ Finally, we go through each node, and restart the cluster listening to the norma
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /etcd/restart/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T06:58:57Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:58:57Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:58:57Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:57Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:58:57Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:57Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:58:57Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:58:57Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:58:58Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:58:58Z DEBU             "retrying on transient etcd error: client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-" keyval/etcd.go:575
-2020-07-31T06:58:58Z DEBU [CLI]       Failed to query cluster operations. error:[
-ERROR REPORT:
-Original Error: *client.ClusterError client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
 
-Stack Trace:
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:576 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry.func1
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:37 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.RetryNotify
-	/gopath/src/github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff/retry.go:25 github.com/gravitational/gravity/vendor/github.com/cenkalti/backoff.Retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:572 github.com/gravitational/gravity/lib/storage/keyval.retryApi.retry
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:489 github.com/gravitational/gravity/lib/storage/keyval.retryApi.Get
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/etcd.go:438 github.com/gravitational/gravity/lib/storage/keyval.(*engine).getKeys
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:80 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetSites
-	/gopath/src/github.com/gravitational/gravity/lib/storage/keyval/sites.go:41 github.com/gravitational/gravity/lib/storage/keyval.(*backend).GetLocalSite
-	/gopath/src/github.com/gravitational/gravity/lib/storage/utils.go:116 github.com/gravitational/gravity/lib/storage.GetOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:314 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).init
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:290 github.com/gravitational/gravity/tool/gravity/cli.(*backendOperations).List
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:266 github.com/gravitational/gravity/tool/gravity/cli.getBackendOperations
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:237 github.com/gravitational/gravity/tool/gravity/cli.getLastOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:252 github.com/gravitational/gravity/tool/gravity/cli.getActiveOperation
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/operation.go:66 github.com/gravitational/gravity/tool/gravity/cli.executePhase
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:418 github.com/gravitational/gravity/tool/gravity/cli.Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:252 github.com/gravitational/gravity/tool/gravity/cli.getExec.func1
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/logging.go:71 github.com/gravitational/gravity/tool/gravity/cli.(*CmdExecer).Execute
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/cli/run.go:92 github.com/gravitational/gravity/tool/gravity/cli.Run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:44 main.run
-	/gopath/src/github.com/gravitational/gravity/tool/gravity/main.go:35 main.main
-	/go/src/runtime/proc.go:200 runtime.main
-	/go/src/runtime/asm_amd64.s:1337 runtime.goexit
-User Message: failed to query cluster operations
-	client: etcd cluster is unavailable or misconfigured; error #0: dial tcp 127.0.0.1:2379: connect: connection refused
-] cli/operation.go:292
-2020-07-31T06:58:58Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:58:58Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:58:58Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:58:58Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:58:58Z DEBU [CLI]       Fetched backend operations. operations:operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC) cli/operation.go:241
-2020-07-31T06:58:58Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T06:58:58Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T06:58:58Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T06:58:58Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T06:58:58Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 06:58:59 UTC	Executing "/etcd/restart/kevin-test1" locally
-2020-07-31T06:58:59Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/etcd/restart/kevin-test1, State=in_progress) cluster/engine.go:288
+...
+
 2020-07-31T06:58:59Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -6687,38 +6027,9 @@ The system configuration task is used to upgrade the teleport configuration on e
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /config/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T07:06:18Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:06:18Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:06:18Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:06:18Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:06:18Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:06:18Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:06:18Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T07:06:18Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:06:18Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:06:18Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:06:18Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 07:06:18 UTC	Executing "/config/kevin-test1" locally
-2020-07-31T07:06:18Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/config/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T07:06:19Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -6907,38 +6218,9 @@ In this particular demo, the following applications are to be updated:
 Let's see what updating a runtime application looks like:
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /runtime/rbac-app 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T07:14:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:14:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:14:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:14:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:14:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:14:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:14:36Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T07:14:36Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:14:36Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:14:36Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:14:36Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 07:14:37 UTC	Executing "/runtime/rbac-app" locally
-2020-07-31T07:14:37Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/runtime/rbac-app, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T07:14:37Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -7150,38 +6432,9 @@ The migrations phase and it's subphases are where we define internal state updat
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /migration/labels 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T07:44:07Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:44:07Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:44:07Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:44:07Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:44:07Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:44:07Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:44:07Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T07:44:07Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:44:07Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:44:07Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:44:07Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 07:44:07 UTC	Executing "/migration/labels" locally
-2020-07-31T07:44:07Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/migration/labels, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T07:44:08Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -7355,38 +6608,9 @@ The example application is just an empty kubernetes cluster, so nothing really h
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /app/telekube 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T07:49:19Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:49:19Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:49:19Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:49:19Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:49:19Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:49:19Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:49:19Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T07:49:19Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:49:19Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:49:19Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:49:19Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 07:49:20 UTC	Executing "/app/telekube" locally
-2020-07-31T07:49:20Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/app/telekube, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T07:49:21Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
@@ -7554,38 +6778,9 @@ The last step of the upgrade is to run "garbage collection", which is a cleanup 
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /gc/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
-2020-07-31T07:51:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:51:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:51:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:51:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:51:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:51:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/usr/local/share/gravity/join", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:51:28Z DEBU [CLI]       Fetched backend operations. operations:"operation(update(3c3621ad-19dc-4ca5-a681-dafee49dc34a), cluster=lucidkowalevski5986, state=update_in_progress, created=Fri Jul 31 06:30 UTC)
-operation(expand(e4f69331-2f58-4eca-8e21-f75cff31dd58), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:23 UTC)
-operation(expand(fa5daa1a-b2cc-4908-acda-084fb405d0a4), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:21 UTC)
-operation(install(0ff5214e-5ba8-4491-b59c-a4e2ae80db71), cluster=lucidkowalevski5986, state=completed, created=Fri Jul 31 06:15 UTC)" cli/operation.go:241
-2020-07-31T07:51:28Z DEBU             got search paths: [/var/lib/gravity assets/local] processconfig/config.go:57
-2020-07-31T07:51:28Z DEBU             look up configs in /var/lib/gravity processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             /var/lib/gravity/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU             look up configs in assets/local processconfig/config.go:59
-2020-07-31T07:51:28Z DEBU             assets/local/gravity.yaml not found in search path processconfig/config.go:67
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/site/update", Insecure:false, Silent:false, Debug:true, EtcdRetryTimeout:0, Reporter:(pack.ProgressReporterFn)(0x1e168d0), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-2020-07-31T07:51:28Z DEBU [LOCAL]     Creating local env: localenv.LocalEnvironmentArgs{LocalKeyStoreDir:"", StateDir:"/var/lib/gravity/local", Insecure:false, Silent:false, Debug:false, EtcdRetryTimeout:0, Reporter:pack.ProgressReporter(nil), DNS:localenv.DNSConfig{Addrs:[]string(nil), Port:0}}. localenv/localenv.go:146
-Fri Jul 31 07:51:29 UTC	Executing "/gc/kevin-test1" locally
-2020-07-31T07:51:29Z DEBU [FSM:UPDAT] Apply. change:StateChange(Phase=/gc/kevin-test1, State=in_progress) cluster/engine.go:288
+
+...
+
 2020-07-31T07:51:29Z DEBU [FSM:UPDAT] "Reconciled plan: Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
 ✓ init                         Initialize update operation                                Completed       -              -                                             Fri Jul 31 06:33 UTC
