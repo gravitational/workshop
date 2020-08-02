@@ -76,13 +76,14 @@ A manual upgrade operation starts with an operation plan which is a tree of acti
 
 ## Gravity Manual Upgrade Demo
 
-Gravity has two ways to execute an upgrade of the cluster and application. What we refer to as an automatic and manual upgrade. In practice both upgrades are precisely the same. The only think an automatic upgrade does which a manual does not, is have an agent that moves the upgrade forward step by step on it's own. If the automatic upgrade is not able to progress, due to an error or problem, the agent that tries to progress the upgrade just stops. This leaves the cluster in whatever state it is, and allows a user to continue to interact with the upgrade to fix the problem, retry the step within the upgrade that broke, or rollback.
+The demo of an upgrade will focus on a manual upgrade, taking our time to go through the upgrade step by step and taking a look at what is happening. The same steps are completed doing an automatic upgrade, the difference is that an automatic upgrade has a process trying to make progress on the upgrade until it encounters an error.
+
 
 In order to get a better understand of how the upgrades work, we'll walkthrough a manual upgrade from start to finish. 
 
 ### Demo Setup
 
-The demo of the manual upgrade will be on a simple 3 node cluster, running an empty kubernetes application. All 3 nodes are master nodes, and we have no workers. In an upgrade, most of the interesting things only happen on masters. Upgrading a worker node is similar to upgrading a master, just with less steps as the node doesn't need to be a replica of the registry, etcd, or any other gravity state.
+The demo of the manual upgrade will be on a simple 3 node cluster, running an empty kubernetes application. These 3 nodes are masters within the cluster, and there are no workers. Upgrading a worker is the same as upgrading a master, but certain steps to do with being a master can be skipped, otherwise nothing special is happening to workers. 
 
 ```
 root@kevin-test1:~/build# gravity status
@@ -119,21 +120,20 @@ Cluster nodes:
             Remote access:      online
 ```
 
-Before we start the upgrade, let's also take a look at some of the gravity internal state.
+Before we start the upgrade, let's take a moment to explore what this cluster looks like.
 
-Gravity uses a packaging system to hold all of the artifacts used within the cluster. This is all of the configuration that get's generated to be distributed throughout the cluster (that isn't stored in etcd), but also cluster packages. These cluster packages are the containers and applications that are available to the cluster. All of this is used internally and abstracted away.
+Gravity uses a packaging system to hold all of the artifacts used within the cluster. This is all of the configuration that get's generated to be distributed throughout the cluster (that isn't stored in etcd), but also cluster packages. These cluster packages are the containers and applications that are available to the cluster. This functionality is generally of internal relevance, and mostly abstracted away by the upgrade procedure.
 
 There are two levels to this package store.
 1. Cluster Wide - 
 The cluster wide package store is replicated between the master nodes within gravity-site. This is the authoritative location for state, that nodes can pull as required.
 2. Node Local -
-The node local package store, is a copy of packages needed by a node to start. As an example, there is a package for our planet container, used to run the platform. This package will be placed in the cluster package store, and copied to the local store on every node. 
+The node local package store, is a copy of packages needed by a node to operate. This is a local copy of a package from the cluster store.
 
-Let's see what this looks like on a live cluster:
 
 #### Cluster Package Store
 
-The cluster package store is how gravity stores the assets needed by the cluster to operate. This is the binaries, container images, and configuration that make up gravity.
+The cluster package store is how gravity stores the assets needed by the cluster to operate. These are the binaries, container images, and configuration that make up gravity.
 
 ```
 root@kevin-test1:~/build# gravity --insecure package list --ops-url=https://gravity-site.kube-system.svc.cluster.local:3009
@@ -180,7 +180,7 @@ Notes:
     1. `<cluster_name>` are configuration packages for the particular cluster. These are configurations used for setting up nodes, like planet and teleport connectivity.
 
 #### Node Package Store
-The cluster package store works sort of like a docker registry server. It's a storage location for packages and blobs of data that can be pulled to another location. In gravity, each node will also pull the individual packages that are needed by the individual node.
+The cluster package store works sort of like a docker registry server. It's a storage location for packages and blobs of data that can be pulled to another location. The node package store is the local copy of the package on the node. The same was as docker image ls shows the containers available on the node, and not the registry server.
 
 ```
 root@kevin-test1:~/build# gravity --insecure package list
@@ -262,7 +262,7 @@ packages/tmp
 packages/unpacked
 ```
 ### Upload the package
-Inside the gravity tarball, is a script for uploading the packages in the new version, to the clusters package store.
+Inside the gravity tarball, is a script for uploading the contents of the local directory the the cluster package store. In effect, we taking the assets we unzipped from the installer tarball, and are syncing the differences to the cluster.
 
 ```
 root@kevin-test1:~/build# ./upload
@@ -277,17 +277,10 @@ Fri Jul 24 20:41:52 UTC Cluster image has been uploaded
 Notes:
 - This uploads the packages to the cluster package store.
 - This uploads the containers to the docker registry running on every master.
-- Many clusters don't have separate disks, so it also waits for the cluster to stabalize by verifying the cluster health.
+- Waits for the cluster to become healthy, if the upload caused a performance issue within etcd.
 
-The cluster package store will not have additional packages present:
+The cluster package store will now have additional packages present:
 ```
-root@kevin-test1:~/build# ./upload
-Fri Jul 24 20:39:54 UTC Importing cluster image telekube v5.5.50-dev.9
-Fri Jul 24 20:40:37 UTC Synchronizing application with Docker registry 10.162.0.7:5000
-Fri Jul 24 20:41:05 UTC Synchronizing application with Docker registry 10.162.0.6:5000
-Fri Jul 24 20:41:30 UTC Synchronizing application with Docker registry 10.162.0.5:5000
-Fri Jul 24 20:41:52 UTC Verifying cluster health
-Fri Jul 24 20:41:52 UTC Cluster image has been uploaded
 root@kevin-test1:~/build# gravity --insecure package list --ops-url=https://gravity-site.kube-system.svc.cluster.local:3009
 
 [eagerbooth1735]
@@ -335,7 +328,7 @@ root@kevin-test1:~/build# gravity --insecure package list --ops-url=https://grav
 * gravitational.io/web-assets:5.5.50-dev.9 1.3MB
 ```
 
-But if we look at the packages on our nodes package store, the new packages aren't present:
+But if we look at the packages on our nodes package store, the new packages aren't shown.
 ```
 root@kevin-test1:~/build# gravity --insecure package list
 
@@ -367,10 +360,10 @@ root@kevin-test1:~/build# gravity --insecure package list
 * gravitational.io/web-assets:5.5.46 1.2MB
 ```
 
-This is because the node hasn't been upgraded yet, the upgrade process is what's responsible for doing node upgrades, and as such pulling the packages to the node.
+This is because the node hasn't been upgraded yet. The required packages will be pulled to the node only when they are needed.
 
 ### Start a manual upgrade
-We've discussed that we have two forms of running the upgrade, what we call automatic and manual upgrades. The only thing an automatic upgrade does that a manual upgrade doesn't do, is to move the upgrade progress forward on it's own. So we'll use a manual upgrade to walk through what is happening.
+To start a manual upgrade, we run the `./gravity upgrade --manual` command.
 
 ```
 root@kevin-test1:~/build# sudo ./gravity upgrade --manual
@@ -385,7 +378,7 @@ See https://gravitational.com/gravity/docs/cluster/#managing-an-ongoing-operatio
 ```
 
 Notes:
-- This will create an "upgrade operation`, using our operation and planning system to manage the change to the cluster.
+- This will create an "upgrade operation`, using our operation and planning system to manage the change to the cluster and prevent other changes while the upgrade is in progress.
 - The operation for upgrade, will try and upgrade to the latest version in the cluster store.
 - The upgrade uses agents deployed to each node, to make the changes to the node for the upgrade. These agents are deployed automatically when starting the upgrade.
 - The agents also allow upgrade steps to be triggered from other nodes. So you as a user don't need to jump between each node for every individual step.
@@ -410,7 +403,7 @@ Jul 24 20:57:03 kevin-test1 systemd[1]: Starting Auto-generated service for the 
 Jul 24 20:57:03 kevin-test1 gravity-cli[11832]: [RUNNING]: /var/lib/gravity/site/update/agent/gravity agent run --debug "sync-plan"
 ```
 
-And that we have two versions of the gravity binary:
+And we have the latest version of the gravity binary available on each node.
 ```
 root@kevin-test1:~/build# /var/lib/gravity/site/update/agent/gravity version
 Edition:        enterprise
@@ -449,9 +442,9 @@ Sat Aug  1 22:43:08 UTC	Deployed agent on kevin-test1 (10.162.0.7)
 Gravity uses a planning system to break up an upgrade into separate small steps to be executed.
 These "phases" of the upgrade perform separate and individual actions to make progress on the upgrade.
 The planning system creates the plan for the upgrade when the upgrade is triggered, inspecting the current state of the system, 
-and only includes phases of the plan that are necessary.
+and only includes the steps necessary to get the cluster to the latest version.
 
-For example, if a particular configuration is already at the latest version, the upgrade plan will realize this, and not add a phase to update the resource.
+For example, if planet is already the latest version, none of the steps to rolling restart planet on the latest version will be included in the plan. It's not needed, as planet is already at the desired version.
 
 We can view and interact with the plan using `gravity plan`.
 
@@ -1053,7 +1046,7 @@ See https://gravitational.com/gravity/docs/cluster/#managing-an-ongoing-operatio
 ```
 
 #### Running multiple phases
-Instead of running phases individually, it's possible to run groups of phases together, by targetting the parent / group phase name when running.
+Instead of running phases individually, it's possible to run groups of phases together, by targetting the parent of a group phases.
 
 ```
 root@kevin-test1:~/build# ./gravity plan
@@ -1077,9 +1070,10 @@ Sun Aug  2 03:40:07 UTC	Executing "/init/kevin-test3" on remote node kevin-test3
 Sun Aug  2 03:40:09 UTC	Executing phase "/init" finished in 5 seconds
 ```
 
+Alternatively we can run `./gravity plan execute --phase /` to run the enter upgrade through to complete or `./gravity plan resume` which does the same thing.
 
 #### Checks
-The checks phase is used to check that the cluster meets any new requirements defined by the application. The phase also does some additional checks that the upgrade is safe to proceed or based on what we've learned from production clusters.
+The checks phase is used to check that the cluster meets any new requirements defined by the application.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /checks 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
@@ -1370,7 +1364,7 @@ Notes:
 - Checks profile requirements against node profiles
 
 #### Pre-update Hook
-The pre-update hook is an application hook that runs that an upgrade is starting. Applications can react to this hook any way they want, such as by scaling system services during the upgrade, putting the application into a read-only mode, etc.
+The pre-update hook is an application hook that runs indicating to the application that an upgrade is starting. This allows the application developers to make changes to the application while the upgrade is running, such as scaling down the cluster services.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /pre-update 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
@@ -1694,7 +1688,7 @@ Wed Jul 29 17:46:37 UTC	Executing phase "/pre-update" finished in 4 seconds
 ```
 
 #### Bootstrap
-The bootstrap phase is used to do initial configuration on each node within the cluster, to prepare the nodes for the upgrade. None of the changes should impact the system, these are just preparation steps.
+The bootstrap phase is used to do initial configuration on each node within the cluster, to prepare the nodes for the upgrade. None of the changes should impact the system, these are just the preparation steps.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /bootstrap/kevin-test1 --force 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
@@ -2114,7 +2108,7 @@ Wed Jul 29 18:01:57 UTC	Executing phase "/bootstrap" finished in 56 seconds
 ```
 
 #### CoreDNS
-CoreDNS configures the CoreDNS configuration within kubernetes to offer cluster DNS services.
+The CoreDNS phase configures the cluster DNS configuration within kubernetes.
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /coredns 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
 
@@ -2318,7 +2312,7 @@ Notes:
 The Masters and Workers groups of subphases are the steps needed to upgrade the planet container on each node in the cluster. This operates as a rolling upgrade strategy, where one node at a time is cordoned and drained, upgraded to the new version of planet, restarted, etc. Each node is done in sequence, so other than
 moving software around the cluster the application and cluster largely remain online.
 
-#### Nodes Kubelet Permissions
+#### Nodes: Kubelet Permissions
 Ensures kubelet RBAC permissions within kubernetes are up to date.
 
 When planet restarts, it will launch a new version of kubelet, which we want to ensure any new requirements are written to kubernetes.
@@ -4597,7 +4591,7 @@ Wed Jul 29 18:29:37 UTC	Executing phase "/masters/kevin-test1/untaint" finished 
 ```
 
 #### Nodes: Elect (First Master)
-After the first master node has been upgraded, the leader election participants get changed to only be the new version of gravity. In effect, we force the first master to be elected, and remain on the latest version of kubernetes throughout the rest of the upgrade. As the masters are upgraded, they'll be re-added to the election process, to take over in the case of a failure.
+After the first master node has been upgraded, the leader election is changed to only allow the upgraded node to take leadership. In effect, we force the first master to be upgraded to also be elected the planet leader, and remain on the latest version of kubernetes throughout the rest of the upgrade. As the masters are upgraded, they'll be re-added to the election process, to take over in the case of a failure.
 
 If the first master were to fail at this point, the cluster would not be able to elect another node to take over as the planet leader.
 
@@ -4803,7 +4797,7 @@ Wed Jul 29 18:41:13 UTC	Executing phase "/masters" finished in 2 minutes
 ```
 
 #### Etcd (/etcd)
-Upgrading etcd is the most complicated portion of the upgrade process when new releases are required. 
+Upgrading etcd is the most complicated portion of the upgrade process when required.  
 
 Etcd is the database that underpins kubernetes, storing all the kubernetes objects that you interact with using kubectl. Because etcd underpins kubernetes, we use the same database to persist internal state of gravity, that can be shared and replicated amongst the master nodes. When designing the upgrade process for gravity, we had a number of constraints:
 
@@ -6954,7 +6948,9 @@ Fri Jul 31 07:51:30 UTC	Executing phase "/gc/kevin-test1" finished in 1 second
 
 ### Complete the Upgrade
 
-
+```
+root@kevin-test1:~/build# ./gravity plan complete
+```
 
 ## Upgrade Scenarios
 
