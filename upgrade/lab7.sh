@@ -13,7 +13,7 @@ SCENARIO #7 ACTIVATED.
 OBJECTIVE
 ---------
 
-The upgrade process and requirements have now been tampered.
+The system and requirements have now been tampered.
 
-Your goal is to inspect the upgrade plan and fix current issues.
+Your goal is to run the usual upgrade process and fix current issues.
 "
