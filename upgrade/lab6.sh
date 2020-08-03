@@ -3,7 +3,8 @@
 echo "ACTIVATING SCENARIO #6...
 "
 
-echo '' | sudo tee /etc/resolv.conf >/dev/null 2>&1
+sudo mv /etc/resolv.conf{,_original} >/dev/null 2>&1
+sudo touch /etc/resolv.conf >/dev/null 2>&1
 
 echo "
 SCENARIO #6 ACTIVATED.
