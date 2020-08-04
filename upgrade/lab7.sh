@@ -16,4 +16,9 @@ OBJECTIVE
 The system and requirements have now been tampered.
 
 Your goal is to run the usual upgrade process and fix current issues.
+
+Once you have executed a few upgrade phases, rollback the cluster to the original state.
+
+    cd $1
+    sudo ./gravity rollback
 "

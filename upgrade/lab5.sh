@@ -34,4 +34,9 @@ and
 sudo ${path}/gravity status
 
 Your goal is to inspect the upgrade plan and status and fix current issues.
+
+Once you have executed a few upgrade phases, rollback the cluster to the original state.
+
+    cd $1
+    sudo ./gravity rollback
 "

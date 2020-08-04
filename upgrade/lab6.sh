@@ -17,4 +17,9 @@ The upgrade process and requirements have now been tampered.
 You should now start with the usual upgrade process.
 
 Your goal is to inspect the upgrade process as it proceeds and fix issues.
+
+Once you have executed a few upgrade phases, rollback the cluster to the original state.
+
+    cd $1
+    sudo ./gravity rollback
 "
