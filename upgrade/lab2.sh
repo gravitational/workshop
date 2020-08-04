@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab2.sh /home/ubuntu/gravity-5.5.50"
+    echo "Please pass a path to the unpacked upgrade tarball, for example: $0 /home/ubuntu/gravity-5.5.50"
     exit 1
 fi
 
