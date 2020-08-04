@@ -7105,12 +7105,44 @@ root@kevin-test1:~/build# ./gravity plan complete
 
 In this section we will cover several Gravity upgrade scenarios. Using what you have learned in this workshop the goal will to be successfully complete an upgrade for each of the following scenarios.
 
+### Pre-requisite
+
+Please clone the workshop repo locally via:
+```
+git clone https://github.com/gravitational/workshop
+```
+and setup three nodes, using the Terraform script in the `env` directory or
+provide a similar environment.
+
+### Initial Setup
+
+Once the VMs are ready, follow the instructions in upgrade/lab0.sh to get ready
+for the following scenarios.
+
 ### Upgrade Scenario 1:
+
+Copy on a VM and then run the script `upgrade/lab1.sh`
 
 ### Upgrade Scenario 2:
 
+Copy on a VM and then run the script `upgrade/lab2.sh`
+
 ### Upgrade Scenario 3:
+
+Copy on a VM and then run the script `upgrade/lab3.sh`
 
 ### Upgrade Scenario 4:
 
+Copy on a VM and then run the script `upgrade/lab4.sh`
+
 ### Upgrade Scenario 5:
+
+Copy on a VM and then run the script `upgrade/lab5.sh`
+
+### Upgrade Scenario 6:
+
+Copy on a VM and then run the script `upgrade/lab6.sh`
+
+### Upgrade Scenario 7:
+
+Copy on a VM and then run the script `upgrade/lab7.sh`
