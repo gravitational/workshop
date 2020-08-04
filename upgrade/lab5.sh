@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$1" ]; then
+    echo "Please pass a path to the unpacked upgrade tarball, for example: ./lab4.sh /home/ubuntu/gravity-5.5.50"
+    exit 1
+fi
+
 echo "ACTIVATING SCENARIO #5...
 "
 
