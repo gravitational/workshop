@@ -583,7 +583,7 @@ Now you will see that after 30 seconds, the job has failed and no more pods will
 
 ### Production Pattern: Pod Quotas
 
-One of important Kubernetes features is resource management. Kubernetes allows to configure CPU/RAM resource quotas for containers to ensure that no single container can starve the entire system.
+One of important Kubernetes features is resource management. Kubernetes allows you to configure CPU/RAM resource quotas for containers to ensure that no single container can starve the entire system.
 
 Suppose we have a container that tends to hog memory:
 
@@ -603,16 +603,16 @@ quota                       0/1     OOMKilled          1          4s
 
 Kubernetes's OOM killer killed the container, so if the application running inside it leaks memory gradually, it will restart.
 
-Kubernetes also allows to configure quotas per namespace and utilizes intelligent scheduling algorithm to ensure that pods are distributed across the cluster nodes appropriately. For example, it won't schedule a pod on a node if that pod's quota request exceeds resources available on the node.
+Kubernetes also allows you to configure quotas per namespace and uses an intelligent scheduling algorithm to ensure that pods are distributed across the cluster nodes appropriately. For example, it won't schedule a pod on a node if that pod's quota request exceeds resources available on the node.
 
-Proper quotas configuration is mandatory to ensure smooth sailing in production. Check Kubernetes resources for more information:
+Proper quotas configuration is mandatory for ensuring smooth sailing in production. Check these Kubernetes resources for more information:
 
 https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/
 https://kubernetes.io/docs/tasks/configure-pod-container/assign-cpu-resource/
 
 ### Anti-Pattern: Putting Configuration Inside Image
 
-Oftentimes an application needs a configuration file to run. It might be tempting to just put the configuration file alongside your program inside the container:
+Often an application needs a configuration file to run. It might be tempting to just put the configuration file alongside your program inside the container:
 
 ```bash
 $ cd prod/config
@@ -756,7 +756,7 @@ service "mail" configured
 service "weather" configured
 ```
 
-Check that everyting is running smoothly:
+Check that everything is running smoothly:
 
 ```bash
 $ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
@@ -949,7 +949,7 @@ if __name__ == "__main__":
     app.run(host='0.0.0.0', port=6000)
 ```
 
-Let's build and redeploy circuit breaker:
+Let's build and redeploy our circuit breaker:
 
 ```bash
 $ docker build -t $registry:5000/cbreaker:0.0.1 -f cbreaker.dockerfile .
@@ -968,7 +968,7 @@ $ cat weather-cbreaker.yaml
 
 Note that we have reconfigured our service so requests are handled by the circuit breaker first which forwards requests to the weather service running in the same pod, and trips if the request fails.
 
-Circuit breaker will detect service outage and auxilliary weather service will not bring our mail service down any more:
+The circuit breaker will detect the service outage and the auxilliary weather service will not bring our mail service down anymore:
 
 ```bash
 $ kubectl run -ti --rm cli --image=appropriate/curl --restart=Never --command /bin/sh
