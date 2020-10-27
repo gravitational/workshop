@@ -63,10 +63,9 @@ metadata:
 automountServiceAccountToken: false
 EOF
 ```
-
 Each namespace automatically has a default serviceAccount called `default`
 
-Note: `automountServiceAccountToken: false` prevents the pod from automatically mounting the service account, which prevents access to the API. Definitly use this for services that don't need to interact with the kubernetes API.
+Note: `automountServiceAccountToken: false` prevents the pod from automatically mounting the service account, which prevents access to the API. Definitely use this for services that don't need to interact with the kubernetes API.
 
 #### Role and ClusterRole
 Role and ClusterRole are kubernetes objects that contain rules that represent a set of allowed permissions. 
@@ -190,7 +189,7 @@ Find out the permissions assigned to kubectl:
 kubectl auth can-i --list
 ```
 
-Find out the permissions for another users:
+Find out the permissions for another user:
 ```
 kubectl auth can-i --list --as rbac-example
 ```
@@ -377,7 +376,7 @@ spec:
   ```
 
 #### Exercise: kubernetes PSP example
-Follow the kubernetes docs example, on creating a PSP, and how to bind specific accounts: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#example
+Follow this kubernetes docs example, on creating a PSP, and how to bind specific accounts: https://kubernetes.io/docs/concepts/policy/pod-security-policy/#example
 
 ### Quality of Service and Limits
 Reference: https://kubernetes.io/docs/tasks/configure-pod-container/quality-service-pod/
@@ -511,7 +510,7 @@ Most cloud providers provide an API to each cloud instance, that can be used to 
 ## Tools
 An ecosystem like kubernetes, with inherent complexity also creates an ecosystem for tools to help navigate and implement sound policies.
 
-Some of the tools we find helpful at gravitational are:
+Some of the tools we find helpful at Gravitational are:
 - KubeAudit: https://github.com/Shopify/kubeaudit
 - KubeSec: https://kubesec.io
 - KubeIAM: https://github.com/uswitch/kiam
