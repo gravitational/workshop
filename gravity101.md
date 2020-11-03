@@ -145,7 +145,7 @@ The command displays the latest stable available cluster images; it also takes a
 
 Note that the base image version does not match the version of included Kubernetes - Gravity and Kubernetes releases are independent and there are usually multiple Gravity releases with the same Kubernetes version, for example when the Gravity platform itself gets improvements or bug fixes.
 
-How do you pick a base image? The Releases page is a good starting point as it contains a table with all current releases and changelog for each new patch release. As a general advice, most of the time you probably want the latest stable release. In some cases you may want to stick to the latest LTS release which may not have the latest features/Kubernetes but is more “battle-tested”.
+How do you pick a base image? The [Releases page](https://gravitational.com/gravity/docs/changelog/) is a good starting point as it contains a table with all current releases and changelog for each new patch release. As a general advice, most of the time you probably want the latest stable release. In some cases you may want to stick to the latest LTS release which may not have the latest features/Kubernetes but is more “battle-tested”.
 
 Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `6.1.11`. There are a couple of ways to go about this.
 
@@ -192,7 +192,7 @@ Note that we had to provide `--overwrite` flag to replace cluster image we built
 
 Thus far we haven’t added any application resources - we’ve only written the cluster manifest - so if we install the cluster using the image we’ve just built, it will be a “bare-bones” Kubernetes cluster that will have only the aforementioned system applications running inside it.
 
-Of course, since it’ll be just a regular Kubernetes cluster, you will be able to install applications into it post-installation using any method, either by just creating resources with kubectl or using Helm charts. Helm is the Kubernetes package manager and every Gravity cluster includes fully-configured Helm environment and can install Helm charts. If you’re not familiar with Helm, check out their documentation.
+Of course, since it’ll be just a regular Kubernetes cluster, you will be able to install applications into it post-installation using any method, either by just creating resources with kubectl or using Helm charts. Helm is the Kubernetes package manager and every Gravity cluster includes fully-configured Helm environment and can install Helm charts. If you’re not familiar with Helm, check out their [documentation](https://helm.sh/docs/).
 
 Most often, however, you want to pre-package your application with the cluster image and have it installed automatically when the cluster is deployed. In order to do so, let’s add a simple Helm chart to our cluster image.
 
@@ -409,9 +409,9 @@ build$ tele build ~/workshop/gravity101/v1/app.yaml --overwrite
 
 We’re finally ready to install a cluster using our image.
 
-## Installing Cluster Image
+## Installing the Cluster Image
 
-### Exploring Cluster Image
+### Exploring the Cluster Image
 
 Transfer the image we’ve just built to a future-cluster node, `node-1`.
 
@@ -483,6 +483,14 @@ node-1$ sudo ./gravity install --cloud-provider=generic
 ```
 
 Note that we specified `--cloud-provider=generic` flag in this case to disable any cloud provider integration in case you’re using cloud instances for this session. Proper cloud provider integration normally requires a little bit more configuration to ensure the instance has proper permissions and tags assigned so we’re installing in bare-metal mode here.
+
+If you're using multiple Vagrant/VirtualBox VMs, you may want to include the `--advertise-addr=...` command to force a certain IP to be advertised on each node you add.  Also, 1GB of RAM may not be enough as you may see job timeouts during the install.  You can use the following Vagrant configuration to increase the RAM from the default of 1GB to 4GB:
+
+```
+ config.vm.provider "virtualbox" do |vb|
+   vb.memory = "4096"
+ end
+```
 
 Now that the installation is started, it will take a few minutes to complete and is going to print the progress into the terminal. Let’s follow the operation progress and discuss what it’s doing at each step.
 
@@ -690,6 +698,19 @@ What we’re looking for is the “cluster management URL”. Open this URL in y
 
 When you open the web page, you will be presented with a login screen. We need valid user credentials to be able to log in. For security purposes, Gravity does not provision any default users so we need to create one ourselves.
 
+If you're using Vagrant/VirtualBox VMs, you'll need to forward the cluster management port.  For example, if your cluster management URL's port is 32009, you could add the following to your Vagrantfile, then access the cluster management URL from your local machine via https://localhost:8080
+
+```
+config.vm.network "forwarded_port", guest: 32009, host: 8080
+```
+
+You may also need to forward the following ports:
+```
+config.vm.network "forwarded_port", guest: 3009, host: 3009
+config.vm.network "forwarded_port", guest: 3023, host: 3023 
+config.vm.network "forwarded_port", guest: 3026, host: 3026
+```
+
 Run the following command on the cluster node:
 
 ```bash
@@ -702,9 +723,9 @@ The command has generated an invitation URL which we can now open in our browser
 
 We should now be able to log into our cluster web UI.
 
-### Connecting To Cluster
+### Connecting To The Cluster
 
-Grab auth gateway address:
+Grab the auth gateway address:
 
 ```bash
 node-1$ gravity status
@@ -735,7 +756,7 @@ build$ kubectl get nodes
 build$ kubectl get pods --all-namespaces -owide
 ```
 
-### Configuring Cluster
+### Configuring The Cluster
 
 For configuring a cluster Gravity uses a concept of “configuration resources”, somewhat similar to Kubernetes itself. Configuration resources are objects described in a YAML format which are managed by the “gravity resource” set of subcommands.
 
@@ -788,7 +809,7 @@ node-1$ gravity resource get tokens --user=agent@example.com
 
 We can see that our token appears in the table.
 
-## Upgrading Cluster
+## Upgrading The Cluster
 
 ### Building Upgrade Image
 
@@ -966,6 +987,13 @@ Once the command has finished, kubectl and gravity display the updated cluster s
 node-2$ kubectl get nodes
 node-2$ gravity status
 ```
+
+If you're using Vagrant/VirtualBox VMs and you're having trouble, make sure all the nodes aren't running with the same IP, and try configuring a distinct IP on each.  One example line to be added to your Vagrantfile is below.  You may also need to add a new default route on each new node to ensure the nodes can talk to the master properly, ex. `sudo ip route add default via 10.0.2.2 src 10.0.2.25 dev enp0s8 metric 10`
+
+```
+config.vm.network "private_network", ip: "10.0.2.16", virtualbox__intnet: true, nic_type: "virtio"
+```
+
 
 Now let’s join our 3rd node to the cluster as well. SSH into `node-3` and run the same command:
 
