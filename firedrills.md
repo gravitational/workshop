@@ -773,7 +773,7 @@ Keep in mind that DNS resolution issues can also be a side effect of broader net
 
 Etcd is the backbone of a Kubernetes cluster. It is a distributed key-value database which Kubernetes uses to keep and replicate all of its state. Gravity also uses etcd as a database for all local cluster data, metadata for in-cluster object storage, leader information and so on. In short, when etcd is unhappy, the cluster falls apart: basic cluster operations (e.g. retrieving a list of pods) are timing out, Kubernetes is not able to schedule new pods, etc. (existing pods should keep running though).
 
-Being a distributed database, etcd relies on a distributed consensus algorithm which requires a majority of all members (“quorum”) to vote in order for cluster to be able to make progress. This is important to keep in mind: it means that in an etcd cluster of N nodes, at least N/2+1 of them must be healthy in order for the whole system to keep functioning. To put this in concrete numbers, in a 3-node cluster you can afford to lose 1 member and the cluster will keep running (albeit at degraded performance), while in a 2-node cluster losing a single member means cluster outage. Etcd documentation has a nice table that explains fault tolerance depending on cluster size: https://coreos.com/etcd/docs/latest/v2/admin_guide.html#optimal-cluster-size.
+Being a distributed database, etcd relies on a distributed consensus algorithm which requires a majority of all members (“quorum”) to vote in order for cluster to be able to make progress. This is important to keep in mind: it means that in an etcd cluster of N nodes, at least N/2+1 of them must be healthy in order for the whole system to keep functioning. To put this in concrete numbers, in a 3-node cluster you can afford to lose 1 member and the cluster will keep running (albeit at degraded performance), while in a 2-node cluster losing a single member means cluster outage. Etcd documentation has a nice table that explains fault tolerance depending on cluster size: https://etcd.io/docs/v2/admin_guide/#optimal-cluster-size.
 
 Note, that in Gravity clusters etcd runs only on master nodes. Regular, non-master nodes run an instance of etcd-proxy which does not maintain any data locally and only routes requests to a full member on another node. Thus, if you have a 3-node cluster, but only 1 of them is a master node, then this cluster is not HA and does not have any etcd redundancy.
 
@@ -1057,7 +1057,7 @@ node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
 Now that we’ve learned how to do rollbacks, let’s reattempt the upgrade but this time execute it all the way through successful completion. To get started, let’s launch an upgrade operation in the manual mode. From the upgrade directory, run:
 
 ```bash
-node-1$ sudo ./gravity upgrade --manual
+node-1$ sudo ./upgrade --manual
 ```
 
 This command has initialized the upgrade operation and launched upgrade agents on the cluster nodes, but has not started it. Let’s inspect the generated operation plan:
