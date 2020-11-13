@@ -1057,7 +1057,7 @@ node-1$ sudo rm -rf /var/lib/gravity/site/update/gravity
 Now that we’ve learned how to do rollbacks, let’s reattempt the upgrade but this time execute it all the way through successful completion. To get started, let’s launch an upgrade operation in the manual mode. From the upgrade directory, run:
 
 ```bash
-node-1$ sudo ./upgrade --manual
+node-1$ sudo ./gravity upgrade --manual
 ```
 
 This command has initialized the upgrade operation and launched upgrade agents on the cluster nodes, but has not started it. Let’s inspect the generated operation plan:
