@@ -329,7 +329,7 @@ Notes:
     1. `<cluster_name>` are configuration packages for the particular cluster. These are configurations used for setting up nodes, like planet and teleport connectivity.
 
 #### Node Package Store
-The cluster package store works sort of like a docker registry server. It's a storage location for packages and blobs of data that can be pulled to another location. The node package store is the local copy of the package on the node. The same was as docker image ls shows the containers available on the node, and not the registry server.
+The cluster package store works sort of like a docker registry server. It's a storage location for packages and blobs of data that can be pulled to another location. The node package store is the local copy of the packages on the node. This is similar to running `docker image ls` in that it shows the containers available on the node, and not the ones on the registry server.
 
 ```
 root@kevin-test1:~/build# gravity --insecure package list
@@ -411,7 +411,7 @@ packages/tmp
 packages/unpacked
 ```
 ### Upload the package
-Inside the gravity tarball, is a script for uploading the contents of the local directory the the cluster package store. In effect, we taking the assets we unzipped from the installer tarball, and are syncing the differences to the cluster.
+Inside the gravity tarball is a script for uploading the contents of the local directory to the cluster package store. In effect, we take the assets we unzipped from the installer tarball, and sync the differences to the cluster.
 
 ```
 root@kevin-test1:~/build# ./upload
@@ -1104,7 +1104,7 @@ root@kevin-test1:~/build# ./gravity --debug plan rollback --phase /init/kevin-te
 Sun Aug  2 03:30:44 UTC	Rolling back phase "/init/kevin-test1" finished in 1 second
 ```
 
-#### Commiting an Upgrade
+#### Committing an Upgrade
 Once all phases have been completed, or all phases have been rolled back, the upgrade needs to be committed / completed, in order to unlock the cluster. Use `gravity plan complete` to commit the upgrade.
 
 ```
@@ -1219,7 +1219,7 @@ Sun Aug  2 03:40:07 UTC	Executing "/init/kevin-test3" on remote node kevin-test3
 Sun Aug  2 03:40:09 UTC	Executing phase "/init" finished in 5 seconds
 ```
 
-Alternatively we can run `./gravity plan execute --phase /` to run the enter upgrade through to complete or `./gravity plan resume` which does the same thing.
+Alternatively, we can run `./gravity plan execute --phase /` to run the entire upgrade through to completion or `./gravity plan resume`, which does the same thing.
 
 #### Checks
 The checks phase is used to check that the cluster meets any new requirements defined by the application.
