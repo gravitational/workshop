@@ -58,9 +58,9 @@ variable "credentials" {
 }
 
 provider "google" {
-  project     = "${var.project}"
-  region      = "${var.region}"
-  credentials = "${file(var.credentials)}"
+  project     = var.project
+  region      = var.region
+  credentials = file(var.credentials)
 }
 
 terraform {
