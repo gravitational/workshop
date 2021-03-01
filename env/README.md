@@ -4,12 +4,6 @@ for Gravity workshops.
 Each environment consists of 3 clean Ubuntu nodes suitable for installing
 Gravity cluster. The nodes are provisioned on GCE using terraform >= v0.12.
 
-Note, the terraform scripts use S3 backend to store terraform state, so valid
-AWS credentials should be available in the environment.
-
-To use the local backend instead, comment out the terraform backend section in
-the [config.tf](./terraform/config.tf) file.
-
 ### Usage Examples
 
 #### Provision Environment
