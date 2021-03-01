@@ -8,7 +8,6 @@ NODES ?= 3
 CREDS ?=
 
 # binaries to use
-AWS ?= aws
 TELE ?= tele
 TF ?= terraform
 
@@ -20,11 +19,6 @@ TF_DIR ?= terraform
 
 # path to the public SSH key file to put on GCE instances
 SSH_KEY_PATH ?=
-
-# parameters for AWS S3 terraform backend
-AWS_S3_REGION ?= us-east-1
-AWS_S3_BUCKET ?= training.gravitational.io
-AWS_S3_OPTS := --region $(AWS_S3_REGION) --acl public-read
 
 # exported terraform variables
 TF_VAR_node_tag := $(ENV)
@@ -79,9 +73,8 @@ refresh: check-env init
 .PHONY: init
 init: check-env
 	cd ${TF_DIR} && ${TF} init -reconfigure \
-	    -backend-config="region=$(AWS_S3_REGION)" \
-	    -backend-config="bucket=$(AWS_S3_BUCKET)" \
-	    -backend-config="key=terraform/$(ENV)/terraform.tfstate"
+		-backend-config="path=../$(ENV).tfstate"
+
 
 #
 # check-env makes sure ENV environment variable is set.
