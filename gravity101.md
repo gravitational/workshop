@@ -14,9 +14,7 @@ For this training we’ll need:
 
 _Note: If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment._
 
-## Building Cluster Image
-
-### What is Gravity?
+## What is Gravity?
 
 Gravity is a set of tools that let you achieve the following results:
 
@@ -30,17 +28,21 @@ You can think of Gravity as an “image” management toolkit and draw an analog
 
 Let’s take a look at how we build a cluster image.
 
+## Building Cluster Image
+
 ### Tele
 
 To be able to build images, we need a tool called `tele`.
 
-Tele is a single binary - again, drawing an analogy with Docker (there will be a few more of those in this chapter), it can be thought of as an equivalent of the `docker` binary: to build a Docker image you would run `docker build` command, and to build a cluster image there is a `tele build` command which we’ll explore below.
+`tele` is a single binary - again, drawing an analogy with Docker (there will be a few more of those in this chapter), it can be thought of as an equivalent of the `docker` binary: to build a Docker image you would run `docker build` command, and to build a cluster image there is a `tele build` command which we’ll explore below.
 
-Tele can be downloaded from the Downloads page.
+`tele` can be downloaded by running the following command:
 
-_Note: If you were provided with a pre-build environment for the training, `tele` should already be present on the build machine._
+```
+curl https://get.gravitational.io/telekube/install/7.0.30 | bash
+```
 
-_Note: Currently `tele` can build cluster images on Linux only, due to some quirks with Docker on MacOS._
+`7.0.30` may be substituted for a preferred release.  For all releases, see the [Releases](https://gravitational.com/gravity/docs/changelog/) page.
 
 ### Cluster Manifest
 
