@@ -20,3 +20,5 @@ spec:
             - registry=registry.local:5000/
             - --name
             - example
+            - --namespace
+            - default
