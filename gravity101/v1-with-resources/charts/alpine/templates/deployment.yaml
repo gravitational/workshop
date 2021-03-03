@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alpine
+  labels:
+    app: alpine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpine
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: alpine
+    spec:
+      containers:
+      - name: alpine
+        image: "{{ .Values.registry }}alpine:{{ .Values.version }}"
+        command: ["/bin/sleep", "90000"]
+        securityContext:
+          runAsNonRoot: false
