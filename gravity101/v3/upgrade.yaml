@@ -18,3 +18,5 @@ spec:
             - registry=registry.local:5000/
             - example
             - /var/lib/gravity/resources/charts/alpine
+            - --namespace
+            - default
