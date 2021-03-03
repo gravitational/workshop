@@ -12,8 +12,6 @@ For this training we’ll need:
 
 * 3 machines for deploying a cluster. Clean nodes, preferably Ubuntu 18.04 or recent CentOS.
 
-_Note: If you’re taking this training as a part of Gravitational training program, you will be provided with a pre-built environment._
-
 ## What is Gravity?
 
 Gravity is a set of tools that let you achieve the following results:
@@ -416,8 +414,6 @@ We’re finally ready to install a cluster using our image.
 ### Exploring the Cluster Image
 
 Transfer the image we’ve just built to a future-cluster node, `node-1`.
-
-_Note: If you’re taking this session as a part of Gravitational-provided training, your cluster nodes should have installer tarball pre-downloaded._
 
 Just to reiterate, the cluster image is a ~1.5GB tarball that contains everything needed to install a Kubernetes cluster from scratch:
 
@@ -917,8 +913,6 @@ total 2.7G
 
 Cluster upgrade process is very similar to cluster install. First, transfer the just-built image to `node-1`.
 
-_Note: If you’re taking this session as a part of Gravitational training program, the upgrade image will be pre-downloaded and unpacked on your cluster nodes._
-
 Unpack it in the `~/v2` directory:
 
 ```bash
@@ -968,8 +962,6 @@ Join token:             6ab6d807010e
 To join a node to the cluster, we will need to run a `gravity join` command on it. To be allowed into the cluster, the node will need to provide a valid join token.
 
 Let’s SSH into the `node-2`. To be able to run `gravity join` on it we need to get a `gravity` binary on it. Copy it from `node-1`.
-
-_Note: If you’re taking this session as a part of Gravitational training program, gravity binary will be present on the machine._
 
 Once we have the `gravity` binary, let’s join the node to our cluster:
 
