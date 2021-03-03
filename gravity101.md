@@ -70,18 +70,25 @@ Now let’s build the cluster image:
 
 ```bash
 build$ tele build ~/workshop/gravity101/v1-simplest/app.yaml
-* [1/6] Selecting base image version
-       Will use base image version 6.1.11
-* [2/6] Downloading dependencies from https://get.gravitational.io
-* [3/6] Embedding application container images
-       Detected application manifest app.yaml
-       Found no images to vendor in application manifest app.yaml
-       Pulling remote image quay.io/gravitational/debian-tall:buster
-       Vendored image gravitational/debian-tall:buster
-* [4/6] Creating application
-* [5/6] Generating the cluster snapshot
-* [6/6] Saving the snapshot as cluster-image-0.0.1.tar
-* [6/6] Build completed in 8 seconds
+Tue Mar  2 00:55:15 UTC Building cluster image cluster-image 0.0.1
+Tue Mar  2 00:55:15 UTC Selecting base image version
+        Will use base image version 7.0.30
+Tue Mar  2 00:55:15 UTC Downloading dependencies from https://get.gravitational.io
+        Still downloading dependencies from https://get.gravitational.io (10 seconds elapsed)
+        Still downloading dependencies from https://get.gravitational.io (20 seconds elapsed)
+        Still downloading dependencies from https://get.gravitational.io (30 seconds elapsed)
+Tue Mar  2 00:55:50 UTC Embedding application container images
+        Pulling remote image quay.io/gravitational/debian-tall:buster
+        Vendored image gravitational/debian-tall:buster
+Tue Mar  2 00:55:53 UTC Creating application
+Tue Mar  2 00:55:53 UTC Generating the cluster image
+        Still generating the cluster image (10 seconds elapsed)
+        Still generating the cluster image (20 seconds elapsed)
+Tue Mar  2 00:56:13 UTC Saving the image as cluster-image-0.0.1.tar
+        Still saving the image as cluster-image-0.0.1.tar (10 seconds elapsed)
+        Still saving the image as cluster-image-0.0.1.tar (20 seconds elapsed)
+        Still saving the image as cluster-image-0.0.1.tar (30 seconds elapsed)
+Tue Mar  2 00:56:47 UTC Build finished in 1 minute
 ```
 
 Let’s explore what has happened, step-by-step.
@@ -98,8 +105,9 @@ The resulting file, `cluster-image-0.0.1.tar`, is our cluster image:
 
 ```bash
 build$ ls -lh
-total 1.4G
--rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 19:06 cluster-image-0.0.1.tar
+total 2.5G
+-rw-rw-r--  1 ubuntu ubuntu 2.5G Mar  2 00:56 cluster-image-0.0.1.tar
+
 ```
 
 This image can now be transferred to a node or a set of nodes and used to install a Kubernetes cluster.
@@ -122,23 +130,22 @@ Let’s check:
 
 ```bash
 build$ tele version
-...
-Edition:	enterprise
-Version:	6.1.11
-Git Commit:	4c4ebfcb33c5b31dcc637b57edba18f5bf9ffbea
-Helm Version:	v2.14
+Edition:        enterprise
+Version:        7.0.30
+Git Commit:     b8214a8ce8aa5d173395f039ca63dcd219b2a760
+Helm Version:   v2.15
 ```
 
 From the build progress output above we can see that `tele` picked matching base image. How do you know which Kubernetes is included into certain base image, or just explore available images in general? For this `tele` provides a list command:
 
 ```bash
 build$ tele ls
-Displaying latest stable versions of images. Use --all flag to show all.
+Displaying latest stable versions of application and cluster images in the default Gravitational Hub. Use --all flag to show all.
 
-Name:Version	Image Type	Created (UTC)		Description
-------------	----------	-------------		-----------
-gravity:6.2.2	Cluster		2019-10-18 02:52	Base cluster image with Kubernetes v1.16.2
-hub:6.2.2	Cluster		2019-10-18 02:52	Remote cluster management and operations center
+Name:Version    Image Type      Created (UTC)           Description
+------------    ----------      -------------           -----------
+gravity:7.0.30  Cluster         2021-01-13 16:12        Base cluster image with Kubernetes v1.17.9
+hub:7.0.30      Cluster         2021-01-13 16:12        Remote cluster management and operations center
 ```
 
 The command displays the latest stable available cluster images; it also takes a `--all` flag to display everything.
@@ -147,13 +154,13 @@ Note that the base image version does not match the version of included Kubernet
 
 How do you pick a base image? The [Releases page](https://gravitational.com/gravity/docs/changelog/) is a good starting point as it contains a table with all current releases and changelog for each new patch release. As a general advice, most of the time you probably want the latest stable release. In some cases you may want to stick to the latest LTS release which may not have the latest features/Kubernetes but is more “battle-tested”.
 
-Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `6.1.11`. There are a couple of ways to go about this.
+Now let’s say we’ve looked at all available runtimes and decided that we want to base our cluster image off of `7.0.30`. There are a couple of ways to go about this.
 
-The first approach is to download `tele` version `6.1.11` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `6.1.11`.
+The first and best approach is to download `tele` version `7.0.30` and build the image using it. Our manifest still does not explicitly say which image to use so `tele` will default to `7.0.30`.
 
 Another option is to “pin” the base image version explicitly in the manifest file. The advantage of this approach is that it eliminates the possibility of accidentally upgrading your runtime when upgrading the `tele` tool.
 
-Let’s look at the manifest that pins base image to version `6.1.11` explicitly:
+Let’s look at the manifest that pins base image to version `7.0.30` explicitly:
 
 ```bash
 build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
@@ -162,7 +169,7 @@ build$ cat ~/workshop/gravity101/v1-with-base/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:6.1.11
+baseImage: gravity:7.0.30
 metadata:
  name: cluster-image
  resourceVersion: 0.0.1
@@ -174,7 +181,7 @@ If we look at the difference between the two, we'll see that the new manifest sp
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1-with-base/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:6.1.11
+                                                              > baseImage: gravity:7.0.30
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -259,21 +266,22 @@ Now that we’ve added the Helm chart, let’s try to build the image again:
 
 ```bash
 build$ tele build ~/workshop/gravity101/v1-with-resources/app.yaml --overwrite
-* [1/6] Selecting base image version
-       Will use base image version 6.1.11 set in manifest
-* [2/6] Local package cache is up-to-date
-* [3/6] Embedding application container images
-       Detected application manifest app.yaml
-       Found no images to vendor in application manifest app.yaml
-       Detected Helm chart charts/alpine
-       Pulling remote image alpine:3.3
-       Using local image quay.io/gravitational/debian-tall:0.0.1
-       Vendored image gravitational/debian-tall:0.0.1
-       Vendored image alpine:3.3
-* [4/6] Creating application
-* [5/6] Generating the cluster snapshot
-* [6/6] Saving the snapshot as cluster-image-0.0.1.tar
-* [6/6] Build completed in 11 seconds
+Tue Mar  2 18:12:26 UTC Building cluster image cluster-image 0.0.1
+Tue Mar  2 18:12:26 UTC Selecting base image version
+        Will use base image version 7.0.30 set in manifest
+Tue Mar  2 18:12:26 UTC Downloading dependencies from https://get.gravitational.io
+Tue Mar  2 18:12:26 UTC Local package cache is up-to-date for cluster-image:0.0.1
+Tue Mar  2 18:12:26 UTC Embedding application container images
+        Pulling remote image alpine:3.3
+        Using local image quay.io/gravitational/debian-tall:buster
+        Vendored image gravitational/debian-tall:buster
+        Vendored image alpine:3.3
+Tue Mar  2 18:12:29 UTC Creating application
+Tue Mar  2 18:12:30 UTC Generating the cluster image
+        Still generating the cluster image (10 seconds elapsed)
+Tue Mar  2 18:12:47 UTC Saving the image as cluster-image-0.0.1.tar
+        Still saving the image as cluster-image-0.0.1.tar (10 seconds elapsed)
+Tue Mar  2 18:13:05 UTC Build finished in 39 seconds
 ```
 
 Tele have detected a Helm chart among our resources, extracted the reference to the Alpine image and vendored it in the resulting cluster image along with other system resources/images.
@@ -377,7 +385,7 @@ build$ cat ~/workshop/gravity101/v1/app.yaml
 ```yaml
 apiVersion: cluster.gravitational.io/v2
 kind: Cluster
-baseImage: gravity:6.1.11
+baseImage: gravity:7.0.30
 metadata:
   name: cluster-image
   resourceVersion: 0.0.1
@@ -392,7 +400,7 @@ If we compare our resulting manifest to the one we started with, we'll see all t
 build$ diff -y ~/workshop/gravity101/v1-simplest/app.yaml ~/workshop/gravity101/v1/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-                                                              > baseImage: gravity:6.1.11
+                                                              > baseImage: gravity:7.0.30
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                          resourceVersion: 0.0.1
@@ -415,12 +423,11 @@ We’re finally ready to install a cluster using our image.
 
 Transfer the image we’ve just built to a future-cluster node, `node-1`.
 
-Just to reiterate, the cluster image is a ~1.5GB tarball that contains everything needed to install a Kubernetes cluster from scratch:
+Just to reiterate, the cluster image is a ~2.5GB tarball that contains everything needed to install a Kubernetes cluster from scratch:
 
 ```bash
-node-1$ ls -lh
-total 1.4G
--rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 20:02 cluster-image-0.0.1.tar
+node-1$ ls -lh cluster-image-0.0.1.tar
+-rw-rw-r-- 1 ubuntu ubuntu 2.5G Mar  2 18:19 cluster-image-0.0.1.tar
 ```
 
 Let’s unpack it into `~/v1` directory and see what’s inside:
@@ -430,15 +437,16 @@ node-1$ mkdir -p ~/v1
 node-1$ tar -xvf cluster-image-0.0.1.tar -C ~/v1
 node-1$ cd ~/v1
 node-1$ ls -lh
-total 88M
--rw-r--r-- 1 ubuntu ubuntu 3.1K May 28 19:22 app.yaml
--rwxr-xr-x 1 ubuntu ubuntu  88M May 28 19:22 gravity
--rw------- 1 ubuntu ubuntu 256K May 28 19:22 gravity.db
--rwxr-xr-x 1 ubuntu ubuntu  907 May 28 19:22 install
-drwxr-xr-x 5 ubuntu ubuntu 4.0K May 28 19:22 packages
--rw-r--r-- 1 ubuntu ubuntu 1.1K May 28 19:22 README
--rwxr-xr-x 1 ubuntu ubuntu  344 May 28 19:22 upgrade
--rwxr-xr-x 1 ubuntu ubuntu  411 May 28 19:22 upload
+total 108M
+-rw-r--r-- 1 ubuntu ubuntu 3.9K Mar  2 18:19 app.yaml
+-rwxr-xr-x 1 ubuntu ubuntu 107M Mar  2 18:19 gravity
+-rw------- 1 ubuntu ubuntu 256K Mar  2 18:19 gravity.db
+-rwxr-xr-x 1 ubuntu ubuntu 1.2K Mar  2 18:19 install
+drwxr-xr-x 5 ubuntu ubuntu 4.0K Mar  2 18:19 packages
+-rw-r--r-- 1 ubuntu ubuntu 1.7K Mar  2 18:19 README
+-rwxr-xr-x 1 ubuntu ubuntu  452 Mar  2 18:19 run_preflight_checks
+-rwxr-xr-x 1 ubuntu ubuntu  628 Mar  2 18:19 upgrade
+-rwxr-xr-x 1 ubuntu ubuntu  467 Mar  2 18:19 upload
 ```
 
 The tarball contains a few files and directories.
@@ -449,7 +457,7 @@ Next, we have a `gravity` binary. It is a tool that you use to install, interact
 
 Next, we have an `install` script. This script is a convenience wrapper over the `gravity` binary that launches UI-based install wizard. For the purpose of this training we’ll be using `gravity` directly to launch CLI-based installation.
 
-The other two scripts in the tarball, `upgrade` and `upload`, are used for upgrading the cluster, which we’ll take a look at later. The `gravity.db` and `packages` constitute the database and object storage for internal purposes, so we don’t need to worry about them.
+Next `upgrade` and `upload`, are used for upgrading the cluster, which we’ll take a look at later. `run_preflight_checks` is a utility to verify the node is ready for Gravity installation, without attempting install. The `gravity.db` and `packages` constitute the database and object storage for internal purposes. This is where the base image and containers vendored earlier live. We won't examine them in depth in this training.
 
 ### Exploring The Node
 
@@ -495,8 +503,20 @@ Now that the installation is started, it will take a few minutes to complete and
 It may take a few seconds for the installer to initialize.
 
 ```
-Wed May 22 20:44:20 UTC Starting enterprise installer
-Wed May 22 20:44:20 UTC Preparing for installation...
+Tue Mar  2 19:46:34 UTC Starting enterprise installer
+
+To abort the installation and clean up the system,
+press Ctrl+C two times in a row.
+
+If you get disconnected from the terminal, you can reconnect to the installer
+agent by issuing 'gravity resume' command.
+
+If the installation fails, use 'gravity plan' to inspect the state and
+'gravity resume' to continue the operation.
+See https://gravitational.com/gravity/docs/cluster/#managing-an-ongoing-operation for details.
+
+Tue Mar  2 19:46:34 UTC Connecting to installer
+Tue Mar  2 19:46:47 UTC Connected to installer
 ```
 
 Once the installer is initialized, it starts the operation. During the operation, the installer process acts as the operation controller.
@@ -506,18 +526,21 @@ The first thing it does is it waits for install agents on all participating node
 Since we have a single node for now, the install agent is started on it together with the install controller and immediately connects back:
 
 ```
-Wed May 22 20:44:42 UTC Installing application cluster-image:0.0.1
-Wed May 22 20:44:42 UTC Starting non-interactive install
-Wed May 22 20:44:42 UTC Successfully added "node" node on 192.168.121.147
-Wed May 22 20:44:42 UTC All agents have connected!
-Wed May 22 20:44:42 UTC Starting the installation
-Wed May 22 20:44:44 UTC Operation has been created
+Tue Mar  2 19:46:48 UTC Successfully added "node" node on 10.138.0.5
+Tue Mar  2 19:46:48 UTC All agents have connected!
+Tue Mar  2 19:46:49 UTC Operation has been created
 ```
 
 Now that all agents connected to the installer and the operation has been kicked off, the first thing Gravity does is executes preflight checks:
 
 ```
-Wed May 22 20:44:45 UTC Execute preflight checks
+Tue Mar  2 19:46:50 UTC Executing "/init/node-1" locally
+Tue Mar  2 19:46:51 UTC Initialize operation on node node-1
+Tue Mar  2 19:46:52 UTC Executing "/checks" locally
+Tue Mar  2 19:46:52 UTC Execute pre-flight checks
+Tue Mar  2 19:46:52 UTC Running pre-flight checks
+Tue Mar  2 19:47:02 UTC         Still running pre-flight checks (10 seconds elapsed)
+
 ```
 
 Preflight checks exist to make sure that the infrastructure (both hardware and software) we’re attempting to install cluster on is suitable. Here’s a non-exhaustive list of things that are checked during this phase:
@@ -532,10 +555,14 @@ Preflight checks exist to make sure that the infrastructure (both hardware and s
 
 Note that many of these parameters can be tweaked via the manifest’s feature called “node profiles”, see documentation for examples.
 
+The preflight checks can be run as a standalone with the `run_preflight_checks` helper script in the installer directory.
+
 Once the checks have passed, the installer proceeds to generating various configuration packages for the future cluster nodes:
 
 ```
-Wed May 22 20:44:47 UTC Configure packages for all nodes
+Tue Mar  2 19:47:06 UTC Executing "/configure" locally
+Tue Mar  2 19:47:06 UTC Configuring cluster packages
+Tue Mar  2 19:47:07 UTC Configure packages for all nodes
 ```
 
 This process is not of much interest as it mostly generates configuration for various system services that will be installed later, however there’s one thing worth mentioning - cluster secrets are also generated at this stage.
@@ -545,24 +572,39 @@ Each Gravity cluster generates its own self-signed certificate authority during 
 Once the packages and secrets have been configured, the installer performs various bootstrap actions on all nodes (such as, creating necessary directories, adjusting permissions, etc.) and instructs install agents to download configured packages for their respective nodes:
 
 ```
-Wed May 22 20:44:51 UTC Bootstrap master node node-1
-Wed May 22 20:44:54 UTC Pull configured packages
-Wed May 22 20:44:55 UTC Pull packages on master node node-1
+Tue Mar  2 19:47:13 UTC Executing "/bootstrap/node-1" locally
+Tue Mar  2 19:47:14 UTC Bootstrap master node node-1
+Tue Mar  2 19:47:14 UTC Configuring system directories
+Tue Mar  2 19:47:14 UTC Configuring application-specific volumes
+Tue Mar  2 19:47:15 UTC Executing "/pull/node-1" locally
+Tue Mar  2 19:47:16 UTC Pulling applications
+Tue Mar  2 19:47:16 UTC Pulling application cluster-image:0.0.1
+Tue Mar  2 19:47:16 UTC Pull packages on master node node-1
+Tue Mar  2 19:47:26 UTC         Still pulling application cluster-image:0.0.1 (10 seconds elapsed)
+Tue Mar  2 19:47:36 UTC         Still pulling application cluster-image:0.0.1 (20 seconds elapsed)
+Tue Mar  2 19:47:45 UTC Pulling configured packages
+Tue Mar  2 19:47:47 UTC Unpacking pulled packages
 ```
 
 Once this is done, all the nodes are bootstrapped and have their configuration pulled, and are ready to start installing services. The first service that’s installed on the node is Teleport:
 
 ```
-Wed May 22 20:45:32 UTC Install system software on master node node-1
-Wed May 22 20:45:33 UTC Install system package teleport:3.2.13 on master node node-1
+Tue Mar  2 19:47:49 UTC Executing "/masters/node-1/teleport" locally
+Tue Mar  2 19:47:50 UTC Installing system service teleport:3.2.16
+Tue Mar  2 19:47:50 UTC Install system package teleport:3.2.16 on master node node-1
 ```
 
 Teleport is a standalone Gravitational product. It is a drop-in SSH replacement that provides additional security and auditing features, such as short-lived certificates, role-based access control, recorded sessions and so on. Gravity uses Teleport to provide remote access to the cluster nodes. Teleport nodes run as systemd units on the cluster nodes.
 
-Next service that’s being installed is called Planet:
+The next service installed is Planet:
 
 ```
-Wed May 22 20:45:34 UTC Install system package planet:6.1.8-11505 on master node node-1
+Tue Mar  2 19:47:50 UTC Executing "node-1/planet" locally
+Tue Mar  2 19:47:51 UTC Installing system service planet:7.0.56-11709
+Tue Mar  2 19:47:51 UTC Install system package planet:7.0.56-11709 on master node node-1
+Tue Mar  2 19:48:01 UTC         Still installing system service planet:7.0.56-11709 (10 seconds elapsed)
+Tue Mar  2 19:48:11 UTC         Still installing system service planet:7.0.56-11709 (20 seconds elapsed)
+
 ```
 
 Planet, sometimes also referred to as “master container”, is a containerized Kubernetes distribution. This needs a bit more explaining.
@@ -576,17 +618,52 @@ The Planet container also runs as a systemd unit on the host, we’ll learn how 
 Once Planet has been installed, the installer waits for the Kubernetes runtime to come up and performs various initialization actions, such as bootstrapping cluster RBAC and pod security policies:
 
 ```
-Wed May 22 20:45:55 UTC Wait for kubernetes to become available
-Wed May 22 20:46:09 UTC Bootstrap Kubernetes roles and PSPs
-Wed May 22 20:46:12 UTC Configure CoreDNS
+Tue Mar  2 19:48:12 UTC Executing "/wait" locally
+Tue Mar  2 19:48:13 UTC Wait for Kubernetes to become available
+Tue Mar  2 19:48:22 UTC         Still executing "/wait" locally (10 seconds elapsed)
+Tue Mar  2 19:48:28 UTC Executing "/rbac" locally
+Tue Mar  2 19:48:29 UTC Bootstrap Kubernetes roles and PSPs
+Tue Mar  2 19:48:29 UTC Creating Kubernetes RBAC resources
+Tue Mar  2 19:48:31 UTC Executing "/coredns" locally
+Tue Mar  2 19:48:32 UTC Configuring CoreDNS
+Tue Mar  2 19:48:32 UTC Configure CoreDNS
+Tue Mar  2 19:48:32 UTC Executing "/system-resources" locally
+Tue Mar  2 19:48:33 UTC Configuring system Kubernetes resources
+Tue Mar  2 19:48:33 UTC Create system Kubernetes resources
+Tue Mar  2 19:48:33 UTC Executing "/user-resources" locally
+Tue Mar  2 19:48:33 UTC Creating user-supplied Kubernetes resources
+Tue Mar  2 19:48:34 UTC Create user-supplied Kubernetes resources
+Tue Mar  2 19:48:35 UTC Executing "/export/node-1" locally
+Tue Mar  2 19:48:36 UTC Unpacking application rbac-app:7.0.30
 ```
 
-We should mention here that Gravity clusters are hardened by default so things like privileged containers are not allowed. Take a look at Securing Cluster chapter in our documentation to learn how to work with it.
+We should mention here that Gravity clusters are hardened by default so things like privileged containers are not allowed. Take a look at the [Securing a Cluster](https://gravitational.com/gravity/docs/cluster/#securing-a-cluster) chapter in our documentation to learn how to work with it.
 
 Next, the installer populates cluster-local registries with all Docker images vendored in the cluster image:
 
 ```
-Wed May 22 20:46:13 UTC Populate Docker registry on master node node-1
+Tue Mar  2 19:48:36 UTC Populate Docker registry on master node node-1
+Tue Mar  2 19:48:36 UTC Exporting application rbac-app:7.0.30 to local registry
+Tue Mar  2 19:48:36 UTC Unpacking application dns-app:7.0.3
+Tue Mar  2 19:48:37 UTC Exporting application dns-app:7.0.3 to local registry
+Tue Mar  2 19:48:40 UTC Unpacking application storage-app:0.0.3
+Tue Mar  2 19:48:44 UTC Exporting application storage-app:0.0.3 to local registry
+Tue Mar  2 19:48:54 UTC         Still exporting application storage-app:0.0.3 to local registry (10 seconds elapsed)
+Tue Mar  2 19:49:04 UTC         Still exporting application storage-app:0.0.3 to local registry (20 seconds elapsed)
+Tue Mar  2 19:49:12 UTC Unpacking application bandwagon:6.0.1
+Tue Mar  2 19:49:13 UTC Exporting application bandwagon:6.0.1 to local registry
+Tue Mar  2 19:49:23 UTC         Still exporting application bandwagon:6.0.1 to local registry (10 seconds elapsed)
+Tue Mar  2 19:49:31 UTC Unpacking application logging-app:6.0.8
+Tue Mar  2 19:49:32 UTC Exporting application logging-app:6.0.8 to local registry
+Tue Mar  2 19:49:36 UTC Unpacking application monitoring-app:7.0.8
+Tue Mar  2 19:49:38 UTC Exporting application monitoring-app:7.0.8 to local registry
+Tue Mar  2 19:49:48 UTC Unpacking application tiller-app:7.0.2
+Tue Mar  2 19:49:48 UTC Exporting application tiller-app:7.0.2 to local registry
+Tue Mar  2 19:49:49 UTC Unpacking application site:7.0.30
+Tue Mar  2 19:49:49 UTC Exporting application site:7.0.30 to local registry
+Tue Mar  2 19:49:51 UTC Unpacking application cluster-image:0.0.1
+Tue Mar  2 19:49:51 UTC Exporting application cluster-image:0.0.1 to local registry
+
 ```
 
 We’ve already briefly mentioned that any Gravity cluster has an internal Docker registry, which address we used when writing install hook for our Helm chart. Registry runs inside the Planet container alongside other services. This step pushes the images that were packaged in the installer to this local registry making them available for Kubernetes to pull.
@@ -594,18 +671,44 @@ We’ve already briefly mentioned that any Gravity cluster has an internal Docke
 Finally, the installer runs a number of health checks on the cluster to make sure everything’s come up properly:
 
 ```
-Wed May 22 20:46:47 UTC Wait for cluster to pass health checks
+Tue Mar  2 19:49:52 UTC Executing "/health" locally
+Tue Mar  2 19:49:53 UTC Waiting for the planet to start
+Tue Mar  2 19:49:53 UTC Wait for cluster to pass health checks
 ```
 
 At this point we have a fully-functional Kubernetes cluster but it does not have any pods running in it yet. As a next step, installer starts populating the cluster with system applications:
 
 ```
-Wed May 22 20:46:48 UTC Install system application dns-app:0.3.0
-Wed May 22 20:47:02 UTC Install system application logging-app:5.0.2
-Wed May 22 20:47:15 UTC Install system application monitoring-app:6.0.1
-Wed May 22 20:47:38 UTC Install system application tiller-app:6.1.0
-Wed May 22 20:47:57 UTC Install system application site:6.1.11
-Wed May 22 20:48:50 UTC Install system application kubernetes:6.1.11
+Tue Mar  2 19:49:53 UTC Executing "/runtime/dns-app" locally
+Tue Mar  2 19:49:54 UTC Install system application dns-app:7.0.3
+Tue Mar  2 19:49:54 UTC Executing install hook for dns-app:7.0.3
+Tue Mar  2 19:50:04 UTC         Still executing install hook for dns-app:7.0.3 (10 seconds elapsed)
+Tue Mar  2 19:50:14 UTC         Still executing install hook for dns-app:7.0.3 (20 seconds elapsed)
+Tue Mar  2 19:50:14 UTC Executing "/runtime/logging-app" locally
+Tue Mar  2 19:50:14 UTC Executing install hook for logging-app:6.0.8
+Tue Mar  2 19:50:15 UTC Install system application logging-app:6.0.8
+Tue Mar  2 19:50:23 UTC Executing "/runtime/monitoring-app" locally
+Tue Mar  2 19:50:24 UTC Executing install hook for monitoring-app:7.0.8
+Tue Mar  2 19:50:24 UTC Install system application monitoring-app:7.0.8
+Tue Mar  2 19:50:34 UTC         Still executing install hook for monitoring-app:7.0.8 (10 seconds elapsed)
+Tue Mar  2 19:50:44 UTC         Still executing install hook for monitoring-app:7.0.8 (20 seconds elapsed)
+Tue Mar  2 19:50:54 UTC         Still executing install hook for monitoring-app:7.0.8 (30 seconds elapsed)
+Tue Mar  2 19:51:04 UTC         Still executing install hook for monitoring-app:7.0.8 (40 seconds elapsed)
+Tue Mar  2 19:51:10 UTC Executing "/runtime/tiller-app" locally
+Tue Mar  2 19:51:11 UTC Executing install hook for tiller-app:7.0.2
+Tue Mar  2 19:51:11 UTC Install system application tiller-app:7.0.2
+Tue Mar  2 19:51:15 UTC Executing "/runtime/site" locally
+Tue Mar  2 19:51:15 UTC Install system application site:7.0.30
+Tue Mar  2 19:51:15 UTC Executing install hook for site:7.0.30
+Tue Mar  2 19:51:25 UTC         Still executing install hook for site:7.0.30 (10 seconds elapsed)
+Tue Mar  2 19:51:35 UTC         Still executing install hook for site:7.0.30 (20 seconds elapsed)
+Tue Mar  2 19:51:45 UTC         Still executing install hook for site:7.0.30 (30 seconds elapsed)
+Tue Mar  2 19:51:55 UTC         Still executing install hook for site:7.0.30 (40 seconds elapsed)
+Tue Mar  2 19:52:03 UTC Executing postInstall hook for site:7.0.30
+Tue Mar  2 19:52:13 UTC         Still executing postInstall hook for site:7.0.30 (10 seconds elapsed)
+Tue Mar  2 19:52:23 UTC         Still executing postInstall hook for site:7.0.30 (20 seconds elapsed)
+Tue Mar  2 19:52:25 UTC Executing "/runtime/kubernetes" locally
+Tue Mar  2 19:52:26 UTC Install system application kubernetes:7.0.30
 ```
 
 These system apps are a part of the base cluster image which, if you remember, we selected when we built our cluster image. They are always installed and provide basic in-cluster functionality such as in-cluster DNS, logging/monitoring facilities and Gravitational-specific cluster management plane and UI.
@@ -615,8 +718,9 @@ As a side note, each system app has its own manifest file and install hook, just
 Finally, it is our application’s turn:
 
 ```
-Wed May 22 20:48:51 UTC Install user application
-Wed May 22 20:48:52 UTC Install application cluster-image:0.0.1
+Tue Mar  2 19:52:27 UTC Executing "/app/cluster-image" locally
+Tue Mar  2 19:52:27 UTC Install application cluster-image:0.0.1
+Tue Mar  2 19:52:27 UTC Executing install hook for cluster-image:0.0.1
 ```
 
 This is where the installs executes our install hook, the one that runs the `helm install` command on our sample chart.
@@ -624,10 +728,20 @@ This is where the installs executes our install hook, the one that runs the `hel
 Once that’s done, the installer runs a few cleanup steps and completes the installation:
 
 ```
-Wed May 22 20:49:01 UTC Connect to installer
-Wed May 22 20:49:04 UTC Enable cluster leader elections
-Wed May 22 20:49:08 UTC Operation has completed
-Wed May 22 20:49:08 UTC Installation succeeded in 4m26.499950025s
+Tue Mar  2 19:52:32 UTC Connect to installer
+Tue Mar  2 19:52:32 UTC Connecting to installer
+Tue Mar  2 19:52:34 UTC Executing "/election" locally
+Tue Mar  2 19:52:34 UTC Enable leader elections
+Tue Mar  2 19:52:35 UTC Enable cluster leader elections
+Tue Mar  2 19:52:35 UTC Executing operation finished in 5 minutes
+Tue Mar  2 19:52:36 UTC Operation has completed
+Tue Mar  2 19:52:36 UTC The operation has finished successfully in 5m48s
+Tue Mar  2 19:52:36 UTC
+Cluster endpoints:
+    * Authentication gateway:
+        - 10.20.30.40:32009
+    * Cluster management URL:
+        - https://10.20.30.40:32009
 ```
 
 Congratulations! We have deployed a Kubernetes cluster and an application in it.
@@ -644,12 +758,12 @@ First, the `kubectl` binary - a main tool used to interact with Kubernetes - has
 node-1$ kubectl version
 ```
 
-Great! We’ve got Kubernetes `v1.15.5` cluster. Now let’s see if our node has registered:
+Great! We’ve got Kubernetes `v1.17.9` cluster. Now let’s see if our node has registered:
 
 ```bash
 node-1$ kubectl get nodes
 NAME              STATUS   ROLES    AGE     VERSION
-192.168.121.197   Ready    <none>   2m58s   v1.15.5
+10.20.30.40   Ready    <none>   2m58s   v1.17.9
 ```
 
 And finally if we have anything running in the cluster:
@@ -665,7 +779,7 @@ Next, the `helm` binary has also been configured and made available for use on h
 ```bash
 node-1$ helm ls
 NAME   	REVISION	UPDATED                 	STATUS  	CHART       	APP VERSION	NAMESPACE
-example	1       	Tue Oct 29 17:49:41 2019	DEPLOYED	alpine-0.0.1	           	kube-system
+example 1               Tue Mar  2 19:52:30 2021        DEPLOYED        alpine-0.0.1                    kube-system
 ```
 
 Great, that works too.
@@ -689,7 +803,7 @@ node-1$ gravity status
 ...
 Cluster endpoints:
    * Cluster management URL:
-       - https://192.168.121.197:32009
+       - https://10.20.30.40:32009
 ```
 
 What we’re looking for is the “cluster management URL”. Open this URL in your browser, but note that this is cluster internal URL so if your machine has a private network interface and is behind the NAT, you might need to replace the IP address with the public IP address of the node, and make sure the port is open.
@@ -714,7 +828,7 @@ Run the following command on the cluster node:
 ```bash
 node-1$ gravity users add --roles=@teleadmin admin
 Signup token has been created and is valid for 8h0m0s hours. Share this URL with the user:
-https://192.168.121.197:3009/web/newuser/33fcb869d9ef5d820f881089baff93d3911ec6f3f52c4e70d4c6781e6ac489f5
+https://10.20.30.40:3009/web/newuser/33fcb869d9ef5d820f881089baff93d3911ec6f3f52c4e70d4c6781e6ac489f5
 ```
 
 The command has generated an invitation URL which we can now open in our browser and sign up. Note that we have specified the `--roles=@teleadmin` flag - this is a special system role that provides super-user privileges.
@@ -729,13 +843,17 @@ Grab the auth gateway address:
 node-1$ gravity status
 Cluster endpoints:
     * Authentication gateway:
-        - 10.128.0.92:32009
+        - 10.20.30.40:32009
 ```
+
+Note: For some cloud providers you'll need to replace the internal IP with
+the publicly routable IP for the server.
+
 
 Login from `build` machine using `tsh` and providing credentials for the admin user we've just created:
 
 ```bash
-build$ tsh --insecure login --proxy=10.128.0.92:32009 --user=admin
+build$ tsh --insecure login --proxy=10.20.30.40:32009 --user=admin
 ```
 
 We can now use `tsh` to interact with the cluster from the `build` box:
@@ -758,7 +876,7 @@ build$ kubectl get pods --all-namespaces -owide
 
 For configuring a cluster Gravity uses a concept of “configuration resources”, somewhat similar to Kubernetes itself. Configuration resources are objects described in a YAML format which are managed by the “gravity resource” set of subcommands.
 
-Gravitational documentation has a whole chapter about Configuring a Cluster that lists all supported configuration resources, but for now we’re going to look at a couple of them.
+Gravitational documentation has a whole chapter about [Configuring a Cluster](https://gravitational.com/gravity/docs/config/) that lists all supported configuration resources, but for now we’re going to look at a couple of them.
 
 Sometimes you might want to create a non-interactive user which does not necessarily need to be able to use web UI but still has to be able to talk to Gravity API to perform certain actions. Example would be a Jenkins machine that needs to publish application updates.
 
@@ -805,7 +923,7 @@ Or, to see API tokens for a particular agent, run:
 node-1$ gravity resource get tokens --user=agent@example.com
 ```
 
-We can see that our token appears in the table.
+We can see that our token appears in the table, alongside a default token.
 
 ## Upgrading The Cluster
 
@@ -850,7 +968,7 @@ Note the highlighted parts that have changed. Now our Helm chart will use versio
 build$ diff -y ~/workshop/gravity101/v1/app.yaml ~/workshop/gravity101/v2/app.yaml
 apiVersion: cluster.gravitational.io/v2                         apiVersion: cluster.gravitational.io/v2
 kind: Cluster                                                   kind: Cluster
-baseImage: gravity:6.1.11                                       baseImage: gravity:6.1.11
+baseImage: gravity:7.0.30                                       baseImage: gravity:7.0.30
 metadata:                                                       metadata:
  name: cluster-image                                             name: cluster-image
  resourceVersion: 0.0.1                                       |  resourceVersion: 0.0.2
@@ -904,9 +1022,8 @@ The resulting file will be called `cluster-image-0.0.2.tar`:
 
 ```bash
 build$ ls -lh
-total 2.7G
--rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 20:41 cluster-image-0.0.1.tar
--rw-rw-r-- 1 ubuntu ubuntu 1.4G May 28 21:03 cluster-image-0.0.2.tar
+-rw-rw-r-- 1 ubuntu ubuntu 2.5G Mar  2 18:19 cluster-image-0.0.1.tar
+-rw-rw-r-- 1 ubuntu ubuntu 2.5G Mar  2 21:02 cluster-image-0.0.2.tar
 ```
 
 ### Performing Upgrade
@@ -926,11 +1043,13 @@ In order to upgrade the cluster, we need to invoke the `upgrade` script found in
 
 ```bash
 node-1$ sudo ./upgrade
-Tue Oct 29 17:58:44 UTC	Importing application cluster-image v0.0.2
-Tue Oct 29 17:58:44 UTC	Synchronizing application with Docker registry 10.128.0.59:5000
-Tue Oct 29 17:58:57 UTC	Application has been uploaded
-Tue Oct 29 17:58:59 UTC	Upgrading application cluster-image from 0.0.1 to 0.0.2
-Tue Oct 29 17:58:59 UTC	Deploying upgrade agents on the nodes
+Tue Mar  2 23:07:46 UTC Importing application cluster-image v0.0.2
+Tue Mar  2 23:09:26 UTC Synchronizing application with Docker registry 10.138.0.5:5000
+Tue Mar  2 23:09:57 UTC Verifying cluster health
+Tue Mar  2 23:09:57 UTC Application has been uploaded
+Tue Mar  2 23:10:00 UTC Upgrading cluster from 0.0.1 to 0.0.2
+Tue Mar  2 23:10:00 UTC Deploying agents on cluster nodes
+Deployed agent on walt-training-cluster-node-2 (10.138.0.5)
 ```
 
 Once the upgrade is launched, it will take a few minutes to complete. Once it’s finished, let’s run `gravity status` to see that the cluster is now running the updated version:
@@ -943,9 +1062,11 @@ And we can use `helm` too to confirm that our upgrade hook job has indeed upgrad
 
 ```bash
 node-1$ helm ls
-NAME   	REVISION	UPDATED                 	STATUS  	CHART       	APP VERSION	NAMESPACE
-example	2       	Tue Oct 29 17:59:19 2019	DEPLOYED	alpine-0.0.2	           	kube-system
+NAME    REVISION        UPDATED                         STATUS          CHART           APP VERSION     NAMESPACE
+example 2               Tue Mar  2 23:10:19 2021        DEPLOYED        alpine-0.0.2                    kube-system
 ```
+
+For in depth analysis of Gravity upgrades see the [Gravity Upgrade Training](./gravity_upgrade.md)
 
 ## Expanding Cluster
 
@@ -956,7 +1077,8 @@ Run `gravity status` command again, this time taking a note of the field that sa
 ```bash
 node-1$ gravity status
 ...
-Join token:             6ab6d807010e
+Join token:             4af4aeadbd157d6535771a2e24552f0b
+...
 ```
 
 To join a node to the cluster, we will need to run a `gravity join` command on it. To be allowed into the cluster, the node will need to provide a valid join token.
