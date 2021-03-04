@@ -846,7 +846,6 @@ Phase                         Description                                       
 * pre-update                  Run pre-update application hook                         Unstarted     -               /init,/checks                           -
 * bootstrap                   Bootstrap update operation on nodes                     Unstarted     -               /checks,/pre-update                     -
   * node-1                    Bootstrap node "node-1"                                 Unstarted     10.138.0.6      -                                       -
-
 ```
 
 In order to run all init phases, we can target the `/init` phase, and all subphases will be executed.
@@ -1695,7 +1694,7 @@ monitoring    watcher-56676986d9-tftmq                     1/1     Running     0
 And we're nearing completion of the upgrade plan:
 
 ```
-ubuntu@node-1:~$ sudo gravity plan | head
+ubuntu@node-1:~$ sudo gravity plan
 Phase                         Description                                             State         Node            Requires                                Updated
 -----                         -----------                                             -----         ----            --------                                -------
 ...
@@ -1773,7 +1772,7 @@ upgrade-db6743                  1/1           6s         3m22s
 Only one phase remains:
 
 ```
-ubuntu@node-1:~$ sudo gravity plan | head
+ubuntu@node-1:~$ sudo gravity plan
 Phase                         Description                                             State         Node            Requires                                Updated
 -----                         -----------                                             -----         ----            --------                                -------
 ...
