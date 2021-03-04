@@ -23,5 +23,5 @@ After successful upgrade, uninstall the cluster by running the following command
 
     sudo gravity system uninstall --confirm
 
-Then reset the cluster to the original 5.5.43 state from lab0.
+Then reset the cluster to the original v1 state from lab0.
 "
