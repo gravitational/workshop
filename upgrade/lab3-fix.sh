@@ -1,4 +1,7 @@
 #!/bin/bash
 echo "ROLLING BACK SCENARIO #3..."
-sudo systemctl start gravity__gravitational.io__teleport__3.0.5.service
+
+service=$(sudo systemctl --all | grep teleport | awk '{print $1}')
+sudo systemctl start $service
+
 echo "SCENARIO #3 ROLLED BACK"

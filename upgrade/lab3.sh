@@ -11,7 +11,8 @@ echo "ACTIVATING SCENARIO #3...
 path="$1"
 sudo $path/upload
 sudo mkdir -p /var/lib/gravity/site/update
-sudo systemctl stop gravity__gravitational.io__teleport__3.0.5.service
+service=$(sudo systemctl --all | grep teleport | awk '{print $1}')
+sudo systemctl stop $service
 
 echo "
 SCENARIO #3 ACTIVATED.
