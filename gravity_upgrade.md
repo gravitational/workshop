@@ -822,15 +822,13 @@ dissappears upon plan completion.
 #### Start a New Upgrade
 
 ```
-root@kevin-test1:~/build# sudo ./gravity upgrade --manual
-Sun Aug  2 03:36:22 UTC	Upgrading cluster from 5.5.46 to 5.5.50-dev.9
-Sun Aug  2 03:36:22 UTC	Deploying agents on cluster nodes
-Sun Aug  2 03:36:26 UTC	Deployed agent on kevin-test3 (10.162.0.5)
-Sun Aug  2 03:36:26 UTC	Deployed agent on kevin-test2 (10.162.0.6)
-Sun Aug  2 03:36:26 UTC	Deployed agent on kevin-test1 (10.162.0.7)
-The operation has been created in manual mode.
-
-See https://gravitational.com/gravity/docs/cluster/#managing-an-ongoing-operation for details on working with operation plan.
+ubuntu@node-1:~/v2$ sudo ./gravity upgrade --manual
+Thu Mar  4 04:09:57 UTC Upgrading cluster from 1.0.0 to 2.0.0
+Thu Mar  4 04:10:09 UTC Deploying agents on cluster nodes
+Deployed agent on node-3 (10.138.0.8)
+Deployed agent on node-1 (10.138.0.6)
+Deployed agent on node-2 (10.138.0.15)
+The operation 099bdfa1-883a-43d5-a286-5fc983a835ac has been created in manual mode.
 ```
 
 #### Running multiple phases
@@ -968,6 +966,9 @@ Phase                         Description                                       
   * node-3                    Bootstrap node "node-3"                                 Unstarted     10.138.0.8      -                                       -
 * coredns                     Provision CoreDNS resources                             Unstarted     -               /bootstrap                              -
 * masters                     Update master nodes                                     Unstarted     -               /coredns                                -
+```
+
+Lets run that on the first node:
 
 ```
 ubuntu@node-1:~/v2$ sudo ./gravity plan execute --phase /bootstrap/node-1
@@ -984,6 +985,7 @@ Notes:
 4. Updates the labeling in the local package store, to identify the packages
 
 New packages will now be available on each node:
+
 ```
 ubuntu@node-1:~/v2$ sudo ./gravity package list
 
