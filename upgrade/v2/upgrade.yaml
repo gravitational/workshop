@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: upgrade
+spec:
+  template:
+    metadata:
+      name: upgrade
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: upgrade
+          image: quay.io/gravitational/debian-tall:stretch
+          command:
+            - /usr/local/bin/helm
+            - upgrade
+            - --set
+            - registry=registry.local:5000/
+            - example
+            - /var/lib/gravity/resources/charts/alpine
+            - --namespace
+            - default
