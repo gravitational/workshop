@@ -99,10 +99,10 @@ The list is divided based on when the specific command will be more likely used,
     checking the systemd unit (with `sudo systemctl status gravity-agent.service`)
     and its logs (via `journalctl -u gravity-agent.service`) may help identify
     possible issues or keep track of messages sent by the agent itself.
-  + In case the Gravity Agent dies or needs to be redeployed (eg in case the 
+  + In case the Gravity Agent dies or needs to be redeployed (eg in case the
     server is rebooted during an upgrade) the command `sudo gravity agent deploy`
     will take care of setting up the Agent on the needed nodes.
-  
+
 ### DURING RUNTIME
   + `sudo gravity status`
     The `status` command output shows the current state of Gravity clusters with
@@ -159,7 +159,7 @@ The list is divided based on when the specific command will be more likely used,
 
 ### Collect logfiles for reporting purpose
   + `sudo gravity report --file report_TICKET_12345.tgz`
-    This command will collect all the needed info that can be later inspected 
+    This command will collect all the needed info that can be later inspected
     to debug a Gravity cluster. This includes Kubernetes resources status,
     Gravity and Planet status, some logs from Planet and much more.
     By default the report will be saved in `report.tar.gz` if not specified.
@@ -232,7 +232,7 @@ In order to get a better understand of how the upgrades work, we'll walkthrough 
 
 ### Demo Setup
 
-The demo of the manual upgrade will be on a simple 3 node cluster, running an empty kubernetes application. These 3 nodes are masters within the cluster, and there are no workers. Upgrading a worker is the same as upgrading a master, but certain steps to do with being a master can be skipped, otherwise nothing special is happening to workers. 
+The demo of the manual upgrade will be on a simple 3 node cluster, with a minimal kubernetes application inside. These 3 nodes are masters within the cluster, and there are no workers. Upgrading a worker is the same as upgrading a master, but certain steps to do with being a master can be skipped. The manifest for these images can be found in the [upgrade/v1](./upgrade/v1/) and [upgrade/v2](./upgrade/v2/) directories.
 
 ```
 root@kevin-test1:~/build# gravity status
@@ -274,7 +274,7 @@ Before we start the upgrade, let's take a moment to explore what this cluster lo
 Gravity uses a packaging system to hold all of the artifacts used within the cluster. This is all of the configuration that get's generated to be distributed throughout the cluster (that isn't stored in etcd), but also cluster packages. These cluster packages are the containers and applications that are available to the cluster. This functionality is generally of internal relevance, and mostly abstracted away by the upgrade procedure.
 
 There are two levels to this package store.
-1. Cluster Wide - 
+1. Cluster Wide -
 The cluster wide package store is replicated between the master nodes within gravity-site. This is the authoritative location for state, that nodes can pull as required.
 2. Node Local -
 The node local package store, is a copy of packages needed by a node to operate. This is a local copy of a package from the cluster store.
@@ -590,7 +590,7 @@ Sat Aug  1 22:43:08 UTC	Deployed agent on kevin-test1 (10.162.0.7)
 ### Plans
 Gravity uses a planning system to break up an upgrade into separate small steps to be executed.
 These "phases" of the upgrade perform separate and individual actions to make progress on the upgrade.
-The planning system creates the plan for the upgrade when the upgrade is triggered, inspecting the current state of the system, 
+The planning system creates the plan for the upgrade when the upgrade is triggered, inspecting the current state of the system,
 and only includes the steps necessary to get the cluster to the latest version.
 
 For example, if planet is already the latest version, none of the steps to rolling restart planet on the latest version will be included in the plan. It's not needed, as planet is already at the desired version.
@@ -687,7 +687,7 @@ An Unstarted phase is a phase that hasn't been requested to run yet.
 
 #### In Progress
 An In Progress phase is a phase that is currently being executed or in rare circumstances has crashed.
-When an agent starts executing a phase, it will set the state to In Progress, until the execution has completed. 
+When an agent starts executing a phase, it will set the state to In Progress, until the execution has completed.
 If the process running the phase exits unexpectedly, such as a panic in the process or `kill -9`, the state will remain "In Progress" forever.
 
 Note: When manually interacting with an upgrade, be careful that an In Progress phase may be trying to interact with the system at the same time.
@@ -721,7 +721,7 @@ Phase                          Description                                      
 
 To manually run the `init` phase on node `kevin-test1` we build a path of `/init/kevin-test1`
 
-### Continuing our Manual Upgrade 
+### Continuing our Manual Upgrade
 
 #### Init
 The first step in the upgrade process, is we initialize and prepare each node to accept the upgrade.
@@ -2132,7 +2132,7 @@ root@kevin-test1:~/build# ./gravity --debug plan execute --phase /bootstrap/kevi
 ✓ pre-update                   Run pre-update application hook                            Completed       -              /init,/checks                                 Wed Jul 29 17:46 UTC
 → bootstrap                    Bootstrap update operation on nodes                        In Progress     -              /checks,/pre-update                           Wed Jul 29 17:51 UTC
   ✓ kevin-test1                Bootstrap node \"kevin-test1\"                               Completed       10.162.0.7     -                                             Wed Jul 29 17:51 UTC
-  * kevin-test2                Bootstrap node \"kevin-test2\"                               Unstarted       10.162.0.6     -                                             - 
+  * kevin-test2                Bootstrap node \"kevin-test2\"                               Unstarted       10.162.0.6     -                                             -
   * kevin-test3                Bootstrap node \"kevin-test3\"                               Unstarted       10.162.0.5     -                                             -
 * coredns                      Provision CoreDNS resources                                Unstarted       -              /bootstrap                                    -
 * masters                      Update master nodes                                        Unstarted       -              /coredns                                      -
@@ -4388,7 +4388,7 @@ kevin-test3   <none>
 ```
 
 #### Nodes: Uncordon
-Removed the cordon setting on the node, allowing the kubernetes scheduler to see the node as available to be scheduled to. 
+Removed the cordon setting on the node, allowing the kubernetes scheduler to see the node as available to be scheduled to.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /masters/kevin-test1/uncordon 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'
@@ -4946,7 +4946,7 @@ Wed Jul 29 18:41:13 UTC	Executing phase "/masters" finished in 2 minutes
 ```
 
 #### Etcd (/etcd)
-Upgrading etcd is the most complicated portion of the upgrade process when required.  
+Upgrading etcd is the most complicated portion of the upgrade process when required.
 
 Etcd is the database that underpins kubernetes, storing all the kubernetes objects that you interact with using kubectl. Because etcd underpins kubernetes, we use the same database to persist internal state of gravity, that can be shared and replicated amongst the master nodes. When designing the upgrade process for gravity, we had a number of constraints:
 
@@ -5415,8 +5415,8 @@ Phase                          Description                                      
   * kevin-test1                Clean up node "kevin-test1"                                Unstarted       -              -                                             -
   * kevin-test2                Clean up node "kevin-test2"                                Unstarted       -              -                                             -
   * kevin-test3                Clean up node "kevin-test3"                                Unstarted       -              -                                             -
-  
-  
+
+
 root@kevin-test2:~/5.5.46# /var/lib/gravity/site/update/agent/gravity plan
 Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
@@ -5494,8 +5494,8 @@ Phase                          Description                                      
   * kevin-test1                Clean up node "kevin-test1"                                Unstarted       -              -                                             -
   * kevin-test2                Clean up node "kevin-test2"                                Unstarted       -              -                                             -
   * kevin-test3                Clean up node "kevin-test3"                                Unstarted       -              -                                             -
-  
-  
+
+
 root@kevin-test3:~/5.5.46# /var/lib/gravity/site/update/agent/gravity plan
 Phase                          Description                                                State           Node           Requires                                      Updated
 -----                          -----------                                                -----           ----           --------                                      -------
@@ -5576,7 +5576,7 @@ Phase                          Description                                      
 ```
 
 #### Etcd: Upgrade
-The upgrade phase is where we reconfigure planet to use the new version of etcd. Additionally, we launch a temporary version of etcd to be used for restoring the backup. 
+The upgrade phase is where we reconfigure planet to use the new version of etcd. Additionally, we launch a temporary version of etcd to be used for restoring the backup.
 
 We use a temporary etcd service, so that kubernetes doesn't see the empty database, and decide to start taking action within the cluster. We want the DB to be fully restored before any clients connect, and this is done by listening on a different IP/Port for this portion of the upgrade.
 
@@ -5760,7 +5760,7 @@ PLANET_ETCD_PREV_VERSION=v3.3.20
 KUBE_STORAGE_BACKEND=etcd3
 ```
 
-Our temporary cluster is bound to a different IP Address (127.0.0.2) for client connections, preventing the api server and other clients from connecting locally. 
+Our temporary cluster is bound to a different IP Address (127.0.0.2) for client connections, preventing the api server and other clients from connecting locally.
 
 ```
 root@kevin-test1:~/build# ps -ef | grep /usr/bin/etcd
@@ -6166,7 +6166,7 @@ Fri Jul 31 07:00:12 UTC	Executing phase "/etcd/restart" finished in 13 seconds
 At this point, the full plan will be available on all nodes in the cluster again.
 
 #### System Configuration
-The system configuration task is used to upgrade the teleport configuration on each node. 
+The system configuration task is used to upgrade the teleport configuration on each node.
 
 ```
 root@kevin-test1:~/build# ./gravity --debug plan execute --phase /config/kevin-test1 2>&1 | sed 's/\\n/\n/g' | sed 's/\\t/\t/g'

@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: install
+spec:
+  template:
+    metadata:
+      name: install
+      namespace: default
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: install
+          image: quay.io/gravitational/debian-tall:stretch
+          command:
+            - /usr/local/bin/helm
+            - install
+            - /var/lib/gravity/resources/charts/alpine
+            - --set
+            - registry=registry.local:5000/
+            - --name
+            - example
+            - --namespace
+            - default

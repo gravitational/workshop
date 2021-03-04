@@ -1,0 +1,11 @@
+apiVersion: cluster.gravitational.io/v2
+kind: Cluster
+baseImage: gravity:7.0.30
+metadata:
+ name: upgrade-demo
+ resourceVersion: 2.0.0
+hooks:
+  install:
+    job: file://install.yaml
+  update:
+    job: file://upgrade.yaml
