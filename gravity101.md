@@ -213,7 +213,7 @@ build$ tree ~/workshop/gravity101/v1-with-resources
     └── alpine
         ├── Chart.yaml
         ├── templates
-        │   └── pod.yaml
+        │   └── deployment.yaml
         └── values.yaml
 ```
 
@@ -240,22 +240,37 @@ version: 3.3
 registry:
 ```
 
-And the actual pod resource:
+And the actual deployment resource:
 
 ```bash
-build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/templates/pod.yaml
+build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/templates/deployment.yaml
 ```
 
 ```yaml
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: alpine
+  labels:
+    app: alpine
 spec:
-  containers:
-  - name: alpine
-    image: "{{ .Values.registry }}alpine:{{ .Values.version }}"
-    command: ["/bin/sleep", "90000"]
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alpine
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: alpine
+    spec:
+      containers:
+      - name: alpine
+        image: "{{ .Values.registry }}alpine:{{ .Values.version }}"
+        command: ["/bin/sleep", "90000"]
+        securityContext:
+          runAsNonRoot: false
 ```
 
 This chart, when installed, will launch a single pod of Alpine Linux.
@@ -347,20 +362,20 @@ build$ tree ~/workshop/gravity101/v1
 │   └── alpine
 │       ├── Chart.yaml
 │       ├── templates
-│       │   └── pod.yaml
+│       │   └── deployment.yaml
 │       └── values.yaml
 └── install.yaml
 ```
 
 When install (or any other) hook job runs, it will have all these files/directories available under `/var/lib/gravity/resources`. In our install hook we pass a path to the alpine chart in the resources directory to the helm install command.
 
-The final piece of the command is setting the registry variable to the address of the in-cluster registry. If you remember, when writing a spec for our pod, we specified the image like this:
+The final piece of the command is setting the registry variable to the address of the in-cluster registry. If you remember, when writing a spec for our deployment, we specified the image like this:
 
 ```yaml
 image: "{{ .Values.registry }}alpine:3.3"
 ```
 
-When our `helm install` command runs, it will substitute this template variable in the pod spec template so it becomes:
+When our `helm install` command runs, it will substitute this template variable in the deployment spec template so it becomes:
 
 ```yaml
 image: “registry.local:5000/alpine:3.3”
@@ -941,7 +956,7 @@ build$ tree ~/workshop/gravity101/v2
 │   └── alpine
 │       ├── Chart.yaml
 │       ├── templates
-│       │   └── pod.yaml
+│       │   └── deployment.yaml
 │       └── values.yaml
 ├── install.yaml
 └── upgrade.yaml
