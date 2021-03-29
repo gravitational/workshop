@@ -225,7 +225,7 @@ build$ cat ~/workshop/gravity101/v1-with-resources/charts/alpine/Chart.yaml
 
 ```yaml
 name: alpine
-description: Deploy a basic Alpine 3.3 Linux pod
+description: An Alpine 3.3 Linux deployment
 version: 0.0.1
 ```
 
@@ -967,7 +967,7 @@ Note that it contains much of the same files as `v1` but let's compare the chart
 ```bash
 build$ diff -y ~/workshop/gravity101/v1/charts/alpine/Chart.yaml ~/workshop/gravity101/v2/charts/alpine/Chart.yaml
 name: alpine                                                    name: alpine
-description: Deploy a basic Alpine 3.3 Linux pod              | description: Deploy a basic Alpine 3.4 Linux pod
+description: An Alpine 3.3 Linux deployment                   | description: An Alpine 3.4 Linux deployment
 version: 0.0.1                                                | version: 0.0.2
 ```
 
