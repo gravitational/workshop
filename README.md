@@ -1,3 +1,17 @@
+# Support Notice
+
+**The Gravity project is no longer under active development.**
+
+Gravity's development has been limited to maintenance and support for our
+commercial customers until maintenance agreements expire.
+
+Please see our blog post for more information:
+https://goteleport.com/blog/gravitational-is-teleport/
+
+Current Gravity releases will remain available until June 30th, 2023.  After
+June, 2023 both Open Source Gravity and Enterprise Gravity hosting and release
+infrastructure will be turned off.
+
 # Gravitational Workshops
 
 Open source series of workshops delivered by Gravitational services team.
