@@ -1,6 +1,14 @@
 # Gravitational Workshops
 
-Open source series of workshops delivered by Gravitational services team.
+> **Warning**
+>
+> The Gravitational Workshops were archived 2023-07-01, as Gravitational no longer
+> offers Kubernetes or Gravity training.
+>
+> Please see our [Gravitational is Teleport](https://goteleport.com/blog/gravitational-is-teleport/)
+> blog post for more information.
+
+Open source series of workshops delivered by the Gravitational team.
 
 * [Docker 101 workshop](docker.md)
 * [Kubernetes 101 workshop using Minikube and Mattermost](k8s101.md)
